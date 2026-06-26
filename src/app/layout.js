@@ -34,8 +34,11 @@ export async function generateMetadata() {
   };
 }
 
+export const revalidate = 60; // ISR cache for 60 seconds (improves speed)
+
 import Script from 'next/script';
 import WhatsAppFloatingButton from '@/components/shared/WhatsAppFloatingButton';
+import ScriptInjector from '@/components/shared/ScriptInjector';
 
 export default async function RootLayout({ children }) {
   const adSettings = await getAdSettings();
@@ -57,7 +60,7 @@ export default async function RootLayout({ children }) {
           />
         )}
         {headScript ? (
-          <div dangerouslySetInnerHTML={{ __html: headScript }} className="hidden" />
+          <ScriptInjector htmlCode={headScript} />
         ) : null}
         <Navbar />
         <WhatsAppFloatingButton phoneNumber={adSettings.data?.whatsappNumber} />

@@ -6,6 +6,8 @@ import SponsorWatermark from "@/components/ads/SponsorWatermark";
 
 import { getPosts } from '@/app/actions/posts';
 
+export const revalidate = 60; // 60 seconds ISR Cache
+
 export default async function Home() {
   const postsRes = await getPosts();
   const allPosts = postsRes.data || [];
