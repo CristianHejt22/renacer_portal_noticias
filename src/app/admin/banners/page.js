@@ -193,13 +193,27 @@ export default function BannersAdminPage() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium mb-1">Imagen del Banner / Sello</label>
-                <div className="flex items-center space-x-4">
-                  <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" id="bannerImage" />
-                  <label htmlFor="bannerImage" className="cursor-pointer bg-background border border-border px-4 py-2 rounded-lg hover:border-primary transition-colors flex-1 text-center">
-                    {uploading ? 'Subiendo...' : 'Seleccionar Imagen'}
-                  </label>
-                  {formData.imageUrl && <img src={formData.imageUrl} className="w-16 h-10 object-contain bg-white/10 rounded" />}
+                <label className="block text-sm font-medium mb-1">Imagen del Banner / Sello (Sube o pega un enlace)</label>
+                <div className="flex flex-col space-y-3">
+                  <div className="flex items-center space-x-4">
+                    <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" id="bannerImage" />
+                    <label htmlFor="bannerImage" className="cursor-pointer bg-background border border-border px-4 py-2 rounded-lg hover:border-primary transition-colors text-center shrink-0">
+                      {uploading ? 'Subiendo...' : 'Seleccionar de PC'}
+                    </label>
+                    <span className="text-gray-500 font-medium">o</span>
+                    <input 
+                      type="url" 
+                      value={formData.imageUrl} 
+                      onChange={e => setFormData({...formData, imageUrl: e.target.value})} 
+                      className="flex-1 bg-background border border-border rounded-lg p-2.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none" 
+                      placeholder="https://ejemplo.com/imagen.jpg" 
+                    />
+                  </div>
+                  {formData.imageUrl && (
+                    <div className="flex justify-center bg-white/5 p-2 rounded-lg">
+                      <img src={formData.imageUrl} className="h-20 object-contain rounded" />
+                    </div>
+                  )}
                 </div>
               </div>
 
