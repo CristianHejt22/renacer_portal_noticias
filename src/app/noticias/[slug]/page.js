@@ -9,7 +9,10 @@ import ShareButtons from '@/components/news/ShareButtons';
 import SocialShareButtons from '@/components/shared/SocialShareButtons';
 import CommentsSection from '@/components/news/CommentsSection';
 import RelatedArticles from '@/components/noticias/RelatedArticles';
-import { getPostBySlug, getPosts } from '@/app/actions/posts';
+import { getPostBySlug } from '@/app/actions/posts';
+
+export const revalidate = 60; // Cache ISR por 60 segundos (mejora radical de velocidad)
+export const dynamicParams = true;
 
 export async function generateMetadata({ params }) {
   const resolvedParams = await params;
@@ -73,13 +76,6 @@ export default async function ArticlePage({ params }) {
       </div>
     );
   }
-
-  // Fetch real related news (e.g. latest 3 published, excluding current)
-  const postsRes = await getPosts();
-  const allPosts = postsRes.data || [];
-  const relatedNews = allPosts
-    .filter(p => p.isPublished && p.id !== post.id)
-    .slice(0, 3);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

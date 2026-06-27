@@ -57,6 +57,24 @@ export async function getPostBySlug(slug) {
   }
 }
 
+export async function getRelatedPosts(category, currentPostId) {
+  try {
+    const posts = await prisma.post.findMany({
+      where: {
+        category: category,
+        isPublished: true,
+        id: { not: parseInt(currentPostId) },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 6,
+    });
+    return { success: true, data: posts };
+  } catch (error) {
+    console.error('Error fetching related posts:', error);
+    return { success: false, data: [] };
+  }
+}
+
 export async function createPost(data) {
   try {
     const user = await ensureUserExists();

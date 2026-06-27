@@ -1,21 +1,12 @@
 import Link from 'next/link';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { getRelatedPosts } from '@/app/actions/posts';
 
 export default async function RelatedArticles({ category, currentPostId }) {
   if (!category) return null;
 
   try {
-    const relatedPosts = await prisma.post.findMany({
-      where: {
-        category: category,
-        isPublished: true,
-        id: { not: currentPostId },
-      },
-      orderBy: { createdAt: 'desc' },
-      take: 6,
-    });
+    const res = await getRelatedPosts(category, currentPostId);
+    const relatedPosts = res.data || [];
 
     if (relatedPosts.length === 0) return null;
 
