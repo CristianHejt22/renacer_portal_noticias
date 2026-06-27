@@ -39,11 +39,17 @@ export const revalidate = 60; // ISR cache for 60 seconds (improves speed)
 import Script from 'next/script';
 import WhatsAppFloatingButton from '@/components/shared/WhatsAppFloatingButton';
 import ScriptInjector from '@/components/shared/ScriptInjector';
+import { getBanners } from '@/app/actions/banners';
 
 export default async function RootLayout({ children }) {
   const adSettings = await getAdSettings();
   const headScript = adSettings.data?.headScript || '';
   const adsenseClientId = adSettings.data?.adsenseClientId || '';
+  
+  // Plan Cielo Total
+  const bannersRes = await getBanners();
+  const activeBanners = bannersRes.data || [];
+  const cieloTotal = activeBanners.find(b => b.position === 'plan-cielo-total' && b.isActive);
 
   return (
     <html
@@ -62,6 +68,16 @@ export default async function RootLayout({ children }) {
         {headScript ? (
           <ScriptInjector htmlCode={headScript} />
         ) : null}
+
+        {/* PLAN CIELO TOTAL */}
+        {cieloTotal && (
+          <div className="w-full bg-black">
+            <a href={`/api/banner/click?id=${cieloTotal.id}&url=${encodeURIComponent(cieloTotal.targetUrl)}`} target="_blank" rel="noopener noreferrer" className="block w-full">
+              <img src={cieloTotal.imageUrl} alt={cieloTotal.name} className="w-full object-cover max-h-[400px]" />
+            </a>
+          </div>
+        )}
+
         <Navbar />
         <WhatsAppFloatingButton phoneNumber={adSettings.data?.whatsappNumber} />
         <main className="flex-grow">

@@ -3,10 +3,21 @@ import React from 'react';
 import { getPosts } from '@/app/actions/posts';
 import BannerDisplay from '@/components/ads/BannerDisplay';
 
-export default async function NoticiasPage() {
+export default async function NoticiasPage({ searchParams }) {
+  const { category: categorySlug } = await searchParams;
+  
   const res = await getPosts();
   const allPosts = res.data || [];
-  const posts = allPosts.filter(p => p.isPublished);
+  let posts = allPosts.filter(p => p.isPublished);
+
+  // Filter by category slug if provided (case-insensitive for slug)
+  let categoryName = "Últimas Noticias";
+  if (categorySlug) {
+    posts = posts.filter(p => 
+      p.category && p.category.toLowerCase().replace(/\s+/g, '-') === categorySlug
+    );
+    categoryName = posts.length > 0 ? posts[0].category : categorySlug;
+  }
 
   const formatDate = (dateString) => {
     try {
@@ -16,10 +27,25 @@ export default async function NoticiasPage() {
     }
   };
 
+  // Determine which banner plan to show based on category
+  const slug = (categorySlug || '').toLowerCase();
+  let planPosition = null;
+  if (slug === 'nacional') planPosition = 'plan-nacional';
+  else if (slug === 'local') planPosition = 'plan-local';
+  else if (slug === 'deportes') planPosition = 'plan-deportivo';
+  else if (['mundo', 'internacional', 'tendencias'].includes(slug)) planPosition = 'plan-internacional';
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <h1 className="text-4xl font-bold mb-10 text-center">Últimas Noticias</h1>
+      <h1 className="text-4xl font-bold mb-10 text-center capitalize">{categoryName}</h1>
       
+      {/* HEADER BANNER PARA PLAN INTERNACIONAL O DEPORTIVO */}
+      {(planPosition === 'plan-internacional' || planPosition === 'plan-deportivo') && (
+        <div className="mb-8">
+          <BannerDisplay position={planPosition} />
+        </div>
+      )}
+
       {posts.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {posts.map((post, index) => {
@@ -46,14 +72,24 @@ export default async function NoticiasPage() {
               </Link>
             );
 
-            // Insert a banner after every 3 posts (at the end of a row on large screens)
+            // Insert a banner after every 3 posts
             if ((index + 1) % 3 === 0) {
               return (
                 <React.Fragment key={`group-${index}`}>
                   {postCard}
-                  <div className="col-span-1 md:col-span-2 lg:col-span-3 my-4">
-                    <BannerDisplay position="home-middle" />
-                  </div>
+                  {planPosition === 'plan-nacional' && (
+                    <div className="col-span-1 md:col-span-2 lg:col-span-3 my-4">
+                      <BannerDisplay position="plan-nacional" />
+                    </div>
+                  )}
+                  {planPosition === 'plan-local' && (
+                    <div className="col-span-1 md:col-span-2 lg:col-span-3 my-4 flex justify-center">
+                       {/* El plan local es cuadrado, le damos un ancho máximo */}
+                      <div className="max-w-md w-full">
+                        <BannerDisplay position="plan-local" />
+                      </div>
+                    </div>
+                  )}
                 </React.Fragment>
               );
             }

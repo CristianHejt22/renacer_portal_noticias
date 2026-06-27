@@ -32,7 +32,7 @@ export default function AdminLayout({ children }) {
           </Link>
           <Link href="/admin/banners" className="flex items-center space-x-3 text-foreground hover:text-primary p-2 rounded-lg hover:bg-white/5 transition-colors">
             <Image size={20} />
-            <span>Banners Propios</span>
+            <span>Planes Publicitarios</span>
           </Link>
           <Link href="/admin/social" className="flex items-center space-x-3 text-foreground hover:text-primary p-2 rounded-lg hover:bg-white/5 transition-colors">
             <Share2 size={20} />

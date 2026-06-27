@@ -9,7 +9,8 @@ export default function BannersAdminPage() {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  const [formData, setFormData] = useState({ name: '', imageUrl: '', targetUrl: '', position: 'in-article' });
+  const [formData, setFormData] = useState({ name: '', imageUrl: '', targetUrl: '', position: 'plan-local' });
+
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
@@ -51,13 +52,13 @@ export default function BannersAdminPage() {
 
   const openNewModal = () => {
     setEditingId(null);
-    setFormData({ name: '', imageUrl: '', targetUrl: '', position: 'in-article' });
+    setFormData({ name: '', imageUrl: '', targetUrl: '', position: 'plan-local' });
     setIsModalOpen(true);
   };
 
   const openEditModal = (banner) => {
     setEditingId(banner.id);
-    setFormData({ name: banner.name, imageUrl: banner.imageUrl, targetUrl: banner.targetUrl, position: banner.position });
+    setFormData({ name: banner.name, imageUrl: banner.imageUrl, targetUrl: banner.targetUrl, position: banner.position || 'plan-local' });
     setIsModalOpen(true);
   };
 
@@ -73,7 +74,7 @@ export default function BannersAdminPage() {
     if (res.success) {
       setIsModalOpen(false);
       setEditingId(null);
-      setFormData({ name: '', imageUrl: '', targetUrl: '', position: 'in-article' });
+      setFormData({ name: '', imageUrl: '', targetUrl: '', position: 'plan-local' });
       loadBanners();
     } else {
       alert('Error: Asegúrate de tener la Base de Datos configurada para guardar permanentemente.');
@@ -96,8 +97,8 @@ export default function BannersAdminPage() {
     <div className="max-w-6xl mx-auto space-y-8">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold mb-2">Banners Propios</h1>
-          <p className="text-gray-400">Gestiona anuncios de imagen, URLs de redirección y marcas de agua.</p>
+          <h1 className="text-3xl font-bold mb-2">Planes Publicitarios</h1>
+          <p className="text-gray-400">Gestiona los planes de patrocinio (Local, Deportivo, Cielo Total, etc.).</p>
         </div>
         <button 
           onClick={openNewModal}
@@ -208,14 +209,13 @@ export default function BannersAdminPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">Ubicación</label>
+                <label className="block text-sm font-medium mb-1">Plan / Ubicación</label>
                 <select value={formData.position} onChange={e => setFormData({...formData, position: e.target.value})} className="w-full bg-background border border-border rounded-lg p-2.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none">
-                  <option value="in-article">Debajo del Artículo (in-article)</option>
-                  <option value="article-top">Arriba del Artículo (article-top)</option>
-                  <option value="home">Página de Inicio Abajo (home)</option>
-                  <option value="home-middle">Página de Inicio Medio (home-middle)</option>
-                  <option value="sidebar">Barra Lateral (sidebar)</option>
-                  <option value="watermark">Sello de Agua / Patrocinador (watermark)</option>
+                  <option value="plan-local">Plan Local (Cuadrado en sección Local)</option>
+                  <option value="plan-deportivo">Plan Deportivo (Banner Deportes + Placas)</option>
+                  <option value="plan-internacional">Plan Internacional (Cabecera Global)</option>
+                  <option value="plan-nacional">Plan Nacional (Central en Home/Nacional)</option>
+                  <option value="plan-cielo-total">Plan Cielo Total (Megabanner 100% superior)</option>
                 </select>
               </div>
 

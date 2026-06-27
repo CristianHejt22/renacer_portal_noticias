@@ -67,7 +67,7 @@ export default async function Home() {
             )}
           </section>
 
-          <BannerDisplay position="home-middle" />
+          <BannerDisplay position="plan-nacional" />
 
           {/* Recent News Grid */}
           <section className="mt-12">
@@ -102,10 +102,6 @@ export default async function Home() {
               <p className="text-gray-500">No hay noticias recientes.</p>
             )}
           </section>
-
-          <div className="mt-12">
-            <BannerDisplay position="home" />
-          </div>
         </div>
 
         {/* Sidebar: 4 columns on large screens */}
