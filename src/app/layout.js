@@ -41,6 +41,8 @@ import WhatsAppFloatingButton from '@/components/shared/WhatsAppFloatingButton';
 import ScriptInjector from '@/components/shared/ScriptInjector';
 import { getBanners } from '@/app/actions/banners';
 
+export const revalidate = 60; // Cachea globalmente la configuración y banners
+
 export default async function RootLayout({ children }) {
   // Fetch settings and banners in parallel for maximum performance
   const [adSettings, bannersRes] = await Promise.all([

@@ -25,30 +25,25 @@ export async function saveAdSettings(data) {
 
 export async function getAdSettings() {
   try {
-    const headScript = await prisma.setting.findUnique({ where: { key: 'ad_head_script' } });
-    const inArticleScript = await prisma.setting.findUnique({ where: { key: 'ad_in_article_script' } });
-    const sidebarScript = await prisma.setting.findUnique({ where: { key: 'ad_sidebar_script' } });
-    const sponsorMode = await prisma.setting.findUnique({ where: { key: 'sponsor_mode' } });
-    const sponsorFixedId = await prisma.setting.findUnique({ where: { key: 'sponsor_fixed_id' } });
-    const siteName = await prisma.setting.findUnique({ where: { key: 'site_name' } });
-    const siteDescription = await prisma.setting.findUnique({ where: { key: 'site_description' } });
-    const siteLogo = await prisma.setting.findUnique({ where: { key: 'site_logo' } });
-    const adsenseClientId = await prisma.setting.findUnique({ where: { key: 'adsense_client_id' } });
-    const whatsappNumber = await prisma.setting.findUnique({ where: { key: 'whatsapp_number' } });
+    const settingsArray = await prisma.setting.findMany();
+    const s = settingsArray.reduce((acc, curr) => {
+      acc[curr.key] = curr.value;
+      return acc;
+    }, {});
 
     return {
       success: true,
       data: {
-        headScript: headScript?.value || '',
-        inArticleScript: inArticleScript?.value || '',
-        sidebarScript: sidebarScript?.value || '',
-        sponsorMode: sponsorMode?.value || 'random',
-        sponsorFixedId: sponsorFixedId?.value || '',
-        siteName: siteName?.value || 'Renacer Noticias',
-        siteDescription: siteDescription?.value || 'Las últimas noticias de tecnología, economía y cultura.',
-        siteLogo: siteLogo?.value || '',
-        adsenseClientId: adsenseClientId?.value || '',
-        whatsappNumber: whatsappNumber?.value || '',
+        headScript: s['ad_head_script'] || '',
+        inArticleScript: s['ad_in_article_script'] || '',
+        sidebarScript: s['ad_sidebar_script'] || '',
+        sponsorMode: s['sponsor_mode'] || 'random',
+        sponsorFixedId: s['sponsor_fixed_id'] || '',
+        siteName: s['site_name'] || 'Renacer Noticias',
+        siteDescription: s['site_description'] || 'Las últimas noticias de tecnología, economía y cultura.',
+        siteLogo: s['site_logo'] || '',
+        adsenseClientId: s['adsense_client_id'] || '',
+        whatsappNumber: s['whatsapp_number'] || '',
       }
     };
   } catch (error) {
