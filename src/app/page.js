@@ -4,14 +4,14 @@ import BannerDisplay from "@/components/ads/BannerDisplay";
 import PublicSidebar from "@/components/layout/PublicSidebar";
 import SponsorWatermark from "@/components/ads/SponsorWatermark";
 
-import { getPosts } from '@/app/actions/posts';
+import { getHomePosts } from '@/app/actions/posts';
 
 export const revalidate = 60; // 60 seconds ISR Cache
 
 export default async function Home() {
-  const postsRes = await getPosts();
+  const postsRes = await getHomePosts();
   const allPosts = postsRes.data || [];
-  const publishedPosts = allPosts.filter(p => p.isPublished);
+  const publishedPosts = allPosts; // already filtered by isPublished in the query
 
   const featuredPost = publishedPosts.length > 0 ? publishedPosts[0] : null;
   const recentPosts = publishedPosts.length > 1 ? publishedPosts.slice(1, 7) : [];

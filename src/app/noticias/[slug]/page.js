@@ -59,11 +59,15 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function ArticlePage({ params }) {
-  const adSettings = await getAdSettings();
-  const inArticleScript = adSettings.data?.inArticleScript || '';
-  
   const resolvedParams = await params;
-  const res = await getPostBySlug(resolvedParams.slug);
+  
+  // Fetch settings and post concurrently for maximum speed
+  const [adSettings, res] = await Promise.all([
+    getAdSettings(),
+    getPostBySlug(resolvedParams.slug)
+  ]);
+  
+  const inArticleScript = adSettings.data?.inArticleScript || '';
   const post = res.data;
 
   if (!post) {

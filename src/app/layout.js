@@ -42,12 +42,16 @@ import ScriptInjector from '@/components/shared/ScriptInjector';
 import { getBanners } from '@/app/actions/banners';
 
 export default async function RootLayout({ children }) {
-  const adSettings = await getAdSettings();
+  // Fetch settings and banners in parallel for maximum performance
+  const [adSettings, bannersRes] = await Promise.all([
+    getAdSettings(),
+    getBanners()
+  ]);
+
   const headScript = adSettings.data?.headScript || '';
   const adsenseClientId = adSettings.data?.adsenseClientId || '';
   
   // Plan Cielo Total
-  const bannersRes = await getBanners();
   const activeBanners = bannersRes.data || [];
   const cieloTotal = activeBanners.find(b => b.position === 'plan-cielo-total' && b.isActive);
 

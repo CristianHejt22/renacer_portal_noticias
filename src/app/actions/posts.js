@@ -25,7 +25,8 @@ export async function getPosts() {
   try {
     const posts = await prisma.post.findMany({
       orderBy: { createdAt: 'desc' },
-      include: { author: true }
+      include: { author: true },
+      take: 30, // Límite de seguridad para no descargar miles de noticias
     });
     return { success: true, data: posts };
   } catch (error) {
@@ -54,6 +55,43 @@ export async function getPostBySlug(slug) {
     return { success: true, data: post };
   } catch (error) {
     return { success: false, error: 'Error fetching post' };
+  }
+}
+
+export async function getHomePosts() {
+  try {
+    const posts = await prisma.post.findMany({
+      where: { isPublished: true },
+      orderBy: { createdAt: 'desc' },
+      take: 7,
+      // We don't use select here because we need the content for the hero snippet, 
+      // but taking only 7 is thousands of times faster than fetching all posts.
+    });
+    return { success: true, data: posts };
+  } catch (error) {
+    return { success: false, data: [] };
+  }
+}
+
+export async function getRecentPosts(limit = 4) {
+  try {
+    const posts = await prisma.post.findMany({
+      where: { isPublished: true },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        category: true,
+        coverImage: true,
+        createdAt: true,
+      } // Exclude heavy content!
+    });
+    return { success: true, data: posts };
+  } catch (error) {
+    console.error('Error fetching recent posts:', error);
+    return { success: false, data: [] };
   }
 }
 

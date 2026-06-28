@@ -1,15 +1,11 @@
 import BannerDisplay from '@/components/ads/BannerDisplay';
 import Link from 'next/link';
-import { getPosts } from '@/app/actions/posts';
+import { getRecentPosts } from '@/app/actions/posts';
 
 export default async function PublicSidebar() {
-  const res = await getPosts();
-  const allPosts = res.data || [];
-  
-  // Como no hay contador de visitas por ahora, tomamos las más recientes
-  const popularNews = allPosts
-    .filter(p => p.isPublished)
-    .slice(0, 4);
+  // Use the lightweight query to fetch just 4 recent posts (no HTML content)
+  const res = await getRecentPosts(4);
+  const popularNews = res.data || [];
 
   return (
     <aside className="w-full flex flex-col gap-8">
