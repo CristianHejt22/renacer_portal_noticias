@@ -1,6 +1,7 @@
 import { Eye, FileText, Share2 } from "lucide-react";
 import { PrismaClient } from '@prisma/client';
 import Link from 'next/link';
+import MigrationButton from '@/components/admin/MigrationButton';
 
 const prisma = new PrismaClient();
 
@@ -101,6 +102,8 @@ export default async function AdminDashboard() {
           </table>
         </div>
       </div>
+
+      <MigrationButton />
     </div>
   );
 }
