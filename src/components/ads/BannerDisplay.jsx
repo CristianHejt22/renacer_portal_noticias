@@ -3,9 +3,10 @@
 import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 
-export default function BannerDisplay({ position = 'in-article', specificId = null }) {
+export default function BannerDisplay({ position = 'in-article', specificId = null, mode = 'slider' }) {
   const [banners, setBanners] = useState([]);
   const [hasViewed, setHasViewed] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -44,21 +45,63 @@ export default function BannerDisplay({ position = 'in-article', specificId = nu
     return () => observer.disconnect();
   }, [banners, hasViewed]);
 
+  useEffect(() => {
+    if (mode === 'slider' && banners.length > 1) {
+      const interval = setInterval(() => {
+        setCurrentIndex((prev) => (prev + 1) % banners.length);
+      }, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [banners.length, mode]);
+
   if (banners.length === 0) return null;
 
   return (
-    <div ref={containerRef} className="w-full flex flex-col items-center gap-4 my-8">
-      {banners.map(banner => (
+    <div ref={containerRef} className="w-full flex flex-col items-center gap-2 my-8">
+      <span className="text-[10px] uppercase tracking-widest text-gray-400 bg-gray-500/10 px-2 py-0.5 rounded">
+        Publicidad
+      </span>
+      
+      {mode === 'slider' ? (
         <a 
-          key={banner.id}
-          href={`/api/banner/click?id=${banner.id}&url=${encodeURIComponent(banner.targetUrl)}`}
+          key={banners[currentIndex].id}
+          href={`/api/banner/click?id=${banners[currentIndex].id}&url=${encodeURIComponent(banners[currentIndex].targetUrl)}`}
           target="_blank"
           rel="noopener noreferrer"
           className="block w-full max-w-4xl mx-auto overflow-hidden rounded-xl border border-border hover:opacity-95 transition-opacity"
         >
-          <img src={banner.imageUrl} alt={banner.name} className="w-full h-auto object-contain max-h-[400px]" />
+          <img 
+            src={banners[currentIndex].imageUrl} 
+            alt={banners[currentIndex].name} 
+            className="w-full h-auto object-contain max-h-[400px]" 
+          />
         </a>
-      ))}
+      ) : (
+        banners.map(banner => (
+          <a 
+            key={banner.id}
+            href={`/api/banner/click?id=${banner.id}&url=${encodeURIComponent(banner.targetUrl)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block w-full max-w-4xl mx-auto overflow-hidden rounded-xl border border-border hover:opacity-95 transition-opacity mb-4"
+          >
+            <img src={banner.imageUrl} alt={banner.name} className="w-full h-auto object-contain max-h-[400px]" />
+          </a>
+        ))
+      )}
+
+      {mode === 'slider' && banners.length > 1 && (
+        <div className="flex gap-2 mt-1">
+          {banners.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => setCurrentIndex(idx)}
+              className={`w-2 h-2 rounded-full transition-all ${idx === currentIndex ? 'bg-primary w-4' : 'bg-gray-400'}`}
+              aria-label={`Go to slide ${idx + 1}`}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
