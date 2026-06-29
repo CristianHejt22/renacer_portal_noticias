@@ -29,7 +29,7 @@ export default function EditPostPage({ params }) {
       // Load available sponsors
       const bannerRes = await getBanners();
       if (bannerRes.success && bannerRes.data) {
-        setAvailableSponsors(bannerRes.data.filter(b => b.position === 'plan-deportivo' && b.isActive));
+        setAvailableSponsors(bannerRes.data.filter(b => b.position === 'watermark' && b.isActive));
       }
       
       // Load available categories

@@ -37,7 +37,7 @@ export default async function SponsorWatermark({ postSponsorId }) {
     if (!selectedSponsor) return null;
 
     const Content = () => (
-      <div className="absolute bottom-4 right-4 z-10 transition-transform hover:scale-105 opacity-80 hover:opacity-100 drop-shadow-md">
+      <div className="absolute top-4 right-4 z-10 transition-transform hover:scale-105 opacity-80 hover:opacity-100 drop-shadow-md">
         <img 
           src={selectedSponsor.imageUrl} 
           alt={selectedSponsor.name || 'Patrocinador'} 

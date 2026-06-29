@@ -230,6 +230,7 @@ export default function BannersAdminPage() {
                   <option value="plan-internacional">Plan Internacional (Cabecera Global)</option>
                   <option value="plan-nacional">Plan Nacional (Central en Home/Nacional)</option>
                   <option value="plan-cielo-total">Plan Cielo Total (Megabanner 100% superior)</option>
+                  <option value="watermark">Sello de Agua (Patrocinador en foto de portada)</option>
                 </select>
               </div>
 

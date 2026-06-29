@@ -35,7 +35,7 @@ export default function BannerDisplay({ position = 'in-article' }) {
           rel="noopener noreferrer"
           className="block w-full max-w-4xl mx-auto overflow-hidden rounded-xl border border-border hover:opacity-95 transition-opacity"
         >
-          <img src={banner.imageUrl} alt={banner.name} className="w-full h-auto object-cover max-h-48" />
+          <img src={banner.imageUrl} alt={banner.name} className="w-full h-auto object-contain max-h-[400px]" />
         </a>
       ))}
     </div>
