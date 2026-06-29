@@ -1,6 +1,4 @@
 import { NextResponse } from 'next/server';
-import { writeFile, mkdir } from 'fs/promises';
-import path from 'path';
 
 export async function POST(request) {
   try {
@@ -13,25 +11,14 @@ export async function POST(request) {
 
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
+    const mimeType = file.type || 'image/jpeg';
+    const base64 = buffer.toString('base64');
+    const fileUrl = `data:${mimeType};base64,${base64}`;
 
-    // Asegurar que la carpeta public/uploads existe
-    const uploadDir = path.join(process.cwd(), 'public/uploads');
-    await mkdir(uploadDir, { recursive: true });
-
-    // Generar un nombre único para evitar colisiones
-    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    const originalName = file.name.replace(/[^a-zA-Z0-9.-]/g, ''); // Sanitizar nombre
-    const filename = `${uniqueSuffix}-${originalName}`;
-    const filePath = path.join(uploadDir, filename);
-
-    // Escribir el archivo
-    await writeFile(filePath, buffer);
-
-    // Devolver la URL pública
-    const fileUrl = `/uploads/${filename}`;
+    // Devolver la URL pública en base64
     return NextResponse.json({ url: fileUrl });
   } catch (error) {
     console.error('Error uploading file:', error);
-    return NextResponse.json({ error: 'Error al subir la imagen' }, { status: 500 });
+    return NextResponse.json({ error: 'Error al procesar la imagen' }, { status: 500 });
   }
 }
