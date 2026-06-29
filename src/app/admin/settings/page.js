@@ -175,7 +175,7 @@ export default function GeneralSettingsPage() {
                 <input
                   type="text"
                   readOnly
-                  value="https://tusitio.com/feed.xml"
+                  value="https://librecielo.com/feed.xml"
                   className="flex-1 bg-background border border-border rounded-lg p-3 text-primary font-mono text-sm focus:outline-none"
                   onClick={(e) => {
                     const url = window.location.origin + '/feed.xml';

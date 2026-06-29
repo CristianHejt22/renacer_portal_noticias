@@ -5,6 +5,6 @@ export default function robots() {
       allow: '/',
       disallow: ['/admin/', '/api/'],
     },
-    sitemap: 'https://renacer.com/sitemap.xml',
+    sitemap: 'https://librecielo.com/sitemap.xml',
   };
 }

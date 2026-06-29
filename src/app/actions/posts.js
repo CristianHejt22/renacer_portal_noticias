@@ -12,7 +12,7 @@ async function ensureUserExists() {
   if (!user) {
     user = await prisma.user.create({
       data: {
-        email: 'admin@renacer.com',
+        email: 'admin@librecielo.com',
         password: 'password', // in a real app this would be hashed
         name: 'Redacción Renacer'
       }

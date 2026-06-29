@@ -37,7 +37,7 @@ export async function generateMetadata({ params }) {
     openGraph: {
       title: post.title,
       description: description,
-      url: `https://renacer.com/noticias/${post.slug}`,
+      url: `https://librecielo.com/noticias/${post.slug}`,
       type: 'article',
       publishedTime: post.createdAt,
       authors: [post.author?.name || 'Redacción'],
@@ -134,7 +134,7 @@ export default async function ArticlePage({ params }) {
           {/* Body and Share */}
           <div className="flex flex-col md:flex-row gap-8">
             <ShareButtons 
-              url={`https://renacer.com/noticias/${post.slug}`} 
+              url={`https://librecielo.com/noticias/${post.slug}`} 
               title={post.title} 
             />
 

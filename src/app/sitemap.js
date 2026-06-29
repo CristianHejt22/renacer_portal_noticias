@@ -3,7 +3,7 @@ import { getPages } from '@/app/actions/pages';
 import { getCategories } from '@/app/actions/categories';
 
 export default async function sitemap() {
-  const baseUrl = 'https://renacer.com';
+  const baseUrl = 'https://librecielo.com';
 
   // Get all public posts
   const postsRes = await getPosts();
