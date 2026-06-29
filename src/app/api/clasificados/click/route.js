@@ -23,7 +23,7 @@ export async function GET(request) {
     // Generar la URL de WhatsApp
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || request.nextUrl.origin;
     const adUrl = `${baseUrl}/clasificados/${ad.slug}`;
-    const message = `Hola, vi tu anuncio "${ad.title}" en Renacer Noticias: ${adUrl}`;
+    const message = `Hola, vi tu anuncio "${ad.title}" en THE DINNER Portal: ${adUrl}`;
     
     // Limpiar el número de WhatsApp
     const cleanNumber = ad.whatsapp.replace(/\D/g, '');

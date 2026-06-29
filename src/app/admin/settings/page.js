@@ -13,7 +13,7 @@ export default function GeneralSettingsPage() {
   const [settings, setSettings] = useState({
     sponsorMode: 'random',
     sponsorFixedId: '',
-    siteName: 'Renacer Noticias',
+    siteName: 'THE DINNER Portal',
     siteDescription: 'Las últimas noticias de tecnología, economía y cultura.',
     siteLogo: '',
     adsenseClientId: '',
@@ -33,7 +33,7 @@ export default function GeneralSettingsPage() {
           ...prev,
           sponsorMode: res.data.sponsorMode || 'random',
           sponsorFixedId: res.data.sponsorFixedId || '',
-          siteName: res.data.siteName || 'Renacer Noticias',
+          siteName: res.data.siteName || 'THE DINNER Portal',
           siteDescription: res.data.siteDescription || 'Las últimas noticias de tecnología, economía y cultura.',
           siteLogo: res.data.siteLogo || '',
           adsenseClientId: res.data.adsenseClientId || '',

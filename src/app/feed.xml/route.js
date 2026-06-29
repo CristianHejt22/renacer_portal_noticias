@@ -14,7 +14,7 @@ export async function GET(request) {
     const siteNameSetting = await prisma.setting.findUnique({ where: { key: 'site_name' } });
     const siteDescSetting = await prisma.setting.findUnique({ where: { key: 'site_description' } });
     
-    const siteTitle = siteNameSetting?.value || 'Renacer Noticias';
+    const siteTitle = siteNameSetting?.value || 'THE DINNER Portal';
     const siteDescription = siteDescSetting?.value || 'Portal de noticias';
 
     // 3. Obtener las últimas 20 noticias publicadas

@@ -10,7 +10,7 @@ export async function GET(request) {
     const siteUrl = `${protocol}://${host}`;
 
     const siteNameSetting = await prisma.setting.findUnique({ where: { key: 'site_name' } });
-    const siteTitle = siteNameSetting?.value || 'Renacer Noticias';
+    const siteTitle = siteNameSetting?.value || 'THE DINNER Portal';
 
     // Google News sitemaps only include articles published in the last 2 days (48 hours)
     const twoDaysAgo = new Date();

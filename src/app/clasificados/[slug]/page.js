@@ -65,7 +65,7 @@ export default async function ClassifiedDetailPage({ params }) {
               <span>Contactar por WhatsApp</span>
             </a>
             <p className="text-center text-gray-500 text-sm mt-4">
-              Al contactar, menciona que lo viste en Renacer Noticias.
+              Al contactar, menciona que lo viste en THE DINNER Portal.
             </p>
           </div>
         </div>
