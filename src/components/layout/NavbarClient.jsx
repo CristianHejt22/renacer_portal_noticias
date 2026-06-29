@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Menu, X, ChevronDown } from 'lucide-react';
+import { Menu, X, Plus, Minus } from 'lucide-react';
 import WeatherWidget from './WeatherWidget';
 
 export default function NavbarClient({ categories, pages, siteLogo, siteName }) {
@@ -76,14 +76,17 @@ export default function NavbarClient({ categories, pages, siteLogo, siteName }) 
             if (hasChildren) {
               return (
                 <div key={cat.id} className="space-y-1">
-                  <div className="flex justify-between items-center px-3 py-3 rounded-md hover:bg-black/5">
-                    <Link href={`/noticias?category=${cat.slug}`} onClick={() => setIsMobileMenuOpen(false)} className="text-base font-medium text-gray-900 hover:text-black flex-grow">
+                  <button 
+                    onClick={() => toggleDropdown(cat.id)}
+                    className="w-full flex justify-between items-center px-3 py-3 rounded-md hover:bg-black/5 text-left"
+                  >
+                    <span className="text-base font-medium text-gray-900 hover:text-black flex-grow">
                       {cat.name}
-                    </Link>
-                    <button onClick={() => toggleDropdown(cat.id)} className="p-1 text-gray-800">
-                      <ChevronDown size={20} className={`transform transition-transform ${openDropdownId === cat.id ? 'rotate-180' : ''}`} />
-                    </button>
-                  </div>
+                    </span>
+                    <span className="p-1 text-gray-800">
+                      {openDropdownId === cat.id ? <Minus size={20} /> : <Plus size={20} />}
+                    </span>
+                  </button>
                   
                   {openDropdownId === cat.id && (
                     <div className="pl-6 space-y-1 border-l border-[#d1c9b4] ml-3 my-2">
