@@ -15,6 +15,10 @@ export default async function AdminDashboard() {
     take: 5,
   });
 
+  const banners = await prisma.bannerAd.findMany();
+  const totalVisits = banners.reduce((sum, b) => sum + (b.views || 0), 0);
+  const networkImpact = banners.reduce((sum, b) => sum + (b.clicks || 0), 0);
+
   return (
     <div>
       <h1 className="text-3xl font-bold mb-8">Resumen General</h1>
@@ -25,8 +29,8 @@ export default async function AdminDashboard() {
             <h3 className="text-lg font-medium text-gray-400">Visitas Totales</h3>
             <Eye className="text-primary" />
           </div>
-          <p className="text-4xl font-bold">124,500</p>
-          <p className="text-sm text-green-500 mt-2">+12% desde el mes pasado</p>
+          <p className="text-4xl font-bold">{totalVisits.toLocaleString()}</p>
+          <p className="text-sm text-green-500 mt-2">Basado en impresiones</p>
         </div>
         
         <div className="glass p-6 rounded-xl border border-border">
@@ -43,8 +47,8 @@ export default async function AdminDashboard() {
             <h3 className="text-lg font-medium text-gray-400">Impacto en Redes</h3>
             <Share2 className="text-purple-500" />
           </div>
-          <p className="text-4xl font-bold">18,200</p>
-          <p className="text-sm text-green-500 mt-2">+5% interacción</p>
+          <p className="text-4xl font-bold">{networkImpact.toLocaleString()}</p>
+          <p className="text-sm text-green-500 mt-2">Interacciones y clics</p>
         </div>
       </div>
 
