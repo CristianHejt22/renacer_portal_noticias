@@ -3,25 +3,32 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
-export default function BannerDisplay({ position = 'in-article' }) {
+export default function BannerDisplay({ position = 'in-article', specificId = null }) {
   const [banners, setBanners] = useState([]);
 
   useEffect(() => {
     // Fetch banners
-    fetch('/api/banner/active?position=' + position)
+    let url = '/api/banner/active?position=' + position;
+    if (specificId) {
+      url = '/api/banner/active?id=' + specificId;
+    }
+    
+    fetch(url)
       .then(res => res.json())
       .then(data => {
         if (data.success && data.data) {
-          setBanners(data.data);
+          // If specificId, it might return an array with one element or we just use it
+          const activeBanners = Array.isArray(data.data) ? data.data : [data.data];
+          setBanners(activeBanners);
           
           // Registrar vista
-          data.data.forEach(banner => {
+          activeBanners.forEach(banner => {
             fetch(`/api/banner/view?id=${banner.id}`);
           });
         }
       })
       .catch(err => console.error(err));
-  }, [position]);
+  }, [position, specificId]);
 
   if (banners.length === 0) return null;
 

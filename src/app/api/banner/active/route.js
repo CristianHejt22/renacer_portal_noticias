@@ -8,13 +8,18 @@ if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const position = searchParams.get('position') || 'in-article';
+  const id = searchParams.get('id');
 
   try {
+    let whereClause = { isActive: true };
+    if (id) {
+      whereClause.id = parseInt(id);
+    } else {
+      whereClause.position = position;
+    }
+
     const banners = await prisma.bannerAd.findMany({
-      where: { 
-        isActive: true,
-        position: position
-      },
+      where: whereClause,
       orderBy: { createdAt: 'desc' }
     });
     return NextResponse.json({ success: true, data: banners });

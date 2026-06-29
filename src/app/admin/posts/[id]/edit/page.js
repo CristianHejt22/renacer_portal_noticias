@@ -18,6 +18,7 @@ export default function EditPostPage({ params }) {
   const [tags, setTags] = useState('');
   const [sponsorId, setSponsorId] = useState('');
   const [availableSponsors, setAvailableSponsors] = useState([]);
+  const [allBanners, setAllBanners] = useState([]);
   const [availableCategories, setAvailableCategories] = useState([]);
   const [slug, setSlug] = useState('');
   const [saving, setSaving] = useState(false);
@@ -29,6 +30,7 @@ export default function EditPostPage({ params }) {
       // Load available sponsors
       const bannerRes = await getBanners();
       if (bannerRes.success && bannerRes.data) {
+        setAllBanners(bannerRes.data.filter(b => b.isActive));
         setAvailableSponsors(bannerRes.data.filter(b => b.position === 'watermark' && b.isActive));
       }
       
@@ -224,7 +226,7 @@ export default function EditPostPage({ params }) {
 
         <div className="mt-8">
           <label className="block text-lg font-bold mb-4">Contenido</label>
-          <RichTextEditor content={content} onChange={setContent} />
+          <RichTextEditor content={content} onChange={setContent} availableBanners={allBanners} />
         </div>
       </div>
     </div>

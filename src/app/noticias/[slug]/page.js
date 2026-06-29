@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { getAdSettings } from '@/app/actions/settings';
 import BannerDisplay from '@/components/ads/BannerDisplay';
+import AdIframeInjector from '@/components/shared/AdIframeInjector';
 import PublicSidebar from '@/components/layout/PublicSidebar';
 import SponsorWatermark from '@/components/ads/SponsorWatermark';
 import ShareButtons from '@/components/news/ShareButtons';
@@ -140,11 +141,33 @@ export default async function ArticlePage({ params }) {
             {/* Article Content */}
             <div className="flex-1">
               <div className="prose prose-lg dark:prose-invert max-w-none font-serif text-gray-800 dark:text-gray-200 leading-relaxed">
-                {(post.content?.split(/(\[banner:in-article\])/g) || []).map((part, index) => {
+                {(post.content?.split(/(\[banner:in-article\]|\[adsterra:in-article\]|\[banner:id:\d+\])/g) || []).map((part, index) => {
                   if (part === '[banner:in-article]') {
                     return (
                       <div key={index} className="my-8 not-prose">
                         <BannerDisplay position="in-article" />
+                      </div>
+                    );
+                  }
+                  
+                  if (part === '[adsterra:in-article]') {
+                    return (
+                      <div key={index} className="my-8 not-prose">
+                        {inArticleScript && <AdIframeInjector htmlCode={inArticleScript} minHeight="250px" />}
+                      </div>
+                    );
+                  }
+
+                  if (part.startsWith('[banner:id:')) {
+                    const bannerId = part.match(/\d+/)[0];
+                    return (
+                      <div key={index} className="my-8 not-prose flex justify-center">
+                        <a href={`/api/banner/click?id=${bannerId}&url=`} target="_blank" rel="noopener noreferrer" className="block max-w-4xl hover:opacity-95 transition-opacity">
+                          {/* Fetching the specific banner image requires a client component or an API route, 
+                              but since we don't have the banner data here, we'll use a dynamic component or just BannerDisplay with ID. 
+                              Let's pass the ID to BannerDisplay */}
+                          <BannerDisplay position="in-article" specificId={parseInt(bannerId)} />
+                        </a>
                       </div>
                     );
                   }

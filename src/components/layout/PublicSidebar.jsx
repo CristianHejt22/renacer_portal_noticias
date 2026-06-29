@@ -1,11 +1,16 @@
 import BannerDisplay from '@/components/ads/BannerDisplay';
 import Link from 'next/link';
 import { getRecentPosts } from '@/app/actions/posts';
+import { getAdSettings } from '@/app/actions/settings';
+import AdIframeInjector from '@/components/shared/AdIframeInjector';
 
 export default async function PublicSidebar() {
-  // Use the lightweight query to fetch just 4 recent posts (no HTML content)
-  const res = await getRecentPosts(4);
+  const [res, settingsRes] = await Promise.all([
+    getRecentPosts(4),
+    getAdSettings()
+  ]);
   const popularNews = res.data || [];
+  const adSettings = settingsRes || {};
 
   return (
     <aside className="w-full flex flex-col gap-8">
@@ -40,7 +45,10 @@ export default async function PublicSidebar() {
       )}
 
       {/* Banner Inferior del Sidebar */}
-      <div className="w-full sticky top-24">
+      <div className="w-full sticky top-24 space-y-8">
+        {adSettings.data?.sidebarScript && (
+          <AdIframeInjector htmlCode={adSettings.data.sidebarScript} minHeight="250px" />
+        )}
         <BannerDisplay position="sidebar" />
       </div>
     </aside>

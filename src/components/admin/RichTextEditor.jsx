@@ -7,7 +7,9 @@ import ImageExtension from '@tiptap/extension-image';
 import { Bold, Italic, Strikethrough, Heading1, Heading2, List, ListOrdered, Quote, Link as LinkIcon, Image as ImageIcon, DollarSign } from 'lucide-react';
 
 
-const MenuBar = ({ editor }) => {
+const MenuBar = ({ editor, availableBanners = [] }) => {
+  const [showAdMenu, setShowAdMenu] = React.useState(false);
+
   if (!editor) {
     return null;
   }
@@ -36,7 +38,6 @@ const MenuBar = ({ editor }) => {
         const formData = new FormData();
         formData.append('file', file);
         try {
-          // Si el servidor lo está subiendo, lo guardará en /public/uploads
           const res = await fetch('/api/upload', {
             method: 'POST',
             body: formData,
@@ -54,8 +55,9 @@ const MenuBar = ({ editor }) => {
     input.click();
   };
 
-  const insertAd = () => {
-    editor.chain().focus().insertContent('<p>[banner:in-article]</p>').run();
+  const insertCode = (code) => {
+    editor.chain().focus().insertContent(`<p>${code}</p>`).run();
+    setShowAdMenu(false);
   };
 
   const buttonClass = (isActive) =>
@@ -131,14 +133,37 @@ const MenuBar = ({ editor }) => {
         <ImageIcon size={18} />
       </button>
       <div className="w-px h-6 bg-border mx-1 self-center" />
-      <button onClick={insertAd} className={buttonClass()} title="Insertar Anuncio / AdSense">
-        <DollarSign size={18} className="text-yellow-500" />
-      </button>
+      <div className="relative">
+        <button onClick={() => setShowAdMenu(!showAdMenu)} className={buttonClass(showAdMenu)} title="Insertar Anuncio">
+          <DollarSign size={18} className="text-yellow-500" />
+        </button>
+        {showAdMenu && (
+          <div className="absolute top-full right-0 mt-1 w-64 bg-surface border border-border rounded-lg shadow-xl z-50 py-2">
+            <button onClick={() => insertCode('[banner:in-article]')} className="w-full text-left px-4 py-2 text-sm hover:bg-white/10 transition-colors">
+              Banner General (Aleatorio)
+            </button>
+            <button onClick={() => insertCode('[adsterra:in-article]')} className="w-full text-left px-4 py-2 text-sm hover:bg-white/10 transition-colors text-yellow-500">
+              Script de Adsterra
+            </button>
+            {availableBanners.length > 0 && (
+              <>
+                <div className="w-full h-px bg-border my-2" />
+                <div className="px-4 py-1 text-xs text-gray-500 font-bold uppercase tracking-wider">Banners Específicos</div>
+                {availableBanners.map(b => (
+                  <button key={b.id} onClick={() => insertCode(`[banner:id:${b.id}]`)} className="w-full text-left px-4 py-2 text-sm hover:bg-white/10 transition-colors truncate">
+                    {b.name}
+                  </button>
+                ))}
+              </>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
 
-export default function RichTextEditor({ content, onChange }) {
+export default function RichTextEditor({ content, onChange, availableBanners = [] }) {
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -167,7 +192,7 @@ export default function RichTextEditor({ content, onChange }) {
 
   return (
     <div className="border border-border rounded-xl overflow-hidden glass">
-      <MenuBar editor={editor} />
+      <MenuBar editor={editor} availableBanners={availableBanners} />
       <EditorContent editor={editor} className="p-4 min-h-[300px] bg-background text-foreground" />
     </div>
   );

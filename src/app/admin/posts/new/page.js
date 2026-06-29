@@ -17,6 +17,7 @@ export default function NewPostPage() {
   const [tags, setTags] = useState('');
   const [sponsorId, setSponsorId] = useState('');
   const [availableSponsors, setAvailableSponsors] = useState([]);
+  const [allBanners, setAllBanners] = useState([]);
   const [availableCategories, setAvailableCategories] = useState([]);
   const [saving, setSaving] = useState(false);
   const router = useRouter();
@@ -25,6 +26,7 @@ export default function NewPostPage() {
     async function loadData() {
       const bannerRes = await getBanners();
       if (bannerRes.success && bannerRes.data) {
+        setAllBanners(bannerRes.data.filter(b => b.isActive));
         setAvailableSponsors(bannerRes.data.filter(b => b.position === 'watermark' && b.isActive));
       }
       
@@ -202,7 +204,7 @@ export default function NewPostPage() {
 
         <div className="mt-8">
           <label className="block text-lg font-bold mb-4">Contenido</label>
-          <RichTextEditor content={content} onChange={setContent} />
+          <RichTextEditor content={content} onChange={setContent} availableBanners={allBanners} />
         </div>
       </div>
     </div>
