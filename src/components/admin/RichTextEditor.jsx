@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import LinkExtension from '@tiptap/extension-link';
@@ -8,7 +9,7 @@ import { Bold, Italic, Strikethrough, Heading1, Heading2, List, ListOrdered, Quo
 
 
 const MenuBar = ({ editor, availableBanners = [] }) => {
-  const [showAdMenu, setShowAdMenu] = React.useState(false);
+  const [showAdMenu, setShowAdMenu] = useState(false);
 
   if (!editor) {
     return null;
