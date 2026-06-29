@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, Eye, MousePointerClick, Image as ImageIcon, ToggleLeft, ToggleRight, Edit } from 'lucide-react';
+import { Plus, Trash2, Eye, MousePointerClick, Image as ImageIcon, ToggleLeft, ToggleRight, Edit, RotateCcw, Percent } from 'lucide-react';
 import { getBanners, createBanner, toggleBannerStatus, deleteBanner, updateBanner } from '@/app/actions/banners';
 
 export default function BannersAdminPage() {
@@ -24,6 +24,17 @@ export default function BannersAdminPage() {
       setBanners(res.data);
     }
     setLoading(false);
+  };
+
+  const handleResetMetrics = async (id) => {
+    if (confirm('¿Seguro que deseas reiniciar a cero las vistas y clics de este banner?')) {
+      try {
+        await fetch(`/api/banner/reset?id=${id}`, { method: 'POST' });
+        loadBanners();
+      } catch (err) {
+        alert('Error al reiniciar métricas');
+      }
+    }
   };
 
   const handleFileChange = async (e) => {
@@ -118,47 +129,64 @@ export default function BannersAdminPage() {
               <tr>
                 <th className="p-4 font-semibold text-gray-300">Banner</th>
                 <th className="p-4 font-semibold text-gray-300">Ubicación</th>
-                <th className="p-4 font-semibold text-gray-300">Métricas</th>
+                <th className="p-4 font-semibold text-gray-300">Métricas de Rendimiento</th>
                 <th className="p-4 font-semibold text-gray-300">Estado</th>
                 <th className="p-4 font-semibold text-gray-300 text-right">Acciones</th>
               </tr>
             </thead>
             <tbody>
-              {banners.map(banner => (
-                <tr key={banner.id} className="border-b border-border hover:bg-background/50">
-                  <td className="p-4">
-                    <div className="flex items-center space-x-4">
-                      {banner.imageUrl ? (
-                        <img src={banner.imageUrl} alt={banner.name} className="w-20 h-12 object-cover rounded bg-white" />
-                      ) : (
-                        <div className="w-20 h-12 bg-gray-800 rounded flex items-center justify-center">
-                          <ImageIcon className="w-6 h-6 text-gray-500" />
+              {banners.map(banner => {
+                const views = banner.views || 0;
+                const clicks = banner.clicks || 0;
+                const ctr = views > 0 ? ((clicks / views) * 100).toFixed(2) : '0.00';
+                
+                return (
+                  <tr key={banner.id} className="border-b border-border hover:bg-background/50">
+                    <td className="p-4">
+                      <div className="flex items-center space-x-4">
+                        {banner.imageUrl ? (
+                          <img src={banner.imageUrl} alt={banner.name} className="w-20 h-12 object-cover rounded bg-white" />
+                        ) : (
+                          <div className="w-20 h-12 bg-gray-800 rounded flex items-center justify-center">
+                            <ImageIcon className="w-6 h-6 text-gray-500" />
+                          </div>
+                        )}
+                        <div>
+                          <p className="font-bold text-base">{banner.name}</p>
+                          <a href={banner.targetUrl} target="_blank" rel="noreferrer" className="text-xs text-primary hover:underline block truncate w-40">
+                            {banner.targetUrl}
+                          </a>
                         </div>
-                      )}
-                      <div>
-                        <p className="font-bold">{banner.name}</p>
-                        <a href={banner.targetUrl} target="_blank" rel="noreferrer" className="text-xs text-primary hover:underline block truncate w-40">
-                          {banner.targetUrl}
-                        </a>
                       </div>
-                    </div>
-                  </td>
-                  <td className="p-4 capitalize">{banner.position}</td>
-                  <td className="p-4">
-                    <div className="flex items-center space-x-4 text-gray-400">
-                      <span className="flex items-center" title="Vistas">
-                        <Eye className="w-4 h-4 mr-1" /> {banner.views}
+                    </td>
+                    <td className="p-4 capitalize">
+                      <span className="bg-surface px-3 py-1 rounded-full text-xs font-semibold text-gray-300 border border-border">
+                        {banner.position.replace('plan-', '').replace('-', ' ')}
                       </span>
-                      <span className="flex items-center" title="Clics">
-                        <MousePointerClick className="w-4 h-4 mr-1" /> {banner.clicks}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="p-4">
-                    <button onClick={() => handleToggle(banner.id, banner.isActive)} className="text-gray-400 hover:text-white">
-                      {banner.isActive ? <ToggleRight className="w-6 h-6 text-green-500" /> : <ToggleLeft className="w-6 h-6" />}
-                    </button>
-                  </td>
+                    </td>
+                    <td className="p-4">
+                      <div className="flex flex-col space-y-2">
+                        <div className="flex items-center space-x-3 text-sm">
+                          <span className="flex items-center text-blue-400 bg-blue-400/10 px-2 py-1 rounded-md min-w-[70px] justify-center" title="Vistas Totales">
+                            <Eye className="w-4 h-4 mr-1.5" /> {views}
+                          </span>
+                          <span className="flex items-center text-green-400 bg-green-400/10 px-2 py-1 rounded-md min-w-[70px] justify-center" title="Clics Totales">
+                            <MousePointerClick className="w-4 h-4 mr-1.5" /> {clicks}
+                          </span>
+                          <span className="flex items-center text-yellow-400 bg-yellow-400/10 px-2 py-1 rounded-md min-w-[70px] justify-center font-bold" title="CTR (Click-Through Rate)">
+                            <Percent className="w-3.5 h-3.5 mr-1" /> {ctr}%
+                          </span>
+                        </div>
+                        <button onClick={() => handleResetMetrics(banner.id)} className="text-xs text-gray-500 hover:text-red-400 transition-colors flex items-center w-fit">
+                          <RotateCcw className="w-3 h-3 mr-1" /> Reiniciar métricas
+                        </button>
+                      </div>
+                    </td>
+                    <td className="p-4">
+                      <button onClick={() => handleToggle(banner.id, banner.isActive)} className="text-gray-400 hover:text-white transition-colors">
+                        {banner.isActive ? <ToggleRight className="w-8 h-8 text-green-500" /> : <ToggleLeft className="w-8 h-8 opacity-50" />}
+                      </button>
+                    </td>
                   <td className="p-4 text-right">
                     <button onClick={() => openEditModal(banner)} className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors">
                       <Edit className="w-4 h-4" />
