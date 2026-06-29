@@ -39,7 +39,7 @@ export async function getAdSettings() {
         sidebarScript: s['ad_sidebar_script'] || '',
         sponsorMode: s['sponsor_mode'] || 'random',
         sponsorFixedId: s['sponsor_fixed_id'] || '',
-        siteName: s['site_name'] || 'Renacer Noticias',
+        siteName: s['site_name'] || 'THE DINNER Portal',
         siteDescription: s['site_description'] || 'Las últimas noticias de tecnología, economía y cultura.',
         siteLogo: s['site_logo'] || '',
         adsenseClientId: s['adsense_client_id'] || '',
