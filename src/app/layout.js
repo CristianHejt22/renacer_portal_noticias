@@ -40,6 +40,7 @@ import Script from 'next/script';
 import WhatsAppFloatingButton from '@/components/shared/WhatsAppFloatingButton';
 import ScriptInjector from '@/components/shared/ScriptInjector';
 import { getBanners } from '@/app/actions/banners';
+import GoogleAnalytics from '@/components/shared/GoogleAnalytics';
 
 export const dynamic = 'force-dynamic';
 
@@ -52,6 +53,7 @@ export default async function RootLayout({ children }) {
 
   const headScript = adSettings.data?.headScript || '';
   const adsenseClientId = adSettings.data?.adsenseClientId || '';
+  const gaId = process.env.NEXT_PUBLIC_GA_ID || '';
   
   // Plan Cielo Total
   const activeBanners = bannersRes.data || [];
@@ -63,6 +65,7 @@ export default async function RootLayout({ children }) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col pt-16">
+        <GoogleAnalytics gaId={gaId} />
         {adsenseClientId && (
           <Script
             async

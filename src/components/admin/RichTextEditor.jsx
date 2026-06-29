@@ -5,7 +5,9 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import LinkExtension from '@tiptap/extension-link';
 import ImageExtension from '@tiptap/extension-image';
-import { Bold, Italic, Strikethrough, Heading1, Heading2, List, ListOrdered, Quote, Link as LinkIcon, Image as ImageIcon, DollarSign } from 'lucide-react';
+import Underline from '@tiptap/extension-underline';
+import TextAlign from '@tiptap/extension-text-align';
+import { Bold, Italic, Strikethrough, Underline as UnderlineIcon, Heading1, Heading2, List, ListOrdered, Quote, Link as LinkIcon, Image as ImageIcon, DollarSign, AlignLeft, AlignCenter, AlignRight, AlignJustify, Code } from 'lucide-react';
 
 
 const MenuBar = ({ editor, availableBanners = [] }) => {
@@ -61,6 +63,18 @@ const MenuBar = ({ editor, availableBanners = [] }) => {
     setShowAdMenu(false);
   };
 
+  const insertHtmlEmbed = () => {
+    const htmlCode = window.prompt('Pega aquí tu código HTML o Iframe (Ej: YouTube, Encuestas, etc.):');
+    if (htmlCode) {
+      try {
+        const encoded = btoa(unescape(encodeURIComponent(htmlCode)));
+        insertCode(`[embed]${encoded}[/embed]`);
+      } catch (e) {
+        alert('Error procesando el código HTML.');
+      }
+    }
+  };
+
   const buttonClass = (isActive) =>
     `p-2 rounded-md transition-colors ${
       isActive ? 'bg-primary text-white' : 'hover:bg-white/10 text-gray-300'
@@ -68,62 +82,46 @@ const MenuBar = ({ editor, availableBanners = [] }) => {
 
   return (
     <div className="flex flex-wrap gap-2 border-b border-border p-2 bg-surface rounded-t-xl">
-      <button
-        onClick={() => editor.chain().focus().toggleBold().run()}
-        className={buttonClass(editor.isActive('bold'))}
-        title="Negrita"
-      >
+      <button onClick={() => editor.chain().focus().toggleBold().run()} className={buttonClass(editor.isActive('bold'))} title="Negrita">
         <Bold size={18} />
       </button>
-      <button
-        onClick={() => editor.chain().focus().toggleItalic().run()}
-        className={buttonClass(editor.isActive('italic'))}
-        title="Cursiva"
-      >
+      <button onClick={() => editor.chain().focus().toggleItalic().run()} className={buttonClass(editor.isActive('italic'))} title="Cursiva">
         <Italic size={18} />
       </button>
-      <button
-        onClick={() => editor.chain().focus().toggleStrike().run()}
-        className={buttonClass(editor.isActive('strike'))}
-        title="Tachado"
-      >
+      <button onClick={() => editor.chain().focus().toggleUnderline().run()} className={buttonClass(editor.isActive('underline'))} title="Subrayado">
+        <UnderlineIcon size={18} />
+      </button>
+      <button onClick={() => editor.chain().focus().toggleStrike().run()} className={buttonClass(editor.isActive('strike'))} title="Tachado">
         <Strikethrough size={18} />
       </button>
       <div className="w-px h-6 bg-border mx-1 self-center" />
-      <button
-        onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-        className={buttonClass(editor.isActive('heading', { level: 1 }))}
-        title="Título 1"
-      >
+      <button onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} className={buttonClass(editor.isActive('heading', { level: 1 }))} title="Título 1">
         <Heading1 size={18} />
       </button>
-      <button
-        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-        className={buttonClass(editor.isActive('heading', { level: 2 }))}
-        title="Título 2"
-      >
+      <button onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className={buttonClass(editor.isActive('heading', { level: 2 }))} title="Título 2">
         <Heading2 size={18} />
       </button>
       <div className="w-px h-6 bg-border mx-1 self-center" />
-      <button
-        onClick={() => editor.chain().focus().toggleBulletList().run()}
-        className={buttonClass(editor.isActive('bulletList'))}
-        title="Lista"
-      >
+      <button onClick={() => editor.chain().focus().setTextAlign('left').run()} className={buttonClass(editor.isActive({ textAlign: 'left' }))} title="Alinear Izquierda">
+        <AlignLeft size={18} />
+      </button>
+      <button onClick={() => editor.chain().focus().setTextAlign('center').run()} className={buttonClass(editor.isActive({ textAlign: 'center' }))} title="Centrar">
+        <AlignCenter size={18} />
+      </button>
+      <button onClick={() => editor.chain().focus().setTextAlign('right').run()} className={buttonClass(editor.isActive({ textAlign: 'right' }))} title="Alinear Derecha">
+        <AlignRight size={18} />
+      </button>
+      <button onClick={() => editor.chain().focus().setTextAlign('justify').run()} className={buttonClass(editor.isActive({ textAlign: 'justify' }))} title="Justificar">
+        <AlignJustify size={18} />
+      </button>
+      <div className="w-px h-6 bg-border mx-1 self-center" />
+      <button onClick={() => editor.chain().focus().toggleBulletList().run()} className={buttonClass(editor.isActive('bulletList'))} title="Lista">
         <List size={18} />
       </button>
-      <button
-        onClick={() => editor.chain().focus().toggleOrderedList().run()}
-        className={buttonClass(editor.isActive('orderedList'))}
-        title="Lista Numerada"
-      >
+      <button onClick={() => editor.chain().focus().toggleOrderedList().run()} className={buttonClass(editor.isActive('orderedList'))} title="Lista Numerada">
         <ListOrdered size={18} />
       </button>
-      <button
-        onClick={() => editor.chain().focus().toggleBlockquote().run()}
-        className={buttonClass(editor.isActive('blockquote'))}
-        title="Cita"
-      >
+      <button onClick={() => editor.chain().focus().toggleBlockquote().run()} className={buttonClass(editor.isActive('blockquote'))} title="Cita">
         <Quote size={18} />
       </button>
       <div className="w-px h-6 bg-border mx-1 self-center" />
@@ -132,6 +130,9 @@ const MenuBar = ({ editor, availableBanners = [] }) => {
       </button>
       <button onClick={addImage} className={buttonClass()} title="Imagen">
         <ImageIcon size={18} />
+      </button>
+      <button onClick={insertHtmlEmbed} className={buttonClass()} title="Insertar Código HTML / Iframe (YouTube, etc.)">
+        <Code size={18} className="text-blue-400" />
       </button>
       <div className="w-px h-6 bg-border mx-1 self-center" />
       <div className="relative">
@@ -168,6 +169,10 @@ export default function RichTextEditor({ content, onChange, availableBanners = [
   const editor = useEditor({
     extensions: [
       StarterKit,
+      Underline,
+      TextAlign.configure({
+        types: ['heading', 'paragraph'],
+      }),
       LinkExtension.configure({
         openOnClick: false,
         HTMLAttributes: {

@@ -141,7 +141,7 @@ export default async function ArticlePage({ params }) {
             {/* Article Content */}
             <div className="flex-1">
               <div className="prose prose-lg dark:prose-invert max-w-none font-serif text-gray-800 dark:text-gray-200 leading-relaxed">
-                {(post.content?.split(/(\[banner:in-article\]|\[adsterra:in-article\]|\[banner:id:\d+\])/g) || []).map((part, index) => {
+                {(post.content?.split(/(\[banner:in-article\]|\[adsterra:in-article\]|\[banner:id:\d+\]|\[embed\][A-Za-z0-9+/=]+\[\/embed\])/g) || []).map((part, index) => {
                   if (part === '[banner:in-article]') {
                     return (
                       <div key={index} className="my-8 not-prose">
@@ -162,14 +162,29 @@ export default async function ArticlePage({ params }) {
                     const bannerId = part.match(/\d+/)[0];
                     return (
                       <div key={index} className="my-8 not-prose flex justify-center">
-                        <a href={`/api/banner/click?id=${bannerId}&url=`} target="_blank" rel="noopener noreferrer" className="block max-w-4xl hover:opacity-95 transition-opacity">
-                          {/* Fetching the specific banner image requires a client component or an API route, 
-                              but since we don't have the banner data here, we'll use a dynamic component or just BannerDisplay with ID. 
-                              Let's pass the ID to BannerDisplay */}
-                          <BannerDisplay position="in-article" specificId={parseInt(bannerId)} />
-                        </a>
+                        <BannerDisplay position="in-article" specificId={parseInt(bannerId)} />
                       </div>
                     );
+                  }
+
+                  if (part.startsWith('[embed]') && part.endsWith('[/embed]')) {
+                    const base64Content = part.replace('[embed]', '').replace('[/embed]', '');
+                    try {
+                      let decoded = '';
+                      if (typeof Buffer !== 'undefined') {
+                        decoded = Buffer.from(base64Content, 'base64').toString('utf-8');
+                      } else {
+                        decoded = atob(base64Content);
+                      }
+                      decoded = decodeURIComponent(escape(decoded));
+                      return (
+                        <div key={index} className="my-8 not-prose w-full overflow-hidden flex justify-center">
+                          <div dangerouslySetInnerHTML={{ __html: decoded }} />
+                        </div>
+                      );
+                    } catch (e) {
+                      return null;
+                    }
                   }
 
                   return <div key={index} dangerouslySetInnerHTML={{ __html: part }} />;

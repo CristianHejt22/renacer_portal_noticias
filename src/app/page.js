@@ -1,3 +1,4 @@
+import React from 'react';
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import BannerDisplay from "@/components/ads/BannerDisplay";
@@ -80,22 +81,31 @@ export default async function Home() {
 
             {recentPosts.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {recentPosts.map((post) => (
-                  <Link href={`/noticias/${post.slug}`} key={post.id} className="group cursor-pointer block bg-surface rounded-xl overflow-hidden border border-border hover:border-primary/50 transition-colors">
-                    <div className="relative h-48 w-full overflow-hidden">
-                      <div 
-                        className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
-                        style={{ backgroundImage: `url(${post.coverImage})` }}
-                      />
-                    </div>
-                    <div className="p-5">
-                      <span className="text-accent text-xs font-bold uppercase tracking-wider mb-2 block">{post.category}</span>
-                      <h3 className="text-xl font-bold mb-3 group-hover:text-primary transition-colors line-clamp-2">
-                        {post.title}
-                      </h3>
-                      <p className="text-sm text-gray-500">{formatDate(post.createdAt)}</p>
-                    </div>
-                  </Link>
+                {recentPosts.map((post, index) => (
+                  <React.Fragment key={post.id}>
+                    <Link href={`/noticias/${post.slug}`} className="group cursor-pointer block bg-surface rounded-xl overflow-hidden border border-border hover:border-primary/50 transition-colors">
+                      <div className="relative h-48 w-full overflow-hidden">
+                        <div 
+                          className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
+                          style={{ backgroundImage: `url(${post.coverImage})` }}
+                        />
+                      </div>
+                      <div className="p-5">
+                        <span className="text-accent text-xs font-bold uppercase tracking-wider mb-2 block">{post.category}</span>
+                        <h3 className="text-xl font-bold mb-3 group-hover:text-primary transition-colors line-clamp-2">
+                          {post.title}
+                        </h3>
+                        <p className="text-sm text-gray-500">{formatDate(post.createdAt)}</p>
+                      </div>
+                    </Link>
+                    
+                    {/* Insert Banner after 2nd post */}
+                    {index === 1 && (
+                      <div className="md:col-span-2 my-4">
+                        <BannerDisplay position="plan-local" />
+                      </div>
+                    )}
+                  </React.Fragment>
                 ))}
               </div>
             ) : (

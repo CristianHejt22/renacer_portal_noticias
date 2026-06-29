@@ -1,10 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 
 export default function BannerDisplay({ position = 'in-article', specificId = null }) {
   const [banners, setBanners] = useState([]);
+  const [hasViewed, setHasViewed] = useState(false);
+  const containerRef = useRef(null);
 
   useEffect(() => {
     // Fetch banners
@@ -17,23 +19,35 @@ export default function BannerDisplay({ position = 'in-article', specificId = nu
       .then(res => res.json())
       .then(data => {
         if (data.success && data.data) {
-          // If specificId, it might return an array with one element or we just use it
           const activeBanners = Array.isArray(data.data) ? data.data : [data.data];
           setBanners(activeBanners);
-          
-          // Registrar vista
-          activeBanners.forEach(banner => {
-            fetch(`/api/banner/view?id=${banner.id}`);
-          });
         }
       })
       .catch(err => console.error(err));
   }, [position, specificId]);
 
+  useEffect(() => {
+    if (banners.length === 0 || hasViewed || !containerRef.current) return;
+
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        banners.forEach(banner => {
+          fetch(`/api/banner/view?id=${banner.id}`).catch(() => {});
+        });
+        setHasViewed(true);
+        observer.disconnect();
+      }
+    }, { threshold: 0.1 });
+
+    observer.observe(containerRef.current);
+
+    return () => observer.disconnect();
+  }, [banners, hasViewed]);
+
   if (banners.length === 0) return null;
 
   return (
-    <div className="w-full flex flex-col items-center gap-4 my-8">
+    <div ref={containerRef} className="w-full flex flex-col items-center gap-4 my-8">
       {banners.map(banner => (
         <a 
           key={banner.id}
