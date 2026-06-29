@@ -20,7 +20,12 @@ export default function BannerDisplay({ position = 'in-article', specificId = nu
       .then(res => res.json())
       .then(data => {
         if (data.success && data.data) {
-          const activeBanners = Array.isArray(data.data) ? data.data : [data.data];
+          let activeBanners = Array.isArray(data.data) ? [...data.data] : [data.data];
+          // Shuffle array so the starting ad is random on each page load
+          for (let i = activeBanners.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [activeBanners[i], activeBanners[j]] = [activeBanners[j], activeBanners[i]];
+          }
           setBanners(activeBanners);
         }
       })
