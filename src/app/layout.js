@@ -92,8 +92,9 @@ export default async function RootLayout({ children }) {
         <main className="flex-grow">
           {children}
         </main>
-        <footer className="py-6 text-center text-sm text-gray-500 border-t border-gray-800 mt-10">
-          © {new Date().getFullYear()} Renacer Noticias. Todos los derechos reservados.
+        <footer className="py-6 text-center text-sm text-gray-500 border-t border-gray-800 mt-10 space-y-2">
+          <p>© {new Date().getFullYear()} Renacer Noticias. Todos los derechos reservados.</p>
+          <p>© {new Date().getFullYear()} THE DINNER Noticias. Todos los derechos reservados.</p>
         </footer>
       </body>
     </html>

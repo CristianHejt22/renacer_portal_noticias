@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LayoutDashboard, FileText, Settings, Share2, DollarSign, Image, LayoutGrid, Globe } from "lucide-react";
+import { LayoutDashboard, FileText, Settings, Share2, DollarSign, Image, LayoutGrid, Globe, Tag } from "lucide-react";
 
 export default function AdminLayout({ children }) {
   return (
@@ -21,6 +21,10 @@ export default function AdminLayout({ children }) {
           <Link href="/admin/categories" className="flex items-center space-x-3 text-foreground hover:text-primary p-2 rounded-lg hover:bg-white/5 transition-colors">
             <LayoutGrid size={20} />
             <span>Categorías</span>
+          </Link>
+          <Link href="/admin/clasificados" className="flex items-center space-x-3 text-foreground hover:text-primary p-2 rounded-lg hover:bg-white/5 transition-colors">
+            <Tag size={20} />
+            <span>Clasificados</span>
           </Link>
           <Link href="/admin/pages" className="flex items-center space-x-3 text-foreground hover:text-primary p-2 rounded-lg hover:bg-white/5 transition-colors">
             <Globe size={20} />

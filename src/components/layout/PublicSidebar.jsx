@@ -15,8 +15,16 @@ export default async function PublicSidebar() {
   return (
     <aside className="w-full flex flex-col gap-8">
       {/* Banner Superior del Sidebar */}
-      <div className="w-full">
+      <div className="w-full space-y-6">
         <BannerDisplay position="sidebar" />
+        
+        {/* Banner Adsterra (Visible en Móvil y PC) */}
+        {adSettings.data?.sidebarScript && (
+          <div className="block w-full text-center">
+            <span className="text-[10px] uppercase tracking-widest text-gray-400 bg-gray-500/10 px-2 py-0.5 rounded mb-2 inline-block">Publicidad</span>
+            <AdIframeInjector htmlCode={adSettings.data.sidebarScript} minHeight="250px" />
+          </div>
+        )}
       </div>
 
       {/* Lo Más Leído */}
@@ -46,9 +54,16 @@ export default async function PublicSidebar() {
 
       {/* Banner Inferior del Sidebar */}
       <div className="w-full sticky top-24 space-y-8">
+        <BannerDisplay position="sidebar" />
+        
+        {/* Banner Adsterra PC (Lateral 2) */}
         {adSettings.data?.sidebarScript && (
-          <AdIframeInjector htmlCode={adSettings.data.sidebarScript} minHeight="250px" />
+          <div className="hidden lg:block w-full text-center">
+            <span className="text-[10px] uppercase tracking-widest text-gray-400 bg-gray-500/10 px-2 py-0.5 rounded mb-2 inline-block">Publicidad</span>
+            <AdIframeInjector htmlCode={adSettings.data.sidebarScript} minHeight="250px" />
+          </div>
         )}
+        
         <BannerDisplay position="sidebar" />
       </div>
     </aside>
