@@ -20,7 +20,10 @@ export default function NavbarClient({ categories, pages, siteLogo, siteName }) 
   };
 
   return (
-    <header className="fixed top-0 w-full z-50 glass border-b border-border">
+    <header 
+      className="fixed top-0 w-full z-50 border-b border-[#d1c9b4] shadow-sm transition-all"
+      style={{ backgroundColor: '#F5EEDC', color: '#1a1a1a' }}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           
@@ -28,9 +31,9 @@ export default function NavbarClient({ categories, pages, siteLogo, siteName }) 
           <div className="flex-shrink-0 flex items-center">
             <Link href="/">
               {siteLogo ? (
-                <img src={siteLogo} alt={siteName} className="h-10 object-contain" />
+                <img src={siteLogo} alt={siteName} className="h-14 py-1 object-contain" />
               ) : (
-                <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
+                <span className="text-2xl font-bold tracking-wider" style={{ fontFamily: 'serif', color: '#1a1a1a' }}>
                   {siteName || 'RENACER'}
                 </span>
               )}
@@ -47,7 +50,7 @@ export default function NavbarClient({ categories, pages, siteLogo, siteName }) 
             <div className="flex items-center">
               <button 
                 onClick={toggleMobileMenu}
-                className="p-2 text-gray-400 hover:text-white transition-colors"
+                className="p-2 text-gray-800 hover:text-black transition-colors"
               >
                 {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
               </button>
@@ -57,9 +60,12 @@ export default function NavbarClient({ categories, pages, siteLogo, siteName }) 
       </div>
 
       {/* Universal Dropdown Menu */}
-      <div className={`absolute top-16 left-0 w-full bg-background/95 backdrop-blur-xl border-b border-border transition-all duration-300 overflow-hidden ${isMobileMenuOpen ? 'max-h-[80vh] py-4 shadow-2xl' : 'max-h-0 py-0'}`}>
+      <div 
+        className={`absolute top-16 left-0 w-full border-b border-[#d1c9b4] transition-all duration-300 overflow-hidden ${isMobileMenuOpen ? 'max-h-[80vh] py-4 shadow-xl' : 'max-h-0 py-0'}`}
+        style={{ backgroundColor: '#F5EEDC' }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-2 overflow-y-auto pb-6">
-          <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="block px-3 py-3 text-base font-medium rounded-md hover:bg-white/5 hover:text-primary">
+          <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="block px-3 py-3 text-base font-medium rounded-md hover:bg-black/5 text-gray-900 hover:text-black">
             Inicio
           </Link>
           
@@ -70,23 +76,23 @@ export default function NavbarClient({ categories, pages, siteLogo, siteName }) 
             if (hasChildren) {
               return (
                 <div key={cat.id} className="space-y-1">
-                  <div className="flex justify-between items-center px-3 py-3 rounded-md hover:bg-white/5">
-                    <Link href={`/noticias?category=${cat.slug}`} onClick={() => setIsMobileMenuOpen(false)} className="text-base font-medium hover:text-primary flex-grow">
+                  <div className="flex justify-between items-center px-3 py-3 rounded-md hover:bg-black/5">
+                    <Link href={`/noticias?category=${cat.slug}`} onClick={() => setIsMobileMenuOpen(false)} className="text-base font-medium text-gray-900 hover:text-black flex-grow">
                       {cat.name}
                     </Link>
-                    <button onClick={() => toggleDropdown(cat.id)} className="p-1">
+                    <button onClick={() => toggleDropdown(cat.id)} className="p-1 text-gray-800">
                       <ChevronDown size={20} className={`transform transition-transform ${openDropdownId === cat.id ? 'rotate-180' : ''}`} />
                     </button>
                   </div>
                   
                   {openDropdownId === cat.id && (
-                    <div className="pl-6 space-y-1 border-l border-border ml-3 my-2">
+                    <div className="pl-6 space-y-1 border-l border-[#d1c9b4] ml-3 my-2">
                       {children.map(child => (
                         <Link 
                           key={child.id} 
                           href={`/noticias?category=${child.slug}`} 
                           onClick={() => setIsMobileMenuOpen(false)}
-                          className="block px-3 py-2 text-sm text-gray-400 hover:text-primary hover:bg-white/5 rounded-md"
+                          className="block px-3 py-2 text-sm text-gray-700 hover:text-black hover:bg-black/5 rounded-md"
                         >
                           {child.name}
                         </Link>
@@ -98,15 +104,15 @@ export default function NavbarClient({ categories, pages, siteLogo, siteName }) 
             }
 
             return (
-              <Link key={cat.id} href={`/noticias?category=${cat.slug}`} onClick={() => setIsMobileMenuOpen(false)} className="block px-3 py-3 text-base font-medium rounded-md hover:bg-white/5 hover:text-primary">
+              <Link key={cat.id} href={`/noticias?category=${cat.slug}`} onClick={() => setIsMobileMenuOpen(false)} className="block px-3 py-3 text-base font-medium text-gray-900 rounded-md hover:bg-black/5 hover:text-black">
                 {cat.name}
               </Link>
             );
           })}
 
-          <div className="pt-4 mt-4 border-t border-border space-y-2">
+          <div className="pt-4 mt-4 border-t border-[#d1c9b4] space-y-2">
             {pages.map((page) => (
-              <Link key={page.id} href={`/${page.slug}`} onClick={() => setIsMobileMenuOpen(false)} className="block px-3 py-2 text-sm text-gray-400 hover:text-primary rounded-md">
+              <Link key={page.id} href={`/${page.slug}`} onClick={() => setIsMobileMenuOpen(false)} className="block px-3 py-2 text-sm text-gray-700 hover:text-black rounded-md hover:bg-black/5">
                 {page.title}
               </Link>
             ))}
