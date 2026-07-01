@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { LayoutDashboard, FileText, Settings, Share2, DollarSign, Image, LayoutGrid, Globe, Tag } from "lucide-react";
+import LogoutButton from "@/components/admin/LogoutButton";
 
 export default function AdminLayout({ children }) {
   return (
@@ -26,6 +27,9 @@ export default function AdminLayout({ children }) {
             <Tag size={20} />
             <span>Clasificados</span>
           </Link>
+          <Link href="/admin/clasificados/categorias" className="flex items-center space-x-3 text-foreground hover:text-primary p-2 rounded-lg hover:bg-white/5 transition-colors pl-8">
+            <span className="text-sm border-l-2 border-border pl-2">Categorías</span>
+          </Link>
           <Link href="/admin/pages" className="flex items-center space-x-3 text-foreground hover:text-primary p-2 rounded-lg hover:bg-white/5 transition-colors">
             <Globe size={20} />
             <span>Páginas</span>
@@ -46,6 +50,7 @@ export default function AdminLayout({ children }) {
             <Settings size={20} />
             <span>Configuración</span>
           </Link>
+          <LogoutButton />
         </nav>
       </aside>
 

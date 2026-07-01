@@ -68,6 +68,9 @@ export default function NavbarClient({ categories, pages, siteLogo, siteName }) 
           <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="block px-3 py-3 text-base font-medium rounded-md hover:bg-black/5 text-gray-900 hover:text-black">
             Inicio
           </Link>
+          <Link href="/clasificados" onClick={() => setIsMobileMenuOpen(false)} className="block px-3 py-3 text-base font-medium rounded-md hover:bg-black/5 text-gray-900 hover:text-black">
+            Clasificados
+          </Link>
           
           {mainCategories.map((cat) => {
             const children = categories.filter(c => c.parentId === cat.id);
