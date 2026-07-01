@@ -11,8 +11,10 @@ const encodedSecret = new TextEncoder().encode(JWT_SECRET);
 
 export async function checkHasUsers() {
   try {
-    const count = await prisma.user.count();
-    return { success: true, hasUsers: count > 0 };
+    const users = await prisma.user.findMany();
+    // Consider we have "real" users only if at least one has a bcrypt hashed password
+    const hasRealUsers = users.some(u => u.password.startsWith('$2'));
+    return { success: true, hasUsers: hasRealUsers };
   } catch (error) {
     console.error('Error checking users:', error);
     return { success: false, error: 'Database error' };
@@ -21,19 +23,35 @@ export async function checkHasUsers() {
 
 export async function createFirstAdmin(email, password) {
   try {
-    const count = await prisma.user.count();
-    if (count > 0) {
+    const users = await prisma.user.findMany();
+    const hasRealUsers = users.some(u => u.password.startsWith('$2'));
+    
+    if (hasRealUsers) {
       return { success: false, error: 'El administrador ya existe.' };
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        name: 'Administrador',
-      },
-    });
+    
+    let user;
+    if (users.length > 0) {
+      // Overwrite the first dummy user (to preserve relations like Posts)
+      user = await prisma.user.update({
+        where: { id: users[0].id },
+        data: {
+          email,
+          password: hashedPassword,
+          name: 'Administrador',
+        },
+      });
+    } else {
+      user = await prisma.user.create({
+        data: {
+          email,
+          password: hashedPassword,
+          name: 'Administrador',
+        },
+      });
+    }
 
     await createSession(user.id);
     return { success: true };
