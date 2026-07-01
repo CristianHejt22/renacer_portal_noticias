@@ -8,6 +8,10 @@ export async function getClassifiedCategories() {
   try {
     const categories = await prisma.classifiedCategory.findMany({
       orderBy: { order: 'asc' },
+      include: {
+        parent: true,
+        children: true,
+      }
     });
     return { success: true, data: categories };
   } catch (error) {
@@ -23,6 +27,7 @@ export async function createClassifiedCategory(data) {
         name: data.name,
         slug: data.slug,
         order: parseInt(data.order) || 0,
+        parentId: data.parentId ? parseInt(data.parentId) : null,
         isActive: data.isActive !== undefined ? data.isActive : true,
       },
     });
@@ -41,6 +46,7 @@ export async function updateClassifiedCategory(id, data) {
         name: data.name,
         slug: data.slug,
         order: parseInt(data.order),
+        parentId: data.parentId ? parseInt(data.parentId) : null,
         isActive: data.isActive,
       },
     });

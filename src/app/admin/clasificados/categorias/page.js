@@ -9,7 +9,7 @@ export default function ClassifiedCategoriesAdminPage() {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  const [formData, setFormData] = useState({ name: '', slug: '', order: 0, isActive: true });
+  const [formData, setFormData] = useState({ name: '', slug: '', order: 0, isActive: true, parentId: '' });
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -27,13 +27,13 @@ export default function ClassifiedCategoriesAdminPage() {
 
   const openNewModal = () => {
     setEditingId(null);
-    setFormData({ name: '', slug: '', order: categories.length, isActive: true });
+    setFormData({ name: '', slug: '', order: categories.length, isActive: true, parentId: '' });
     setIsModalOpen(true);
   };
 
   const openEditModal = (category) => {
     setEditingId(category.id);
-    setFormData({ name: category.name, slug: category.slug, order: category.order, isActive: category.isActive });
+    setFormData({ name: category.name, slug: category.slug, order: category.order, isActive: category.isActive, parentId: category.parentId || '' });
     setIsModalOpen(true);
   };
 
@@ -111,6 +111,7 @@ export default function ClassifiedCategoriesAdminPage() {
               <tr>
                 <th className="p-4 font-semibold text-gray-300">Orden</th>
                 <th className="p-4 font-semibold text-gray-300">Nombre</th>
+                <th className="p-4 font-semibold text-gray-300">Jerarquía</th>
                 <th className="p-4 font-semibold text-gray-300">Slug</th>
                 <th className="p-4 font-semibold text-gray-300">Activo</th>
                 <th className="p-4 font-semibold text-gray-300 text-right">Acciones</th>
@@ -121,6 +122,9 @@ export default function ClassifiedCategoriesAdminPage() {
                 <tr key={cat.id} className="border-b border-border hover:bg-background/50">
                   <td className="p-4 text-gray-400">{cat.order}</td>
                   <td className="p-4 font-bold">{cat.name}</td>
+                  <td className="p-4 text-gray-400 text-sm">
+                    {cat.parentId ? `Hija de: ${categories.find(c => c.id === cat.parentId)?.name || 'Desconocida'}` : 'Principal'}
+                  </td>
                   <td className="p-4 text-primary">{cat.slug}</td>
                   <td className="p-4">
                     <button onClick={() => handleToggle(cat)} className="text-gray-400 hover:text-white">
@@ -158,6 +162,20 @@ export default function ClassifiedCategoriesAdminPage() {
               <div>
                 <label className="block text-sm font-medium mb-1">Nombre</label>
                 <input required type="text" value={formData.name} onChange={handleNameChange} className="w-full bg-background border border-border rounded-lg p-2.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none" placeholder="Ej: Vehículos" />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Categoría Padre</label>
+                <select 
+                  value={formData.parentId} 
+                  onChange={e => setFormData({...formData, parentId: e.target.value})}
+                  className="w-full bg-background border border-border rounded-lg p-2.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                >
+                  <option value="">Ninguna (Es categoría principal)</option>
+                  {categories.filter(c => c.id !== editingId && !c.parentId).map(c => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
               </div>
               
               <div>

@@ -81,6 +81,9 @@ model ClassifiedCategory {
   slug        String         @unique
   order       Int            @default(0)
   isActive    Boolean        @default(true)
+  parentId    Int?
+  parent      ClassifiedCategory?  @relation("ClassifiedCategoryToClassifiedCategory", fields: [parentId], references: [id])
+  children    ClassifiedCategory[] @relation("ClassifiedCategoryToClassifiedCategory")
   classifieds ClassifiedAd[]
   createdAt   DateTime       @default(now())
 }
