@@ -105,9 +105,9 @@ model ClassifiedAd {
   clicks      Int                @default(0)
   isActive    Boolean            @default(true)
   price       Float?
-  images      String[]           @default([])
-  categoryId  Int?
-  category    ClassifiedCategory? @relation(fields: [categoryId], references: [id])
+  images               String[]           @default([])
+  classifiedCategoryId Int?
+  category             ClassifiedCategory? @relation(fields: [classifiedCategoryId], references: [id])
   reviews     ClassifiedReview[]
   createdAt   DateTime           @default(now())
   updatedAt   DateTime           @updatedAt

@@ -80,7 +80,7 @@ export async function createClassified(data) {
         imageUrl: data.imageUrl,
         images: data.images || [],
         price: data.price ? parseFloat(data.price) : null,
-        categoryId: data.categoryId ? parseInt(data.categoryId) : null,
+        classifiedCategoryId: data.classifiedCategoryId ? parseInt(data.classifiedCategoryId) : null,
         whatsapp: data.whatsapp,
         isActive: data.isActive !== undefined ? data.isActive : true,
       }
@@ -104,7 +104,7 @@ export async function updateClassified(id, data) {
         imageUrl: data.imageUrl,
         images: data.images || [],
         price: data.price ? parseFloat(data.price) : null,
-        categoryId: data.categoryId ? parseInt(data.categoryId) : null,
+        classifiedCategoryId: data.classifiedCategoryId ? parseInt(data.classifiedCategoryId) : null,
         whatsapp: data.whatsapp,
         isActive: data.isActive,
       }

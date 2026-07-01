@@ -16,7 +16,7 @@ export default function NewClassifiedPage() {
     imageUrl: '',
     images: '',
     price: '',
-    categoryId: '',
+    classifiedCategoryId: '',
     whatsapp: '',
     isActive: true,
   });
@@ -127,8 +127,8 @@ export default function NewClassifiedPage() {
             <label className="block text-sm font-medium text-gray-300 mb-2">Categoría</label>
             <select
               className="w-full bg-background border border-border rounded-lg px-4 py-2 text-white focus:outline-none focus:border-primary"
-              value={formData.categoryId}
-              onChange={e => setFormData({ ...formData, categoryId: e.target.value })}
+              value={formData.classifiedCategoryId}
+              onChange={e => setFormData({ ...formData, classifiedCategoryId: e.target.value })}
             >
               <option value="">Sin Categoría</option>
               {categories.map(cat => (
