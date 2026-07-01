@@ -71,8 +71,9 @@ model Category {
   isActive  Boolean    @default(true)
   parentId  Int?
   parent    Category?  @relation("CategoryToCategory", fields: [parentId], references: [id])
-  children  Category[] @relation("CategoryToCategory")
-  createdAt DateTime   @default(now())
+  children     Category[]     @relation("CategoryToCategory")
+  classifieds  ClassifiedAd[]
+  createdAt    DateTime       @default(now())
 }
 
 model Page {
@@ -94,6 +95,10 @@ model ClassifiedAd {
   whatsapp    String
   clicks      Int                @default(0)
   isActive    Boolean            @default(true)
+  price       Float?
+  images      String[]           @default([])
+  categoryId  Int?
+  category    Category?          @relation(fields: [categoryId], references: [id])
   reviews     ClassifiedReview[]
   createdAt   DateTime           @default(now())
   updatedAt   DateTime           @updatedAt

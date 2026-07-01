@@ -1,7 +1,8 @@
 import { getClassifiedBySlug } from '@/app/actions/classifieds';
 import { notFound } from 'next/navigation';
-import { Star, MessageCircle, Clock, ExternalLink } from 'lucide-react';
+import { Star, MessageCircle, Clock, ExternalLink, Tag } from 'lucide-react';
 import ClassifiedReviewForm from '@/components/classifieds/ClassifiedReviewForm';
+import ClassifiedGallery from '@/components/classifieds/ClassifiedGallery';
 
 export const revalidate = 60; // ISR
 
@@ -23,17 +24,25 @@ export default async function ClassifiedDetailPage({ params }) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
         {/* Izquierda: Imagen */}
         <div className="space-y-6">
-          <div className="relative rounded-2xl overflow-hidden bg-gray-900 aspect-square">
-            <div 
-              className="absolute inset-0 bg-contain bg-center bg-no-repeat"
-              style={{ backgroundImage: `url(${ad.imageUrl})` }}
-            />
-          </div>
+          <ClassifiedGallery mainImage={ad.imageUrl} images={ad.images} />
         </div>
 
         {/* Derecha: Detalles */}
         <div className="flex flex-col">
+          {ad.category && (
+            <div className="flex items-center text-primary font-bold text-sm uppercase tracking-wider mb-2">
+              <Tag className="w-4 h-4 mr-2" />
+              {ad.category.name}
+            </div>
+          )}
+          
           <h1 className="text-4xl font-bold text-white mb-4">{ad.title}</h1>
+          
+          {ad.price && (
+            <div className="text-3xl font-bold text-primary mb-6">
+              $ {ad.price.toLocaleString('es-AR')}
+            </div>
+          )}
           
           <div className="flex items-center space-x-4 mb-6 text-sm text-gray-400">
             <div className="flex items-center text-yellow-500 font-bold">

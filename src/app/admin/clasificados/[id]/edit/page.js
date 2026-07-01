@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { getClassifiedById, updateClassified } from '@/app/actions/classifieds';
+import { getCategories } from '@/app/actions/categories';
 
 export default function EditClassifiedPage() {
   const router = useRouter();
@@ -17,9 +18,21 @@ export default function EditClassifiedPage() {
     slug: '',
     description: '',
     imageUrl: '',
+    images: '',
+    price: '',
+    categoryId: '',
     whatsapp: '',
     isActive: true,
   });
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    async function loadCategories() {
+      const res = await getCategories();
+      if (res.success) setCategories(res.data);
+    }
+    loadCategories();
+  }, []);
 
   useEffect(() => {
     if (id) {
@@ -36,6 +49,9 @@ export default function EditClassifiedPage() {
         slug: res.data.slug || '',
         description: res.data.description || '',
         imageUrl: res.data.imageUrl || '',
+        images: res.data.images ? res.data.images.join(', ') : '',
+        price: res.data.price || '',
+        categoryId: res.data.categoryId || '',
         whatsapp: res.data.whatsapp || '',
         isActive: res.data.isActive !== undefined ? res.data.isActive : true,
       });
@@ -59,15 +75,25 @@ export default function EditClassifiedPage() {
       finalSlug = handleSlugify(formData.title);
     }
     
-    const res = await updateClassified(id, {
-      ...formData,
-      slug: finalSlug,
-    });
-    
-    if (res.success) {
-      router.push('/admin/clasificados');
-    } else {
-      alert('Error: ' + res.error);
+    try {
+      const formattedImages = formData.images
+        ? formData.images.split(',').map(url => url.trim()).filter(url => url !== '')
+        : [];
+
+      const res = await updateClassified(id, {
+        ...formData,
+        images: formattedImages,
+        slug: finalSlug,
+      });
+      
+      if (res && res.success) {
+        router.push('/admin/clasificados');
+      } else {
+        alert('Error: ' + (res?.error || 'No se pudo actualizar el clasificado'));
+        setLoading(false);
+      }
+    } catch (error) {
+      alert('Error de conexión o de base de datos. Detalle: ' + error.message);
       setLoading(false);
     }
   };
@@ -118,14 +144,52 @@ export default function EditClassifiedPage() {
           />
         </div>
 
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Precio ($ ARS)</label>
+            <input
+              type="number"
+              className="w-full bg-background border border-border rounded-lg px-4 py-2 text-white focus:outline-none focus:border-primary"
+              value={formData.price}
+              onChange={e => setFormData({ ...formData, price: e.target.value })}
+              placeholder="Ej: 15000 (Opcional)"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Categoría</label>
+            <select
+              className="w-full bg-background border border-border rounded-lg px-4 py-2 text-white focus:outline-none focus:border-primary"
+              value={formData.categoryId}
+              onChange={e => setFormData({ ...formData, categoryId: e.target.value })}
+            >
+              <option value="">Sin Categoría</option>
+              {categories.map(cat => (
+                <option key={cat.id} value={cat.id}>{cat.name}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-2">URL de Imagen</label>
+          <label className="block text-sm font-medium text-gray-300 mb-2">URL de Imagen Principal</label>
           <input
             type="url"
             required
             className="w-full bg-background border border-border rounded-lg px-4 py-2 text-white focus:outline-none focus:border-primary"
             value={formData.imageUrl}
             onChange={e => setFormData({ ...formData, imageUrl: e.target.value })}
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">Imágenes Adicionales (separadas por coma)</label>
+          <textarea
+            rows={2}
+            className="w-full bg-background border border-border rounded-lg px-4 py-2 text-white focus:outline-none focus:border-primary"
+            value={formData.images}
+            onChange={e => setFormData({ ...formData, images: e.target.value })}
+            placeholder="https://ejemplo.com/img1.jpg, https://ejemplo.com/img2.jpg"
           />
         </div>
 

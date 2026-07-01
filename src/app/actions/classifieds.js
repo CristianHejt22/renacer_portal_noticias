@@ -12,6 +12,7 @@ export async function getActiveClassifieds() {
       orderBy: { createdAt: 'desc' },
       include: {
         reviews: true,
+        category: true,
       }
     });
     return { success: true, data: classifieds };
@@ -27,6 +28,7 @@ export async function getClassifiedBySlug(slug) {
     const classified = await prisma.classifiedAd.findUnique({
       where: { slug },
       include: {
+        category: true,
         reviews: {
           orderBy: { createdAt: 'desc' }
         }
@@ -76,6 +78,9 @@ export async function createClassified(data) {
         slug: data.slug,
         description: data.description,
         imageUrl: data.imageUrl,
+        images: data.images || [],
+        price: data.price ? parseFloat(data.price) : null,
+        categoryId: data.categoryId ? parseInt(data.categoryId) : null,
         whatsapp: data.whatsapp,
         isActive: data.isActive !== undefined ? data.isActive : true,
       }
@@ -97,6 +102,9 @@ export async function updateClassified(id, data) {
         slug: data.slug,
         description: data.description,
         imageUrl: data.imageUrl,
+        images: data.images || [],
+        price: data.price ? parseFloat(data.price) : null,
+        categoryId: data.categoryId ? parseInt(data.categoryId) : null,
         whatsapp: data.whatsapp,
         isActive: data.isActive,
       }
