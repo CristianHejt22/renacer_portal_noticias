@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { getClassifiedById, updateClassified } from '@/app/actions/classifieds';
-import { getCategories } from '@/app/actions/categories';
+import { getClassifiedCategories } from '@/app/actions/classifiedCategories';
 
 export default function EditClassifiedPage() {
   const router = useRouter();
@@ -28,7 +28,7 @@ export default function EditClassifiedPage() {
 
   useEffect(() => {
     async function loadCategories() {
-      const res = await getCategories();
+      const res = await getClassifiedCategories();
       if (res.success) setCategories(res.data);
     }
     loadCategories();

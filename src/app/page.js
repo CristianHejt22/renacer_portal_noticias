@@ -4,6 +4,7 @@ import { ArrowRight } from "lucide-react";
 import BannerDisplay from "@/components/ads/BannerDisplay";
 import PublicSidebar from "@/components/layout/PublicSidebar";
 import SponsorWatermark from "@/components/ads/SponsorWatermark";
+import FeaturedClassifieds from "@/components/classifieds/FeaturedClassifieds";
 
 import { getHomePosts } from '@/app/actions/posts';
 
@@ -112,6 +113,9 @@ export default async function Home() {
               <p className="text-gray-500">No hay noticias recientes.</p>
             )}
           </section>
+
+          {/* Featured Classifieds */}
+          <FeaturedClassifieds />
         </div>
 
         {/* Sidebar: 4 columns on large screens */}

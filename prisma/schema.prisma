@@ -72,8 +72,17 @@ model Category {
   parentId  Int?
   parent    Category?  @relation("CategoryToCategory", fields: [parentId], references: [id])
   children     Category[]     @relation("CategoryToCategory")
-  classifieds  ClassifiedAd[]
   createdAt    DateTime       @default(now())
+}
+
+model ClassifiedCategory {
+  id          Int            @id @default(autoincrement())
+  name        String
+  slug        String         @unique
+  order       Int            @default(0)
+  isActive    Boolean        @default(true)
+  classifieds ClassifiedAd[]
+  createdAt   DateTime       @default(now())
 }
 
 model Page {
@@ -98,7 +107,7 @@ model ClassifiedAd {
   price       Float?
   images      String[]           @default([])
   categoryId  Int?
-  category    Category?          @relation(fields: [categoryId], references: [id])
+  category    ClassifiedCategory? @relation(fields: [categoryId], references: [id])
   reviews     ClassifiedReview[]
   createdAt   DateTime           @default(now())
   updatedAt   DateTime           @updatedAt

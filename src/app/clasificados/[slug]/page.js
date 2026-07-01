@@ -36,7 +36,7 @@ export default async function ClassifiedDetailPage({ params }) {
             </div>
           )}
           
-          <h1 className="text-4xl font-bold text-white mb-4">{ad.title}</h1>
+          <h1 className="text-4xl font-bold text-foreground mb-4">{ad.title}</h1>
           
           {ad.price && (
             <div className="text-3xl font-bold text-primary mb-6">
@@ -48,7 +48,7 @@ export default async function ClassifiedDetailPage({ params }) {
             <div className="flex items-center text-yellow-500 font-bold">
               <Star className="w-5 h-5 fill-current mr-1" />
               <span>{avgRating}</span>
-              <span className="text-gray-500 font-normal ml-1">({ad.reviews.length} reseñas)</span>
+              <span className="text-gray-600 dark:text-gray-500 font-normal ml-1">({ad.reviews.length} reseñas)</span>
             </div>
             <span>•</span>
             <div className="flex items-center">
@@ -58,7 +58,7 @@ export default async function ClassifiedDetailPage({ params }) {
           </div>
 
           <div className="prose prose-invert max-w-none mb-8">
-            <p className="text-gray-300 text-lg leading-relaxed whitespace-pre-wrap">
+            <p className="text-gray-700 dark:text-gray-300 text-lg leading-relaxed whitespace-pre-wrap">
               {ad.description}
             </p>
           </div>
@@ -97,7 +97,7 @@ export default async function ClassifiedDetailPage({ params }) {
                 <div key={review.id} className="bg-surface border border-border p-6 rounded-xl">
                   <div className="flex justify-between items-start mb-4">
                     <div>
-                      <h4 className="font-bold text-white">{review.authorName}</h4>
+                      <h4 className="font-bold text-foreground">{review.authorName}</h4>
                       <p className="text-xs text-gray-500">
                         {new Date(review.createdAt).toLocaleDateString()}
                       </p>
@@ -108,12 +108,12 @@ export default async function ClassifiedDetailPage({ params }) {
                       ))}
                     </div>
                   </div>
-                  <p className="text-gray-300 whitespace-pre-wrap">{review.content}</p>
+                  <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{review.content}</p>
                 </div>
               ))
             ) : (
               <div className="text-center py-12 bg-surface rounded-xl border border-border">
-                <p className="text-gray-400">Aún no hay reseñas. ¡Sé el primero en opinar!</p>
+                <p className="text-gray-600 dark:text-gray-400">Aún no hay reseñas. ¡Sé el primero en opinar!</p>
               </div>
             )}
           </div>

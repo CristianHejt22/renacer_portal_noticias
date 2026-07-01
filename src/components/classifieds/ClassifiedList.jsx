@@ -11,7 +11,7 @@ export default function ClassifiedList({ classifieds }) {
   if (classifieds.length === 0) {
     return (
       <div className="text-center py-20 bg-surface rounded-2xl border border-border">
-        <p className="text-gray-400 text-xl">No hay clasificados disponibles en este momento.</p>
+        <p className="text-gray-600 dark:text-gray-400 text-xl">No hay clasificados disponibles en este momento.</p>
       </div>
     );
   }
@@ -23,7 +23,7 @@ export default function ClassifiedList({ classifieds }) {
           <button
             onClick={() => setViewMode('list')}
             className={`p-2 rounded-md flex items-center transition-colors ${
-              viewMode === 'list' ? 'bg-primary text-white' : 'text-gray-400 hover:text-white'
+              viewMode === 'list' ? 'bg-primary text-white' : 'text-gray-600 dark:text-gray-400 hover:text-foreground'
             }`}
             title="Vista de Lista"
           >
@@ -32,7 +32,7 @@ export default function ClassifiedList({ classifieds }) {
           <button
             onClick={() => setViewMode('grid')}
             className={`p-2 rounded-md flex items-center transition-colors ${
-              viewMode === 'grid' ? 'bg-primary text-white' : 'text-gray-400 hover:text-white'
+              viewMode === 'grid' ? 'bg-primary text-white' : 'text-gray-600 dark:text-gray-400 hover:text-foreground'
             }`}
             title="Vista de Cuadros"
           >
@@ -57,7 +57,7 @@ export default function ClassifiedList({ classifieds }) {
                 key={ad.id} 
                 className="group flex flex-col md:flex-row bg-surface border border-border rounded-2xl overflow-hidden hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10"
               >
-                <div className="relative h-48 md:h-auto md:w-1/3 overflow-hidden bg-gray-900 shrink-0">
+                <div className="relative h-48 md:h-auto md:w-1/3 overflow-hidden bg-secondary shrink-0">
                   <div 
                     className="absolute inset-0 bg-cover md:bg-contain bg-center bg-no-repeat transition-transform duration-700 group-hover:scale-110"
                     style={{ backgroundImage: `url(${ad.imageUrl})` }}
@@ -66,7 +66,7 @@ export default function ClassifiedList({ classifieds }) {
                 
                 <div className="p-6 flex flex-col flex-grow">
                   <div className="flex justify-between items-start mb-2 gap-4">
-                    <h2 className="text-xl md:text-2xl font-bold text-white group-hover:text-primary transition-colors line-clamp-2">
+                    <h2 className="text-xl md:text-2xl font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2">
                       {ad.title}
                     </h2>
                     {ad.price && (
@@ -82,7 +82,7 @@ export default function ClassifiedList({ classifieds }) {
                     </span>
                   )}
 
-                  <p className="text-gray-400 text-sm md:text-base line-clamp-3 mb-4 flex-grow">
+                  <p className="text-gray-600 dark:text-gray-400 text-sm md:text-base line-clamp-3 mb-4 flex-grow">
                     {ad.description}
                   </p>
                   
@@ -90,7 +90,7 @@ export default function ClassifiedList({ classifieds }) {
                     <div className="flex items-center text-yellow-500 text-sm font-semibold">
                       <Star className="w-4 h-4 fill-current mr-1" />
                       <span>{avgRating}</span>
-                      <span className="text-gray-500 font-normal ml-1">({ad.reviews?.length || 0})</span>
+                      <span className="text-gray-600 dark:text-gray-500 font-normal ml-1">({ad.reviews?.length || 0})</span>
                     </div>
                     
                     <div className="flex items-center space-x-3 w-full sm:w-auto">
@@ -124,7 +124,7 @@ export default function ClassifiedList({ classifieds }) {
               key={ad.id} 
               className="group flex flex-col bg-surface border border-border rounded-2xl overflow-hidden hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10"
             >
-              <div className="relative h-60 w-full overflow-hidden bg-gray-900">
+              <div className="relative h-60 w-full overflow-hidden bg-secondary">
                 <div 
                   className="absolute inset-0 bg-contain bg-center bg-no-repeat transition-transform duration-700 group-hover:scale-110"
                   style={{ backgroundImage: `url(${ad.imageUrl})` }}
@@ -137,7 +137,7 @@ export default function ClassifiedList({ classifieds }) {
               </div>
               <div className="p-6 flex flex-col flex-grow">
                 <div className="flex justify-between items-start mb-1">
-                  <h2 className="text-xl font-bold text-white group-hover:text-primary transition-colors line-clamp-2">
+                  <h2 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2">
                     {ad.title}
                   </h2>
                 </div>
@@ -148,7 +148,7 @@ export default function ClassifiedList({ classifieds }) {
                   </span>
                 )}
 
-                <p className="text-gray-400 text-sm line-clamp-3 mb-6 flex-grow">
+                <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-3 mb-6 flex-grow">
                   {ad.description}
                 </p>
                 
@@ -156,7 +156,7 @@ export default function ClassifiedList({ classifieds }) {
                   <div className="flex items-center text-yellow-500 text-sm font-semibold">
                     <Star className="w-4 h-4 fill-current mr-1" />
                     <span>{avgRating}</span>
-                    <span className="text-gray-500 font-normal ml-1">({ad.reviews?.length || 0})</span>
+                    <span className="text-gray-600 dark:text-gray-500 font-normal ml-1">({ad.reviews?.length || 0})</span>
                   </div>
                   <button className="flex items-center text-sm font-semibold text-[#25D366] bg-[#25D366]/10 px-3 py-1.5 rounded-full hover:bg-[#25D366]/20 transition-colors">
                     <MessageCircle className="w-4 h-4 mr-2" />
