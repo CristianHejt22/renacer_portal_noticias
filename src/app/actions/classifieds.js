@@ -3,6 +3,23 @@
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
+import { cookies } from 'next/headers';
+import { jwtVerify } from 'jose';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_fallback_key_for_dev_123';
+const encodedSecret = new TextEncoder().encode(JWT_SECRET);
+
+async function getSessionUserId() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get('auth_token')?.value;
+  if (!token) return null;
+  try {
+    const { payload } = await jwtVerify(token, encodedSecret);
+    return payload.userId;
+  } catch (e) {
+    return null;
+  }
+}
 
 // Public: Get all active classifieds
 export async function getActiveClassifieds() {
@@ -69,7 +86,25 @@ export async function getClassifiedById(id) {
   }
 }
 
-// Admin: Create classified
+// Public/User: Get User Classifieds
+export async function getUserClassifieds() {
+  try {
+    const userId = await getSessionUserId();
+    if (!userId) return { success: false, error: 'Unauthorized' };
+
+    const classifieds = await prisma.classifiedAd.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      include: { category: true }
+    });
+    return { success: true, data: classifieds };
+  } catch (error) {
+    console.error('Error fetching user classifieds:', error);
+    return { success: false, error: 'Error fetching classifieds' };
+  }
+}
+
+// User/Admin: Create classified
 export async function createClassified(data) {
   try {
     const newClassified = await prisma.classifiedAd.create({
@@ -83,6 +118,7 @@ export async function createClassified(data) {
         classifiedCategoryId: data.classifiedCategoryId ? parseInt(data.classifiedCategoryId) : null,
         whatsapp: data.whatsapp,
         isActive: data.isActive !== undefined ? data.isActive : true,
+        userId: data.userId || await getSessionUserId(), // Fallback to current session user
       }
     });
     return { success: true, data: newClassified };

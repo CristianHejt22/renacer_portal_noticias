@@ -41,6 +41,7 @@ export async function createFirstAdmin(email, password) {
           email,
           password: hashedPassword,
           name: 'Administrador',
+          role: 'ADMIN',
         },
       });
     } else {
@@ -49,11 +50,12 @@ export async function createFirstAdmin(email, password) {
           email,
           password: hashedPassword,
           name: 'Administrador',
+          role: 'ADMIN',
         },
       });
     }
 
-    await createSession(user.id);
+    await createSession(user.id, user.role);
     return { success: true };
   } catch (error) {
     console.error('Error creating admin:', error);
@@ -89,11 +91,36 @@ export async function login(email, password) {
       return { success: false, error: 'Credenciales inválidas' };
     }
 
-    await createSession(user.id);
+    await createSession(user.id, user.role);
     return { success: true };
   } catch (error) {
     console.error('Error in login:', error);
     return { success: false, error: 'Ocurrió un error al intentar iniciar sesión' };
+  }
+}
+
+export async function registerUser(name, email, password) {
+  try {
+    const existing = await prisma.user.findUnique({ where: { email } });
+    if (existing) {
+      return { success: false, error: 'El correo ya está registrado.' };
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = await prisma.user.create({
+      data: {
+        name,
+        email,
+        password: hashedPassword,
+        role: 'USER',
+      },
+    });
+
+    await createSession(user.id, user.role);
+    return { success: true };
+  } catch (error) {
+    console.error('Error in registration:', error);
+    return { success: false, error: 'Ocurrió un error al registrarse' };
   }
 }
 
@@ -103,8 +130,8 @@ export async function logout() {
   return { success: true };
 }
 
-async function createSession(userId) {
-  const token = await new SignJWT({ userId })
+async function createSession(userId, role) {
+  const token = await new SignJWT({ userId, role })
     .setProtectedHeader({ alg: 'HS256' })
     .setExpirationTime('7d')
     .sign(encodedSecret);

@@ -15,10 +15,12 @@ model User {
   email     String   @unique
   password  String
   name       String?
+  role       String   @default("USER")
   credits    Int      @default(0)
   planLevel  String   @default("free")
   planActive Boolean  @default(false)
   posts      Post[]
+  classifieds ClassifiedAd[]
   createdAt  DateTime @default(now())
 }
 
@@ -116,6 +118,8 @@ model ClassifiedAd {
   images               String[]           @default([])
   classifiedCategoryId Int?
   category             ClassifiedCategory? @relation(fields: [classifiedCategoryId], references: [id])
+  userId               Int?
+  user                 User?               @relation(fields: [userId], references: [id])
   reviews     ClassifiedReview[]
   createdAt   DateTime           @default(now())
   updatedAt   DateTime           @updatedAt
