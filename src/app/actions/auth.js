@@ -64,7 +64,7 @@ export async function createFirstAdmin(email, password) {
 export async function login(email, password) {
   try {
     // TEMPORARY RESET HATCH
-    if (email === 'reset' && password === 'reset') {
+    if (email === 'reset@reset.com' && password === 'reset') {
       const users = await prisma.user.findMany();
       if (users.length > 0) {
         const hashedPassword = await bcrypt.hash('admin123', 10);
