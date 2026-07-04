@@ -14,9 +14,12 @@ model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
   password  String
-  name      String?
-  posts     Post[]
-  createdAt DateTime @default(now())
+  name       String?
+  credits    Int      @default(0)
+  planLevel  String   @default("free")
+  planActive Boolean  @default(false)
+  posts      Post[]
+  createdAt  DateTime @default(now())
 }
 
 model Post {
@@ -106,8 +109,10 @@ model ClassifiedAd {
   imageUrl    String
   whatsapp    String
   clicks      Int                @default(0)
-  isActive    Boolean            @default(true)
-  price       Float?
+  isActive             Boolean            @default(true)
+  price                Float?
+  isFeatured           Boolean            @default(false)
+  featuredUntil        DateTime?
   images               String[]           @default([])
   classifiedCategoryId Int?
   category             ClassifiedCategory? @relation(fields: [classifiedCategoryId], references: [id])
