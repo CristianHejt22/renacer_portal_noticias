@@ -95,7 +95,7 @@ export default async function AdminDashboard() {
                       )}
                     </td>
                     <td className="py-4 text-sm">
-                      <Link href={`/admin/posts?edit=${post.id}`} className="text-primary hover:underline">
+                      <Link href={`/admin/posts/${post.id}/edit`} className="text-primary hover:underline">
                         Editar
                       </Link>
                     </td>
