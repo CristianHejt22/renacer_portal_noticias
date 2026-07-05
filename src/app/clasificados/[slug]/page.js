@@ -4,6 +4,7 @@ import { Star, MessageCircle, Clock, ExternalLink, Tag } from 'lucide-react';
 import ClassifiedReviewForm from '@/components/classifieds/ClassifiedReviewForm';
 import ClassifiedGallery from '@/components/classifieds/ClassifiedGallery';
 import SocialShareButtons from '@/components/shared/SocialShareButtons';
+import AdViewTracker from '@/components/classifieds/AdViewTracker';
 
 export const revalidate = 60; // ISR
 
@@ -22,6 +23,7 @@ export default async function ClassifiedDetailPage({ params }) {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <AdViewTracker adId={ad.id} />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
         {/* Izquierda: Imagen */}
         <div className="space-y-6">
