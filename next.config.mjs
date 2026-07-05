@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  serverActions: {
+    bodySizeLimit: '15mb',
+  },
   eslint: {
     ignoreDuringBuilds: true,
   },

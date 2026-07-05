@@ -99,6 +99,11 @@ export default function PublishClassifiedPage() {
         const imgData = new FormData();
         imgData.append('file', file);
         const uploadRes = await fetch('/api/upload', { method: 'POST', body: imgData });
+        
+        if (!uploadRes.ok) {
+          throw new Error(`Error al subir imagen (Status: ${uploadRes.status})`);
+        }
+        
         const uploadData = await uploadRes.json();
         if (uploadData.url) {
           uploadedUrls.push(uploadData.url);
@@ -131,8 +136,12 @@ export default function PublishClassifiedPage() {
       router.push('/mi-cuenta');
 
     } catch (error) {
-      alert('Ocurrió un error inesperado.');
       console.error(error);
+      if (error.message && error.message.includes('Payload Too Large')) {
+        alert('Las imágenes son demasiado pesadas. Por favor reduce su tamaño.');
+      } else {
+        alert('Ocurrió un error inesperado al procesar la solicitud: ' + (error.message || 'Inténtalo de nuevo.'));
+      }
     }
     setLoading(false);
   };
