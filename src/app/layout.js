@@ -20,6 +20,7 @@ export async function generateMetadata() {
   const siteDescription = adSettings.data?.siteDescription || "Las últimas noticias al instante";
   
   return {
+    metadataBase: new URL(adSettings.data?.siteUrl || 'https://librecielo.com'),
     title: {
       default: siteName,
       template: `%s | ${siteName}`,

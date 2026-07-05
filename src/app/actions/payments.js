@@ -15,7 +15,7 @@ export async function createCheckout({ userId, planId, price, type }) {
     const reference = `${type}_user_${userId}_plan_${planId}_time_${Date.now()}`;
 
     // Get the base URL from the environment or default to localhost for dev
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://librecielo.com';
 
     const data = {
       total: parseFloat(price),

@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 export async function GET(request) {
   try {
     const protocol = request.headers.get('x-forwarded-proto') || 'http';
-    const host = request.headers.get('host') || 'localhost:3000';
+    const host = request.headers.get('host') || 'librecielo.com';
     const siteUrl = `${protocol}://${host}`;
 
     const siteNameSetting = await prisma.setting.findUnique({ where: { key: 'site_name' } });

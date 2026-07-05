@@ -7,7 +7,7 @@ export async function GET(request) {
   try {
     // 1. Obtener la URL base del sitio desde la petición o variable de entorno
     const protocol = request.headers.get('x-forwarded-proto') || 'http';
-    const host = request.headers.get('host') || 'localhost:3000';
+    const host = request.headers.get('host') || 'librecielo.com';
     const siteUrl = `${protocol}://${host}`;
 
     // 2. Obtener configuraciones del sitio
