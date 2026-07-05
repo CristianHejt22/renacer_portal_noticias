@@ -120,23 +120,23 @@ export default function PublishClassifiedPage() {
     <div className="min-h-screen bg-background py-12">
       <div className="max-w-3xl mx-auto px-4">
         <div className="text-center mb-6">
-          <h1 className="text-4xl font-bold text-white mb-4">Publicar Aviso</h1>
-          <p className="text-gray-400 text-lg">Completa los datos para publicar tu clasificado en el portal</p>
+          <h1 className="text-4xl font-bold text-foreground mb-4">Publicar Aviso</h1>
+          <p className="text-gray-600 dark:text-gray-400 text-lg">Completa los datos para publicar tu clasificado en el portal</p>
         </div>
 
         {/* CREDIT BALANCES */}
         <div className="bg-surface glass border border-border rounded-xl p-4 mb-8 flex justify-center items-center gap-8">
           <div className="flex flex-col items-center">
-            <span className="text-sm text-gray-400 mb-1">Créditos Normales</span>
-            <div className="flex items-center text-xl font-bold text-white">
+            <span className="text-sm text-gray-600 dark:text-gray-400 mb-1">Créditos Normales</span>
+            <div className="flex items-center text-xl font-bold text-foreground">
               <Package className="text-primary mr-2" size={20} />
               {credits.credits} disponibles
             </div>
           </div>
           <div className="w-px h-12 bg-border"></div>
           <div className="flex flex-col items-center">
-            <span className="text-sm text-gray-400 mb-1">Créditos Destacados</span>
-            <div className="flex items-center text-xl font-bold text-white">
+            <span className="text-sm text-gray-600 dark:text-gray-400 mb-1">Créditos Destacados</span>
+            <div className="flex items-center text-xl font-bold text-foreground">
               <Star className="text-purple-400 mr-2" size={20} />
               {credits.featuredCredits} disponibles
             </div>
@@ -149,7 +149,7 @@ export default function PublishClassifiedPage() {
             <h2 className="text-xl font-semibold text-primary border-b border-border pb-2">1. Detalles del Aviso</h2>
             
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Título del Aviso</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Título del Aviso</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
                   <Tag size={18} />
@@ -165,7 +165,7 @@ export default function PublishClassifiedPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Precio (Opcional, en ARS)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Precio (Opcional, en ARS)</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
                     <DollarSign size={18} />
@@ -180,7 +180,7 @@ export default function PublishClassifiedPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">WhatsApp de Contacto</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">WhatsApp de Contacto</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
                     <Phone size={18} />
@@ -196,7 +196,7 @@ export default function PublishClassifiedPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Categoría</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Categoría</label>
               <select 
                 required
                 value={formData.classifiedCategoryId} 
@@ -211,7 +211,7 @@ export default function PublishClassifiedPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Imagen Principal (Max 2MB)</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Imagen Principal (Max 2MB)</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
                   <Upload size={18} />
@@ -225,7 +225,7 @@ export default function PublishClassifiedPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Descripción</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Descripción</label>
               <div className="relative">
                 <div className="absolute top-3 left-3 pointer-events-none text-gray-500">
                   <AlignLeft size={18} />
@@ -252,7 +252,7 @@ export default function PublishClassifiedPage() {
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
-                  <span className={`font-bold text-lg ${credits.credits > 0 ? 'text-white' : 'text-gray-400'}`}>Anuncio Normal</span>
+                  <span className={`font-bold text-lg ${credits.credits > 0 ? 'text-foreground' : 'text-gray-400'}`}>Anuncio Normal</span>
                   <input 
                     type="radio" 
                     name="plan" 
@@ -263,8 +263,8 @@ export default function PublishClassifiedPage() {
                     className="w-5 h-5 text-primary accent-primary" 
                   />
                 </div>
-                <p className={`text-sm flex-1 font-medium mt-2 ${formData.plan === 'free' ? 'text-white font-bold' : 'text-gray-300'}`}>
-                  Aparecerá en la lista general.<br/><span className="text-primary mt-1 inline-block font-black tracking-wide bg-primary/20 px-2 py-1 rounded">Consume 1 Crédito Normal.</span>
+                <p className={`text-sm flex-1 font-medium mt-2 ${formData.plan === 'free' ? 'text-foreground font-bold' : 'text-gray-500 dark:text-gray-300'}`}>
+                  Aparecerá en la lista general.<br/><span className="text-primary mt-1 inline-block font-black tracking-wide bg-primary/10 dark:bg-primary/20 px-2 py-1 rounded">Consume 1 Crédito Normal.</span>
                 </p>
                 {credits.credits <= 0 && <p className="text-red-400 text-xs mt-2 font-bold">No tienes créditos normales</p>}
               </label>
@@ -277,8 +277,8 @@ export default function PublishClassifiedPage() {
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
-                  <span className={`font-bold text-lg flex items-center ${(credits.credits > 0 && credits.featuredCredits > 0) ? 'text-white' : 'text-gray-400'}`}>
-                    <Star size={18} className="text-purple-400 mr-2 fill-purple-400" />
+                  <span className={`font-bold text-lg flex items-center ${(credits.credits > 0 && credits.featuredCredits > 0) ? 'text-foreground' : 'text-gray-400'}`}>
+                    <Star size={18} className="text-purple-600 dark:text-purple-400 mr-2 fill-purple-600 dark:fill-purple-400" />
                     Destacado x7 Días
                   </span>
                   <input 
@@ -288,11 +288,11 @@ export default function PublishClassifiedPage() {
                     disabled={credits.credits <= 0 || credits.featuredCredits <= 0}
                     checked={formData.plan === 'highlight'}
                     onChange={() => setFormData({...formData, plan: 'highlight'})}
-                    className="w-5 h-5 text-purple-500 accent-purple-500" 
+                    className="w-5 h-5 text-purple-600 dark:text-purple-500 accent-purple-600 dark:accent-purple-500" 
                   />
                 </div>
-                <p className={`text-sm flex-1 font-medium mt-2 ${formData.plan === 'highlight' ? 'text-white font-bold' : 'text-gray-300'}`}>
-                  Aparecerá primero y resaltado.<br/><span className="text-purple-400 mt-1 inline-block font-black tracking-wide bg-purple-500/20 px-2 py-1 rounded">Consume 1 Normal + 1 Destacado.</span>
+                <p className={`text-sm flex-1 font-medium mt-2 ${formData.plan === 'highlight' ? 'text-foreground font-bold' : 'text-gray-500 dark:text-gray-300'}`}>
+                  Aparecerá primero y resaltado.<br/><span className="text-purple-600 dark:text-purple-400 mt-1 inline-block font-black tracking-wide bg-purple-100 dark:bg-purple-500/20 px-2 py-1 rounded">Consume 1 Normal + 1 Destacado.</span>
                 </p>
                 {(credits.credits <= 0 || credits.featuredCredits <= 0) && <p className="text-red-400 text-xs mt-2 font-bold">Créditos insuficientes</p>}
               </label>

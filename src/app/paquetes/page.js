@@ -44,8 +44,8 @@ export default function PackagesPage() {
     <div className="min-h-screen bg-background py-16">
       <div className="max-w-6xl mx-auto px-4">
         <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">Compra Paquetes de Créditos</h1>
-          <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+          <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">Compra Paquetes de Créditos</h1>
+          <p className="text-gray-600 dark:text-gray-400 text-lg max-w-2xl mx-auto">
             Adquiere créditos para publicar tus clasificados. Un crédito equivale a un anuncio normal. 
             Adquiere destacados para vender hasta 10 veces más rápido.
           </p>
@@ -63,14 +63,14 @@ export default function PackagesPage() {
                 </div>
               )}
               
-              <h2 className="text-2xl font-bold text-white mb-2">{pkg.name}</h2>
-              <p className="text-gray-300 text-sm mb-6 h-12">{pkg.description}</p>
+              <h2 className="text-2xl font-bold text-foreground mb-2">{pkg.name}</h2>
+              <p className="text-gray-600 dark:text-gray-300 text-sm mb-6 h-12">{pkg.description}</p>
               
-              <div className="text-4xl font-black text-white mb-6">
+              <div className="text-4xl font-black text-foreground mb-6">
                 ${pkg.price.toLocaleString('es-AR')}
               </div>
               
-              <ul className="space-y-4 mb-8 flex-1 text-white">
+              <ul className="space-y-4 mb-8 flex-1 text-foreground">
                 <li className="flex items-center">
                   <Package className="text-primary mr-3" size={20} />
                   <span><strong>{pkg.credits}</strong> Créditos Normales</span>
@@ -85,7 +85,7 @@ export default function PackagesPage() {
               
               <Link 
                 href={`/transferencia?pack=${pkg.id}&price=${pkg.price}&name=${encodeURIComponent(pkg.name)}`}
-                className={`w-full py-4 rounded-xl flex justify-center items-center font-bold transition-all ${pkg.popular ? 'bg-primary hover:bg-accent text-white shadow-lg' : 'bg-white/5 hover:bg-white/10 text-white border border-border'}`}
+                className={`w-full py-4 rounded-xl flex justify-center items-center font-bold transition-all ${pkg.popular ? 'bg-primary hover:bg-accent text-white shadow-lg' : 'bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-foreground border border-border'}`}
               >
                 Comprar Ahora
                 <ArrowRight size={18} className="ml-2" />
