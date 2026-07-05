@@ -12,7 +12,7 @@ export default function PublishClassifiedPage() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [credits, setCredits] = useState({ credits: 0, featuredCredits: 0 });
-  const [imageFile, setImageFile] = useState(null);
+  const [imageFiles, setImageFiles] = useState([]);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -40,16 +40,30 @@ export default function PublishClassifiedPage() {
   };
 
   const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        alert('La imagen pesa más de 2MB. Por favor elige una imagen más liviana.');
-        e.target.value = '';
-        setImageFile(null);
-        return;
-      }
-      setImageFile(file);
+    const files = Array.from(e.target.files);
+    
+    if (imageFiles.length + files.length > 3) {
+      alert('Puedes subir un máximo de 3 imágenes.');
+      return;
     }
+    
+    const validFiles = [];
+    for (let file of files) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert(`La imagen ${file.name} pesa más de 2MB y fue descartada.`);
+      } else {
+        validFiles.push(file);
+      }
+    }
+    
+    setImageFiles([...imageFiles, ...validFiles].slice(0, 3));
+    e.target.value = '';
+  };
+
+  const removeImage = (index) => {
+    const newFiles = [...imageFiles];
+    newFiles.splice(index, 1);
+    setImageFiles(newFiles);
   };
 
   const generateSlug = (text) => {
@@ -60,8 +74,8 @@ export default function PublishClassifiedPage() {
     e.preventDefault();
     setLoading(true);
 
-    if (!imageFile) {
-      alert('Por favor selecciona una imagen para tu anuncio.');
+    if (imageFiles.length === 0) {
+      alert('Por favor selecciona al menos una imagen para tu anuncio.');
       setLoading(false);
       return;
     }
@@ -79,14 +93,20 @@ export default function PublishClassifiedPage() {
     }
 
     try {
-      // 1. Subir la imagen
-      const imgData = new FormData();
-      imgData.append('file', imageFile);
-      const uploadRes = await fetch('/api/upload', { method: 'POST', body: imgData });
-      const uploadData = await uploadRes.json();
+      // 1. Subir las imágenes
+      const uploadedUrls = [];
+      for (let file of imageFiles) {
+        const imgData = new FormData();
+        imgData.append('file', file);
+        const uploadRes = await fetch('/api/upload', { method: 'POST', body: imgData });
+        const uploadData = await uploadRes.json();
+        if (uploadData.url) {
+          uploadedUrls.push(uploadData.url);
+        }
+      }
       
-      if (!uploadData.url) {
-        alert('Error al subir la imagen.');
+      if (uploadedUrls.length === 0) {
+        alert('Error al subir las imágenes.');
         setLoading(false);
         return;
       }
@@ -94,7 +114,8 @@ export default function PublishClassifiedPage() {
       // 2. Crear el clasificado descontando créditos
       const adData = {
         ...formData,
-        imageUrl: uploadData.url,
+        imageUrl: uploadedUrls[0],
+        images: uploadedUrls.slice(1),
         slug: generateSlug(formData.title),
       };
 
@@ -211,17 +232,36 @@ export default function PublishClassifiedPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Imagen Principal (Max 2MB)</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
-                  <Upload size={18} />
-                </div>
-                <input 
-                  type="file" required accept="image/*"
-                  onChange={handleImageChange}
-                  className="w-full bg-background border border-border rounded-lg pl-10 p-2 text-foreground focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/20 file:text-primary hover:file:bg-primary/30" 
-                />
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Fotos (Max 3, hasta 2MB c/u)</label>
+              
+              <div className="flex flex-wrap gap-4 mb-2">
+                {imageFiles.map((file, index) => (
+                  <div key={index} className="relative w-24 h-24 rounded-lg border border-border bg-black/5 flex items-center justify-center overflow-hidden group">
+                    <img src={URL.createObjectURL(file)} alt="preview" className="object-cover w-full h-full" />
+                    <button type="button" onClick={() => removeImage(index)} className="absolute inset-0 bg-red-500/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      X
+                    </button>
+                    {index === 0 && (
+                      <div className="absolute bottom-0 left-0 right-0 bg-primary/90 text-white text-[10px] text-center font-bold py-0.5">
+                        Principal
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
+
+              {imageFiles.length < 3 && (
+                <div className="relative mt-2">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
+                    <Upload size={18} />
+                  </div>
+                  <input 
+                    type="file" multiple accept="image/*"
+                    onChange={handleImageChange}
+                    className="w-full bg-background border border-border rounded-lg pl-10 p-2 text-foreground focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20" 
+                  />
+                </div>
+              )}
             </div>
 
             <div>

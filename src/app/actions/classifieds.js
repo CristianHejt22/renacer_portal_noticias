@@ -36,18 +36,51 @@ export async function getUserCredits() {
   }
 }
 
-// Public: Get all active classifieds
-export async function getActiveClassifieds() {
+// Public: Get all active classifieds (with pagination, search, filter)
+export async function getActiveClassifieds({ q = '', categoryId = null, page = 1, limit = 12 } = {}) {
   try {
+    // 30 days expiration logic (we only show ads created in the last 30 days)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const where = {
+      isActive: true,
+      createdAt: { gte: thirtyDaysAgo },
+      ...(categoryId ? { classifiedCategoryId: parseInt(categoryId) } : {}),
+      ...(q ? {
+        OR: [
+          { title: { contains: q, mode: 'insensitive' } },
+          { description: { contains: q, mode: 'insensitive' } },
+        ]
+      } : {})
+    };
+
+    const totalCount = await prisma.classifiedAd.count({ where });
+
     const classifieds = await prisma.classifiedAd.findMany({
-      where: { isActive: true },
-      orderBy: { createdAt: 'desc' },
+      where,
+      orderBy: [
+        { isFeatured: 'desc' }, // Destacados primero
+        { createdAt: 'desc' },  // Luego los más recientes
+      ],
+      skip: (page - 1) * limit,
+      take: limit,
       include: {
         reviews: true,
         category: true,
       }
     });
-    return { success: true, data: classifieds };
+
+    return { 
+      success: true, 
+      data: classifieds,
+      pagination: {
+        total: totalCount,
+        page,
+        limit,
+        totalPages: Math.ceil(totalCount / limit)
+      }
+    };
   } catch (error) {
     console.error('Error fetching classifieds:', error);
     return { success: false, error: 'Error fetching classifieds' };
@@ -107,6 +140,16 @@ export async function getUserClassifieds() {
     const userId = await getSessionUserId();
     if (!userId) return { success: false, error: 'Unauthorized' };
 
+    // Auto-delete ads older than 37 days
+    const thirtySevenDaysAgo = new Date();
+    thirtySevenDaysAgo.setDate(thirtySevenDaysAgo.getDate() - 37);
+    await prisma.classifiedAd.deleteMany({
+      where: {
+        userId,
+        createdAt: { lt: thirtySevenDaysAgo }
+      }
+    });
+
     const classifieds = await prisma.classifiedAd.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
@@ -157,6 +200,7 @@ export async function publishUserClassified(data) {
           slug: data.slug,
           description: data.description,
           imageUrl: data.imageUrl,
+          images: data.images || [],
           price: data.price ? parseFloat(data.price) : null,
           classifiedCategoryId: data.classifiedCategoryId ? parseInt(data.classifiedCategoryId) : null,
           whatsapp: data.whatsapp,
@@ -252,5 +296,63 @@ export async function createReview(data) {
   } catch (error) {
     console.error('Error creating review:', error);
     return { success: false, error: 'Error creating review' };
+  }
+}
+
+// User: Republish classified (consumes 1 normal credit)
+export async function republishClassified(id) {
+  try {
+    const userId = await getSessionUserId();
+    if (!userId) return { success: false, error: 'Unauthorized' };
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (user.credits <= 0) return { success: false, error: 'No tienes créditos normales suficientes.' };
+
+    const result = await prisma.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id: userId },
+        data: { credits: { decrement: 1 } }
+      });
+      const updated = await tx.classifiedAd.update({
+        where: { id: parseInt(id) },
+        data: { createdAt: new Date() } // Reset createdAt to now
+      });
+      return updated;
+    });
+
+    return { success: true, data: result };
+  } catch (error) {
+    console.error('Error republishing:', error);
+    return { success: false, error: 'Error al republicar el clasificado' };
+  }
+}
+
+// User: Highlight classified (consumes 1 featured credit)
+export async function highlightClassified(id) {
+  try {
+    const userId = await getSessionUserId();
+    if (!userId) return { success: false, error: 'Unauthorized' };
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (user.featuredCredits <= 0) return { success: false, error: 'No tienes créditos destacados suficientes.' };
+
+    const featuredUntil = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+    const result = await prisma.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id: userId },
+        data: { featuredCredits: { decrement: 1 } }
+      });
+      const updated = await tx.classifiedAd.update({
+        where: { id: parseInt(id) },
+        data: { isFeatured: true, featuredUntil }
+      });
+      return updated;
+    });
+
+    return { success: true, data: result };
+  } catch (error) {
+    console.error('Error highlighting:', error);
+    return { success: false, error: 'Error al destacar el clasificado' };
   }
 }

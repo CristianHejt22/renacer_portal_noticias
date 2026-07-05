@@ -20,6 +20,7 @@ model User {
   featuredCredits Int @default(0)
   planLevel  String   @default("free")
   planActive Boolean  @default(false)
+  freeCreditsExpireAt DateTime?
   posts      Post[]
   classifieds ClassifiedAd[]
   createdAt  DateTime @default(now())

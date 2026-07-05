@@ -114,6 +114,9 @@ export async function registerUser(name, email, password) {
       return { success: false, error: 'El correo ya está registrado.' };
     }
 
+    const expireDate = new Date();
+    expireDate.setDate(expireDate.getDate() + 15);
+
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await prisma.user.create({
       data: {
@@ -121,6 +124,8 @@ export async function registerUser(name, email, password) {
         email,
         password: hashedPassword,
         role: 'USER',
+        credits: 3,
+        freeCreditsExpireAt: expireDate,
       },
     });
 

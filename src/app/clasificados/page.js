@@ -1,16 +1,26 @@
 import { getActiveClassifieds } from '@/app/actions/classifieds';
+import { getClassifiedCategories } from '@/app/actions/classifiedCategories';
 import ClassifiedList from '@/components/classifieds/ClassifiedList';
 
-export const revalidate = 60; // ISR
+// export const revalidate = 60; (removed for dynamic searchParams support)
 
 export const metadata = {
   title: 'Clasificados',
   description: 'Anuncios y servicios recomendados',
 };
 
-export default async function ClassifiedsPage() {
-  const res = await getActiveClassifieds();
+export default async function ClassifiedsPage({ searchParams }) {
+  const params = await searchParams; // Next.js 15+ searchParams must be awaited (if applicable, else standard usage. Safe to await or just destructure)
+  const q = params?.q || '';
+  const page = parseInt(params?.page) || 1;
+  const categoryId = params?.cat || null;
+
+  const res = await getActiveClassifieds({ q, categoryId, page, limit: 12 });
   const classifieds = res.data || [];
+  const pagination = res.pagination || { totalPages: 1, page: 1 };
+  
+  const catRes = await getClassifiedCategories();
+  const categories = catRes.success ? catRes.data : [];
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -21,7 +31,13 @@ export default async function ClassifiedsPage() {
         </p>
       </div>
 
-      <ClassifiedList classifieds={classifieds} />
+      <ClassifiedList 
+        classifieds={classifieds} 
+        categories={categories}
+        pagination={pagination} 
+        currentQuery={q} 
+        currentCategory={categoryId} 
+      />
     </div>
   );
 }
