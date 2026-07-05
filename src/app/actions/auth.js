@@ -91,8 +91,16 @@ export async function login(email, password) {
       return { success: false, error: 'Credenciales inválidas' };
     }
 
-    await createSession(user.id, user.role);
-    return { success: true, role: user.role };
+    // Auto-fix: Ensure the very first user is ALWAYS an ADMIN
+    let finalRole = user.role;
+    const firstUser = await prisma.user.findFirst({ orderBy: { id: 'asc' } });
+    if (firstUser && firstUser.id === user.id && user.role !== 'ADMIN') {
+      await prisma.user.update({ where: { id: user.id }, data: { role: 'ADMIN' } });
+      finalRole = 'ADMIN';
+    }
+
+    await createSession(user.id, finalRole);
+    return { success: true, role: finalRole };
   } catch (error) {
     console.error('Error in login:', error);
     return { success: false, error: 'Ocurrió un error al intentar iniciar sesión' };
