@@ -1,6 +1,7 @@
 import { getActiveClassifieds } from '@/app/actions/classifieds';
 import { getClassifiedCategories } from '@/app/actions/classifiedCategories';
 import ClassifiedList from '@/components/classifieds/ClassifiedList';
+import ClassifiedsHeader from '@/components/classifieds/ClassifiedsHeader';
 
 // export const revalidate = 60; (removed for dynamic searchParams support)
 
@@ -23,7 +24,9 @@ export default async function ClassifiedsPage({ searchParams }) {
   const categories = catRes.success ? catRes.data : [];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <>
+      <ClassifiedsHeader />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold text-foreground mb-4">Clasificados</h1>
         <p className="text-gray-600 dark:text-gray-400 text-lg max-w-2xl mx-auto">
@@ -39,5 +42,6 @@ export default async function ClassifiedsPage({ searchParams }) {
         currentCategory={categoryId} 
       />
     </div>
+    </>
   );
 }

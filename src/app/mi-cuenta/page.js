@@ -1,28 +1,33 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Tag, LogOut, CheckCircle, Clock, Trash2, RotateCw, Star, AlertTriangle } from 'lucide-react';
+import { Plus, Tag, LogOut, CheckCircle, Clock, Trash2, RotateCw, Star, AlertTriangle, User, Mail, Calendar, Package } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { getUserClassifieds, deleteClassified, republishClassified, highlightClassified } from '@/app/actions/classifieds';
-import { logout } from '@/app/actions/auth';
+import { getMe, logout } from '@/app/actions/auth';
 
 export default function UserDashboard() {
   const router = useRouter();
   const [classifieds, setClassifieds] = useState([]);
+  const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
-    loadMyAds();
+    loadData();
   }, []);
 
-  const loadMyAds = async () => {
+  const loadData = async () => {
     setLoading(true);
-    const res = await getUserClassifieds();
-    if (res.success && res.data) {
-      setClassifieds(res.data);
-    }
+    const [adsRes, profileRes] = await Promise.all([
+      getUserClassifieds(),
+      getMe()
+    ]);
+    
+    if (adsRes.success) setClassifieds(adsRes.data);
+    if (profileRes.success) setUserProfile(profileRes.data);
+    
     setLoading(false);
   };
 
@@ -37,7 +42,7 @@ export default function UserDashboard() {
     const res = await deleteClassified(id);
     if (res.success) {
       alert('Aviso eliminado');
-      loadMyAds();
+      loadData();
     } else {
       alert(res.error || 'Error al eliminar');
     }
@@ -50,7 +55,7 @@ export default function UserDashboard() {
     const res = await republishClassified(id);
     if (res.success) {
       alert('Aviso republicado con éxito');
-      loadMyAds();
+      loadData();
     } else {
       alert(res.error || 'Error al republicar');
     }
@@ -63,7 +68,7 @@ export default function UserDashboard() {
     const res = await highlightClassified(id);
     if (res.success) {
       alert('Aviso destacado con éxito');
-      loadMyAds();
+      loadData();
     } else {
       alert(res.error || 'Error al destacar');
     }
@@ -118,16 +123,79 @@ export default function UserDashboard() {
         <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
           <div>
             <h1 className="text-3xl font-bold text-foreground mb-2">Mi Cuenta</h1>
-            <p className="text-muted-foreground">Gestiona tus avisos clasificados publicados</p>
+            <p className="text-muted-foreground">Gestiona tu perfil y tus avisos publicados</p>
           </div>
-          <Link 
-            href="/clasificados/publicar" 
-            className="bg-primary hover:bg-accent text-white px-5 py-2.5 rounded-lg font-semibold flex items-center transition-all shadow-lg"
-          >
-            <Plus size={20} className="mr-2" />
-            Publicar Aviso
-          </Link>
+          <div className="flex space-x-3">
+            <Link 
+              href="/paquetes" 
+              className="bg-surface border border-primary text-primary hover:bg-primary hover:text-white px-5 py-2.5 rounded-lg font-semibold flex items-center transition-all"
+            >
+              Comprar Créditos
+            </Link>
+            <Link 
+              href="/clasificados/publicar" 
+              className="bg-primary hover:bg-accent text-white px-5 py-2.5 rounded-lg font-semibold flex items-center transition-all shadow-lg"
+            >
+              <Plus size={20} className="mr-2" />
+              Publicar Aviso
+            </Link>
+          </div>
         </div>
+
+        {/* User Profile Cards */}
+        {userProfile && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="bg-surface glass rounded-2xl border border-border p-6 flex flex-col justify-center">
+              <div className="flex items-center mb-4">
+                <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mr-4">
+                  <User size={24} className="text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-lg text-foreground">{userProfile.name}</h3>
+                  <p className="text-sm text-muted-foreground flex items-center">
+                    <Mail size={14} className="mr-1" /> {userProfile.email}
+                  </p>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground flex items-center mt-2">
+                <Calendar size={14} className="mr-1" />
+                Registrado el {new Date(userProfile.createdAt).toLocaleDateString()}
+              </p>
+            </div>
+
+            <div className="bg-surface glass rounded-2xl border border-border p-6 relative overflow-hidden group">
+              <div className="absolute -right-4 -top-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                <Package size={100} />
+              </div>
+              <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2">Créditos Normales</h4>
+              <div className="flex items-baseline mb-2">
+                <span className="text-5xl font-black text-foreground mr-2">{userProfile.credits}</span>
+                <span className="text-sm font-medium text-muted-foreground">disponibles</span>
+              </div>
+              
+              {userProfile.freeCreditsExpireAt && new Date(userProfile.freeCreditsExpireAt) > new Date() && (
+                <div className="mt-3 bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 text-xs font-semibold px-3 py-2 rounded-lg flex items-start">
+                  <AlertTriangle size={14} className="mr-2 shrink-0 mt-0.5" />
+                  <span>Tienes créditos de bienvenida que expiran el {new Date(userProfile.freeCreditsExpireAt).toLocaleDateString()}.</span>
+                </div>
+              )}
+            </div>
+
+            <div className="bg-surface glass rounded-2xl border border-purple-500/30 p-6 relative overflow-hidden group shadow-[0_0_15px_rgba(168,85,247,0.1)]">
+              <div className="absolute -right-4 -top-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                <Star size={100} className="text-purple-500" />
+              </div>
+              <h4 className="text-sm font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-wider mb-2">Créditos Destacados</h4>
+              <div className="flex items-baseline mb-2">
+                <span className="text-5xl font-black text-foreground mr-2">{userProfile.featuredCredits}</span>
+                <span className="text-sm font-medium text-muted-foreground">disponibles</span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-3">
+                Usa estos créditos para multiplicar x10 la visibilidad de tus avisos por 7 días.
+              </p>
+            </div>
+          </div>
+        )}
 
         <div className="bg-surface glass rounded-2xl border border-border p-6 shadow-xl">
           <h2 className="text-xl font-bold mb-6 flex items-center text-foreground">

@@ -158,3 +158,34 @@ async function createSession(userId, role) {
     maxAge: 60 * 60 * 24 * 7, // 7 days
   });
 }
+
+export async function getMe() {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get('auth_token')?.value;
+    if (!token) return { success: false, error: 'No token' };
+
+    const { payload } = await jwtVerify(token, encodedSecret);
+    const userId = payload.userId;
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        credits: true,
+        featuredCredits: true,
+        freeCreditsExpireAt: true,
+        createdAt: true
+      }
+    });
+
+    if (!user) return { success: false, error: 'User not found' };
+    return { success: true, data: user };
+  } catch (error) {
+    console.error('Error in getMe:', error);
+    return { success: false, error: 'Error getting profile' };
+  }
+}

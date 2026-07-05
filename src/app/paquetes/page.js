@@ -37,6 +37,23 @@ export default function PackagesPage() {
       featured: 5,
       price: 15000,
       description: 'El poder absoluto. 10 normales + 5 destacados.'
+    },
+    {
+      id: 'pack-pymes-50',
+      name: 'Pymes 50',
+      credits: 50,
+      featured: 10,
+      price: 45000,
+      description: 'Ideal para negocios. 50 normales + 10 destacados.',
+      popular: true
+    },
+    {
+      id: 'pack-pymes-100',
+      name: 'Pymes 100',
+      credits: 100,
+      featured: 10,
+      price: 80000,
+      description: 'Gran volumen. 100 normales + 10 destacados.'
     }
   ];
 
@@ -51,7 +68,7 @@ export default function PackagesPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {packages.map((pkg) => (
             <div 
               key={pkg.id} 
