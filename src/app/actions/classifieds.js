@@ -21,6 +21,21 @@ async function getSessionUserId() {
   }
 }
 
+export async function getUserCredits() {
+  try {
+    const userId = await getSessionUserId();
+    if (!userId) return { success: false, error: 'Unauthorized' };
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { credits: true, featuredCredits: true }
+    });
+    return { success: true, data: user };
+  } catch (error) {
+    return { success: false, error: 'Error fetching credits' };
+  }
+}
+
 // Public: Get all active classifieds
 export async function getActiveClassifieds() {
   try {
@@ -101,6 +116,63 @@ export async function getUserClassifieds() {
   } catch (error) {
     console.error('Error fetching user classifieds:', error);
     return { success: false, error: 'Error fetching classifieds' };
+  }
+}
+
+// Public/User: Publish classified with credits
+export async function publishUserClassified(data) {
+  try {
+    const userId = await getSessionUserId();
+    if (!userId) return { success: false, error: 'Unauthorized' };
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    
+    // Check credits based on plan
+    const isHighlight = data.plan === 'highlight';
+    
+    if (user.credits <= 0) {
+      return { success: false, error: 'No tienes créditos suficientes para publicar. Por favor compra un paquete.' };
+    }
+    if (isHighlight && user.featuredCredits <= 0) {
+      return { success: false, error: 'No tienes créditos de destacado suficientes. Elige el plan normal o compra más destacados.' };
+    }
+
+    const featuredUntil = isHighlight ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) : null;
+
+    // Run transaction to ensure credits are deducted when ad is created
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. Deduct credits
+      await tx.user.update({
+        where: { id: userId },
+        data: {
+          credits: { decrement: 1 },
+          ...(isHighlight && { featuredCredits: { decrement: 1 } })
+        }
+      });
+
+      // 2. Create ad
+      const newAd = await tx.classifiedAd.create({
+        data: {
+          title: data.title,
+          slug: data.slug,
+          description: data.description,
+          imageUrl: data.imageUrl,
+          price: data.price ? parseFloat(data.price) : null,
+          classifiedCategoryId: data.classifiedCategoryId ? parseInt(data.classifiedCategoryId) : null,
+          whatsapp: data.whatsapp,
+          isActive: true, // Auto publish
+          isFeatured: isHighlight,
+          featuredUntil: featuredUntil,
+          userId: userId,
+        }
+      });
+      return newAd;
+    });
+
+    return { success: true, data: result };
+  } catch (error) {
+    console.error('Error publishing classified:', error);
+    return { success: false, error: 'Error al publicar el clasificado' };
   }
 }
 

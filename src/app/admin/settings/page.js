@@ -18,6 +18,9 @@ export default function GeneralSettingsPage() {
     siteLogo: '',
     adsenseClientId: '',
     whatsappNumber: '',
+    bankAlias: '',
+    bankCvu: '',
+    bankName: '',
   });
 
   useEffect(() => {
@@ -38,6 +41,9 @@ export default function GeneralSettingsPage() {
           siteLogo: res.data.siteLogo || '',
           adsenseClientId: res.data.adsenseClientId || '',
           whatsappNumber: res.data.whatsappNumber || '',
+          bankAlias: res.data.bankAlias || '',
+          bankCvu: res.data.bankCvu || '',
+          bankName: res.data.bankName || '',
         }));
       }
       setLoading(false);
@@ -77,6 +83,9 @@ export default function GeneralSettingsPage() {
       'site_logo': settings.siteLogo,
       'adsense_client_id': settings.adsenseClientId,
       'whatsapp_number': settings.whatsappNumber,
+      'bank_alias': settings.bankAlias,
+      'bank_cvu': settings.bankCvu,
+      'bank_name': settings.bankName,
     };
     const res = await saveAdSettings(dataToSave);
     setSaving(false);
@@ -254,6 +263,45 @@ export default function GeneralSettingsPage() {
               <p className="text-xs text-gray-500 mt-2">
                 Agrega el número completo con código de país. Si lo llenas, aparecerá un botón flotante para que los lectores te envíen noticias directamente.
               </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-card p-6 rounded-xl border border-border">
+          <h2 className="text-xl font-bold mb-4">Datos Bancarios (Transferencias)</h2>
+          <p className="text-sm text-gray-400 mb-4">
+            Estos datos se le mostrarán a los usuarios cuando quieran comprar un paquete de créditos para publicar clasificados.
+          </p>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-2">Alias de la Cuenta</label>
+              <input
+                type="text"
+                value={settings.bankAlias}
+                onChange={(e) => setSettings({...settings, bankAlias: e.target.value})}
+                className="w-full bg-surface border border-border rounded-lg px-4 py-3 focus:outline-none focus:border-primary transition-colors"
+                placeholder="Ej: mi.portal.noticias"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-2">CVU / CBU</label>
+              <input
+                type="text"
+                value={settings.bankCvu}
+                onChange={(e) => setSettings({...settings, bankCvu: e.target.value})}
+                className="w-full bg-surface border border-border rounded-lg px-4 py-3 focus:outline-none focus:border-primary transition-colors"
+                placeholder="Ej: 00000031000..."
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-2">Nombre a cargo de la Cuenta (Titular)</label>
+              <input
+                type="text"
+                value={settings.bankName}
+                onChange={(e) => setSettings({...settings, bankName: e.target.value})}
+                className="w-full bg-surface border border-border rounded-lg px-4 py-3 focus:outline-none focus:border-primary transition-colors"
+                placeholder="Ej: Juan Perez"
+              />
             </div>
           </div>
         </div>

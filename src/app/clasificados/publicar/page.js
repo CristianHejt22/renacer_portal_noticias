@@ -3,18 +3,19 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getClassifiedCategories } from '@/app/actions/classifiedCategories';
-import { createClassified } from '@/app/actions/classifieds';
-import { createCheckout } from '@/app/actions/payments';
-import { Tag, Image as ImageIcon, DollarSign, Phone, AlignLeft, Star, Send } from 'lucide-react';
+import { publishUserClassified, getUserCredits } from '@/app/actions/classifieds';
+import { Tag, Image as ImageIcon, DollarSign, Phone, AlignLeft, Star, Send, Upload, Package } from 'lucide-react';
+import Link from 'next/link';
 
 export default function PublishClassifiedPage() {
   const router = useRouter();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [credits, setCredits] = useState({ credits: 0, featuredCredits: 0 });
+  const [imageFile, setImageFile] = useState(null);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    imageUrl: '',
     price: '',
     whatsapp: '',
     classifiedCategoryId: '',
@@ -23,11 +24,32 @@ export default function PublishClassifiedPage() {
 
   useEffect(() => {
     loadCategories();
+    loadCredits();
   }, []);
 
   const loadCategories = async () => {
     const res = await getClassifiedCategories();
     if (res.success) setCategories(res.data);
+  };
+
+  const loadCredits = async () => {
+    const res = await getUserCredits();
+    if (res.success && res.data) {
+      setCredits(res.data);
+    }
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert('La imagen pesa más de 2MB. Por favor elige una imagen más liviana.');
+        e.target.value = '';
+        setImageFile(null);
+        return;
+      }
+      setImageFile(file);
+    }
   };
 
   const generateSlug = (text) => {
@@ -38,50 +60,87 @@ export default function PublishClassifiedPage() {
     e.preventDefault();
     setLoading(true);
 
-    // 1. Create the classified ad
-    const adData = {
-      ...formData,
-      slug: generateSlug(formData.title),
-      isActive: true, // We publish it by default
-    };
-
-    const adRes = await createClassified(adData);
-
-    if (!adRes.success) {
-      alert(adRes.error || 'Error al publicar el aviso');
+    if (!imageFile) {
+      alert('Por favor selecciona una imagen para tu anuncio.');
       setLoading(false);
       return;
     }
 
-    // 2. Process Plan
-    if (formData.plan === 'highlight') {
-      // Need to checkout with Mobbex
-      const checkoutRes = await createCheckout({
-        userId: adRes.data.userId, // Assigned in the backend
-        planId: adRes.data.id,     // We pass the Ad ID so the webhook knows what to highlight
-        price: 1000,               // $1000 ARS for Highlight
-        type: 'highlight'
-      });
-
-      if (checkoutRes.success) {
-        // Redirect to Mobbex
-        window.location.href = checkoutRes.url;
-      } else {
-        alert('Aviso publicado, pero hubo un error con Mobbex: ' + checkoutRes.error);
-        router.push('/mi-cuenta');
-      }
-    } else {
-      // Free plan, just go to dashboard
-      router.push('/mi-cuenta');
+    if (formData.plan === 'free' && credits.credits <= 0) {
+      alert('No tienes suficientes créditos normales.');
+      setLoading(false);
+      return;
     }
+
+    if (formData.plan === 'highlight' && (credits.credits <= 0 || credits.featuredCredits <= 0)) {
+      alert('No tienes suficientes créditos o destacados.');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      // 1. Subir la imagen
+      const imgData = new FormData();
+      imgData.append('file', imageFile);
+      const uploadRes = await fetch('/api/upload', { method: 'POST', body: imgData });
+      const uploadData = await uploadRes.json();
+      
+      if (!uploadData.url) {
+        alert('Error al subir la imagen.');
+        setLoading(false);
+        return;
+      }
+
+      // 2. Crear el clasificado descontando créditos
+      const adData = {
+        ...formData,
+        imageUrl: uploadData.url,
+        slug: generateSlug(formData.title),
+      };
+
+      const adRes = await publishUserClassified(adData);
+
+      if (!adRes.success) {
+        alert(adRes.error || 'Error al publicar el aviso');
+        setLoading(false);
+        return;
+      }
+
+      alert('¡Tu aviso ha sido publicado con éxito!');
+      router.push('/mi-cuenta');
+
+    } catch (error) {
+      alert('Ocurrió un error inesperado.');
+      console.error(error);
+    }
+    setLoading(false);
   };
 
   return (
     <div className="min-h-screen bg-background py-12">
       <div className="max-w-3xl mx-auto px-4">
-        <div className="text-center mb-10">
+        <div className="text-center mb-6">
           <h1 className="text-4xl font-bold text-white mb-4">Publicar Aviso</h1>
           <p className="text-gray-400 text-lg">Completa los datos para publicar tu clasificado en el portal</p>
+        </div>
+
+        {/* CREDIT BALANCES */}
+        <div className="bg-surface glass border border-border rounded-xl p-4 mb-8 flex justify-center items-center gap-8">
+          <div className="flex flex-col items-center">
+            <span className="text-sm text-gray-400 mb-1">Créditos Normales</span>
+            <div className="flex items-center text-xl font-bold text-white">
+              <Package className="text-primary mr-2" size={20} />
+              {credits.credits} disponibles
+            </div>
+          </div>
+          <div className="w-px h-12 bg-border"></div>
+          <div className="flex flex-col items-center">
+            <span className="text-sm text-gray-400 mb-1">Créditos Destacados</span>
+            <div className="flex items-center text-xl font-bold text-white">
+              <Star className="text-purple-400 mr-2" size={20} />
+              {credits.featuredCredits} disponibles
+            </div>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="bg-surface glass border border-border p-8 rounded-2xl shadow-2xl space-y-6">
@@ -152,16 +211,15 @@ export default function PublishClassifiedPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Imagen Principal (URL)</label>
+              <label className="block text-sm font-medium text-gray-300 mb-1">Imagen Principal (Max 2MB)</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
-                  <ImageIcon size={18} />
+                  <Upload size={18} />
                 </div>
                 <input 
-                  type="url" required
-                  value={formData.imageUrl} onChange={e => setFormData({...formData, imageUrl: e.target.value})}
-                  className="w-full bg-background border border-border rounded-lg pl-10 p-3 text-foreground focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" 
-                  placeholder="https://ejemplo.com/imagen.jpg" 
+                  type="file" required accept="image/*"
+                  onChange={handleImageChange}
+                  className="w-full bg-background border border-border rounded-lg pl-10 p-2 text-foreground focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/20 file:text-primary hover:file:bg-primary/30" 
                 />
               </div>
             </div>
@@ -183,31 +241,41 @@ export default function PublishClassifiedPage() {
           </div>
 
           <div className="space-y-4 pt-4">
-            <h2 className="text-xl font-semibold text-primary border-b border-border pb-2">2. Elige tu Plan</h2>
+            <h2 className="text-xl font-semibold text-primary border-b border-border pb-2">2. Elige tu Plan (Consumirá tus Créditos)</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-              <label className={`cursor-pointer border-2 rounded-xl p-5 flex flex-col transition-all ${formData.plan === 'free' ? 'border-primary bg-primary/10' : 'border-border bg-background hover:border-gray-500'}`}>
+              {/* PLAN NORMAL */}
+              <label className={`cursor-pointer border-2 rounded-xl p-5 flex flex-col transition-all relative
+                ${credits.credits > 0 
+                  ? formData.plan === 'free' ? 'border-primary bg-primary/20 shadow-[0_0_15px_rgba(var(--primary-rgb),0.3)]' : 'border-border bg-background hover:border-gray-500' 
+                  : 'opacity-50 grayscale cursor-not-allowed border-border'
+                }`}
+              >
                 <div className="flex items-center justify-between mb-2">
-                  <span className="font-bold text-lg text-white">Plan Gratuito</span>
+                  <span className={`font-bold text-lg ${credits.credits > 0 ? 'text-white' : 'text-gray-500'}`}>Anuncio Normal</span>
                   <input 
                     type="radio" 
                     name="plan" 
                     value="free" 
+                    disabled={credits.credits <= 0}
                     checked={formData.plan === 'free'}
                     onChange={() => setFormData({...formData, plan: 'free'})}
                     className="w-5 h-5 text-primary accent-primary" 
                   />
                 </div>
-                <p className="text-gray-400 text-sm flex-1">Publica tu aviso de forma gratuita. Aparecerá en la lista general con el resto de los avisos.</p>
-                <div className="mt-4 font-bold text-xl text-white">
-                  $0 ARS
-                </div>
+                <p className="text-gray-300 text-sm flex-1 font-medium">Aparecerá en la lista general. Consume 1 Crédito Normal.</p>
+                {credits.credits <= 0 && <p className="text-red-400 text-xs mt-2 font-bold">No tienes créditos normales</p>}
               </label>
 
-              <label className={`cursor-pointer border-2 rounded-xl p-5 flex flex-col transition-all relative overflow-hidden ${formData.plan === 'highlight' ? 'border-purple-500 bg-purple-500/10 shadow-[0_0_15px_rgba(168,85,247,0.3)]' : 'border-border bg-background hover:border-gray-500'}`}>
-                <div className="absolute top-0 right-0 bg-purple-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">RECOMENDADO</div>
+              {/* PLAN DESTACADO */}
+              <label className={`cursor-pointer border-2 rounded-xl p-5 flex flex-col transition-all relative overflow-hidden
+                ${(credits.credits > 0 && credits.featuredCredits > 0)
+                  ? formData.plan === 'highlight' ? 'border-purple-500 bg-purple-500/20 shadow-[0_0_20px_rgba(168,85,247,0.4)]' : 'border-border bg-background hover:border-gray-500'
+                  : 'opacity-50 grayscale cursor-not-allowed border-border'
+                }`}
+              >
                 <div className="flex items-center justify-between mb-2">
-                  <span className="font-bold text-lg text-white flex items-center">
+                  <span className={`font-bold text-lg flex items-center ${(credits.credits > 0 && credits.featuredCredits > 0) ? 'text-white' : 'text-gray-500'}`}>
                     <Star size={18} className="text-purple-400 mr-2 fill-purple-400" />
                     Destacado x7 Días
                   </span>
@@ -215,27 +283,35 @@ export default function PublishClassifiedPage() {
                     type="radio" 
                     name="plan" 
                     value="highlight" 
+                    disabled={credits.credits <= 0 || credits.featuredCredits <= 0}
                     checked={formData.plan === 'highlight'}
                     onChange={() => setFormData({...formData, plan: 'highlight'})}
                     className="w-5 h-5 text-purple-500 accent-purple-500" 
                   />
                 </div>
-                <p className="text-gray-400 text-sm flex-1">Tu aviso aparecerá primero en las búsquedas y resaltado con colores premium. Vende mucho más rápido.</p>
-                <div className="mt-4 font-bold text-xl text-white">
-                  $1.000 ARS
-                </div>
+                <p className="text-gray-300 text-sm flex-1 font-medium">Aparecerá primero y resaltado. Consume 1 Crédito Normal + 1 Crédito Destacado.</p>
+                {(credits.credits <= 0 || credits.featuredCredits <= 0) && <p className="text-red-400 text-xs mt-2 font-bold">Créditos insuficientes</p>}
               </label>
             </div>
           </div>
 
+          {(credits.credits <= 0) && (
+            <div className="bg-red-500/10 border border-red-500/30 p-4 rounded-xl text-center">
+              <p className="text-red-400 mb-2 font-bold">No tienes créditos suficientes para publicar.</p>
+              <Link href="/paquetes" className="inline-block bg-primary text-white font-bold px-6 py-2 rounded-lg hover:bg-accent transition-colors">
+                Comprar Paquetes de Créditos
+              </Link>
+            </div>
+          )}
+
           <button 
             type="submit" 
-            disabled={loading}
-            className="w-full bg-primary hover:bg-accent text-white font-semibold p-4 rounded-xl flex items-center justify-center transition-all disabled:opacity-50 mt-8 text-lg shadow-[0_0_15px_rgba(var(--primary-rgb),0.3)]"
+            disabled={loading || credits.credits <= 0 || (formData.plan === 'highlight' && credits.featuredCredits <= 0)}
+            className="w-full bg-primary hover:bg-accent text-white font-bold p-4 rounded-xl flex items-center justify-center transition-all disabled:opacity-50 mt-8 text-lg shadow-[0_0_15px_rgba(var(--primary-rgb),0.3)]"
           >
-            {loading ? 'Procesando...' : (
+            {loading ? 'Publicando...' : (
               <>
-                {formData.plan === 'highlight' ? 'Continuar al Pago' : 'Publicar Ahora'}
+                Publicar Ahora
                 <Send size={20} className="ml-2" />
               </>
             )}

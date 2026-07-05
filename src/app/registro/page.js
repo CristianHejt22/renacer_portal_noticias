@@ -9,11 +9,16 @@ import { Mail, Lock, User, ArrowRight } from 'lucide-react';
 export default function RegisterPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!termsAccepted) {
+      setError('Debes aceptar los Términos y Condiciones y Políticas de Privacidad.');
+      return;
+    }
     setError('');
     setLoading(true);
 
@@ -89,6 +94,24 @@ export default function RegisterPage() {
                 placeholder="••••••••" 
               />
             </div>
+          </div>
+
+          <div className="flex items-start mt-2">
+            <div className="flex items-center h-5">
+              <input 
+                id="terms" 
+                type="checkbox" 
+                checked={termsAccepted}
+                onChange={(e) => setTermsAccepted(e.target.checked)}
+                className="w-4 h-4 rounded bg-background border-border text-primary focus:ring-primary focus:ring-2" 
+              />
+            </div>
+            <label htmlFor="terms" className="ml-2 text-sm text-gray-400">
+              He leído y acepto los{' '}
+              <Link href="/terminos" target="_blank" className="text-primary hover:underline">Términos y Condiciones</Link>
+              {' '}y las{' '}
+              <Link href="/privacidad" target="_blank" className="text-primary hover:underline">Políticas de Privacidad</Link>.
+            </label>
           </div>
 
           <button 
