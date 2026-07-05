@@ -213,7 +213,7 @@ export async function publishUserClassified(data) {
       return newAd;
     });
 
-    return { success: true, data: result };
+    return { success: true };
   } catch (error) {
     console.error('Error publishing classified:', error);
     return { success: false, error: 'Error al publicar el clasificado' };

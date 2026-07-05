@@ -54,38 +54,38 @@ function TransferenciaContent() {
           </div>
         </div>
 
-        <h1 className="text-3xl font-bold text-center text-white mb-2">Pago por Transferencia</h1>
-        <p className="text-gray-400 text-center mb-8">
+        <h1 className="text-3xl font-bold text-center text-foreground mb-2">Pago por Transferencia</h1>
+        <p className="text-gray-600 dark:text-gray-400 text-center mb-8">
           Estás comprando el <strong>{packName}</strong> por un valor de <strong>${Number(packPrice).toLocaleString('es-AR')}</strong>.
         </p>
 
         <div className="bg-background border border-border rounded-xl p-6 mb-8">
-          <h2 className="text-lg font-semibold text-white mb-4">Datos de la Cuenta</h2>
+          <h2 className="text-lg font-semibold text-foreground mb-4">Datos de la Cuenta</h2>
           
           <div className="space-y-4">
-            <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
+            <div className="flex justify-between items-center p-3 bg-black/5 dark:bg-white/5 rounded-lg">
               <div>
                 <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Titular</p>
-                <p className="font-mono text-gray-200">{bankSettings?.name}</p>
+                <p className="font-mono text-foreground font-bold">{bankSettings?.name}</p>
               </div>
             </div>
 
-            <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
+            <div className="flex justify-between items-center p-3 bg-black/5 dark:bg-white/5 rounded-lg">
               <div>
                 <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">CBU / CVU</p>
-                <p className="font-mono text-gray-200">{bankSettings?.cvu}</p>
+                <p className="font-mono text-foreground font-bold">{bankSettings?.cvu}</p>
               </div>
-              <button onClick={() => handleCopy(bankSettings?.cvu, 'cvu')} className="text-primary hover:text-white transition-colors flex items-center text-sm">
+              <button onClick={() => handleCopy(bankSettings?.cvu, 'cvu')} className="text-primary hover:text-accent transition-colors flex items-center text-sm">
                 {copied === 'cvu' ? <CheckCircle size={16} className="text-green-500" /> : <Copy size={16} />}
               </button>
             </div>
 
-            <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
+            <div className="flex justify-between items-center p-3 bg-black/5 dark:bg-white/5 rounded-lg">
               <div>
                 <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Alias</p>
-                <p className="font-mono text-gray-200">{bankSettings?.alias}</p>
+                <p className="font-mono text-foreground font-bold">{bankSettings?.alias}</p>
               </div>
-              <button onClick={() => handleCopy(bankSettings?.alias, 'alias')} className="text-primary hover:text-white transition-colors flex items-center text-sm">
+              <button onClick={() => handleCopy(bankSettings?.alias, 'alias')} className="text-primary hover:text-accent transition-colors flex items-center text-sm">
                 {copied === 'alias' ? <CheckCircle size={16} className="text-green-500" /> : <Copy size={16} />}
               </button>
             </div>
@@ -93,10 +93,10 @@ function TransferenciaContent() {
         </div>
 
         <div className="bg-yellow-500/10 border border-yellow-500/30 p-5 rounded-xl flex items-start mb-8">
-          <AlertTriangle className="text-yellow-500 shrink-0 mr-4 mt-0.5" size={24} />
+          <AlertTriangle className="text-yellow-600 dark:text-yellow-500 shrink-0 mr-4 mt-0.5" size={24} />
           <div>
-            <h3 className="font-bold text-yellow-500 mb-1">Importante: Tiempo de Acreditación</h3>
-            <p className="text-sm text-gray-300 leading-relaxed">
+            <h3 className="font-bold text-yellow-700 dark:text-yellow-500 mb-1">Importante: Tiempo de Acreditación</h3>
+            <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
               Una vez realizada la transferencia, <strong>tu paquete puede demorar de 30 minutos a 2 horas hábiles en ser activado</strong>. 
               Por favor guarda tu comprobante de pago.
             </p>

@@ -44,6 +44,9 @@ export async function getAdSettings() {
         siteLogo: s['site_logo'] || '',
         adsenseClientId: s['adsense_client_id'] || '',
         whatsappNumber: s['whatsapp_number'] || '',
+        bankAlias: s['bank_alias'] || '',
+        bankCvu: s['bank_cvu'] || '',
+        bankName: s['bank_name'] || '',
       }
     };
   } catch (error) {
@@ -58,6 +61,9 @@ export async function getAdSettings() {
         sponsorMode: 'random',
         sponsorFixedId: '',
         whatsappNumber: '',
+        bankAlias: '',
+        bankCvu: '',
+        bankName: '',
       }
     };
   }
