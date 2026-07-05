@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { Star, MessageCircle, Clock, ExternalLink, Tag } from 'lucide-react';
 import ClassifiedReviewForm from '@/components/classifieds/ClassifiedReviewForm';
 import ClassifiedGallery from '@/components/classifieds/ClassifiedGallery';
+import SocialShareButtons from '@/components/shared/SocialShareButtons';
 
 export const revalidate = 60; // ISR
 
@@ -62,6 +63,8 @@ export default async function ClassifiedDetailPage({ params }) {
               {ad.description}
             </p>
           </div>
+
+          <SocialShareButtons title={ad.title} slug={`/clasificados/${ad.slug}`} />
 
           <div className="mt-auto pt-8 border-t border-border">
             <a 

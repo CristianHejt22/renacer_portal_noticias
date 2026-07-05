@@ -70,6 +70,48 @@ export default function PublishClassifiedPage() {
     return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') + '-' + Date.now().toString().slice(-4);
   };
 
+  const compressImage = async (file) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 1024;
+          const MAX_HEIGHT = 1024;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          canvas.toBlob((blob) => {
+            const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".webp", {
+              type: 'image/webp',
+              lastModified: Date.now(),
+            });
+            resolve(compressedFile);
+          }, 'image/webp', 0.8);
+        };
+      };
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -96,8 +138,11 @@ export default function PublishClassifiedPage() {
       // 1. Subir las imágenes
       const uploadedUrls = [];
       for (let file of imageFiles) {
+        // Comprimir imagen antes de subir para evitar "Payload Too Large"
+        const compressedFile = await compressImage(file);
+
         const imgData = new FormData();
-        imgData.append('file', file);
+        imgData.append('file', compressedFile);
         const uploadRes = await fetch('/api/upload', { method: 'POST', body: imgData });
         
         if (!uploadRes.ok) {

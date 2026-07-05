@@ -21,7 +21,7 @@ export async function GET(request) {
     });
 
     // Generar la URL de WhatsApp
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || request.nextUrl.origin;
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://librecielo.com';
     const adUrl = `${baseUrl}/clasificados/${ad.slug}`;
     const message = `Hola, vi tu anuncio "${ad.title}" en THE DINNER Portal: ${adUrl}`;
     

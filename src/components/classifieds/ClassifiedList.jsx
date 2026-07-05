@@ -57,25 +57,25 @@ export default function ClassifiedList({ classifieds, categories = [], paginatio
         </div>
 
         {categories.length > 0 && (
-          <div className="flex flex-wrap items-center justify-center gap-3 pt-4">
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-6 pb-2">
             <button
               onClick={() => handleCategoryClick(null)}
-              className={`px-5 py-2.5 rounded-full text-base font-bold transition-all shadow-sm hover:shadow-md ${
+              className={`px-6 py-2.5 rounded-2xl text-sm font-bold tracking-wide transition-all duration-300 shadow-sm hover:shadow-md border ${
                 !currentCategory 
-                  ? 'bg-primary text-white scale-105' 
-                  : 'bg-surface border border-border text-foreground hover:bg-muted'
+                  ? 'bg-gradient-to-r from-primary to-primary/80 text-white border-transparent scale-105 shadow-primary/30' 
+                  : 'bg-surface border-border text-gray-600 dark:text-gray-300 hover:border-primary/50 hover:text-primary'
               }`}
             >
-              Todos
+              TODOS
             </button>
             {categories.slice(0, 6).map(cat => (
               <button
                 key={cat.id}
                 onClick={() => handleCategoryClick(cat.id)}
-                className={`px-5 py-2.5 rounded-full text-base font-bold transition-all shadow-sm hover:shadow-md ${
+                className={`px-6 py-2.5 rounded-2xl text-sm font-bold tracking-wide uppercase transition-all duration-300 shadow-sm hover:shadow-md border ${
                   currentCategory == cat.id 
-                    ? 'bg-primary text-white scale-105' 
-                    : 'bg-surface border border-border text-foreground hover:bg-muted'
+                    ? 'bg-gradient-to-r from-primary to-primary/80 text-white border-transparent scale-105 shadow-primary/30' 
+                    : 'bg-surface border-border text-gray-600 dark:text-gray-300 hover:border-primary/50 hover:text-primary'
                 }`}
               >
                 {cat.name}
@@ -117,19 +117,16 @@ export default function ClassifiedList({ classifieds, categories = [], paginatio
         </div>
       ) : (
         <>
-          <div className={
-            viewMode === 'grid' 
-              ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
-              : "flex flex-col space-y-6"
-          }>
-            {classifieds.map((ad, index) => {
+          {(() => {
+            const featuredAds = classifieds.filter(ad => ad.isFeatured);
+            const normalAds = classifieds.filter(ad => !ad.isFeatured);
+
+            const renderAdCard = (ad, index) => {
               const avgRating = ad.reviews?.length > 0 
                 ? (ad.reviews.reduce((acc, rev) => acc + rev.rating, 0) / ad.reviews.length).toFixed(1)
                 : 'Nuevo';
               
               const isInjectAd = (index > 0 && index % 6 === 0);
-
-              const renderAdCard = () => {
                 if (viewMode === 'list') {
                   return (
                     <div 
@@ -171,10 +168,16 @@ export default function ClassifiedList({ classifieds, categories = [], paginatio
                       </p>
                       
                       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-auto pt-6 border-t border-border/50">
-                        <div className="flex items-center text-yellow-500 text-base font-bold">
-                          <Star className="w-5 h-5 fill-current mr-1" />
-                          <span>{avgRating}</span>
-                          <span className="text-gray-600 dark:text-gray-500 font-medium ml-1.5">({ad.reviews?.length || 0})</span>
+                        <div className="flex items-center space-x-4">
+                          <div className="flex items-center text-yellow-500 text-base font-bold">
+                            <Star className="w-5 h-5 fill-current mr-1" />
+                            <span>{avgRating}</span>
+                            <span className="text-gray-600 dark:text-gray-500 font-medium ml-1.5">({ad.reviews?.length || 0})</span>
+                          </div>
+                          <div className="flex items-center text-gray-500 text-sm font-medium">
+                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                            {ad.clicks} Vistas
+                          </div>
                         </div>
                         
                         <div className="flex items-center space-x-3 w-full sm:w-auto">
@@ -242,10 +245,15 @@ export default function ClassifiedList({ classifieds, categories = [], paginatio
                       </p>
                       
                       <div className="flex items-center justify-between mt-auto pt-6 border-t border-border/50">
-                        <div className="flex items-center text-yellow-500 text-base font-bold">
-                          <Star className="w-5 h-5 fill-current mr-1" />
-                          <span>{avgRating}</span>
-                          <span className="text-gray-600 dark:text-gray-500 font-medium ml-1.5">({ad.reviews?.length || 0})</span>
+                        <div className="flex items-center space-x-4">
+                          <div className="flex items-center text-yellow-500 text-sm font-bold">
+                            <Star className="w-4 h-4 fill-current mr-1" />
+                            <span>{avgRating}</span>
+                          </div>
+                          <div className="flex items-center text-gray-500 text-sm font-medium">
+                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                            {ad.clicks}
+                          </div>
                         </div>
                         <button className="flex items-center text-sm md:text-base font-bold text-[#25D366] bg-[#25D366]/10 px-4 py-2 rounded-full hover:bg-[#25D366]/20 transition-all active:scale-95">
                           <MessageCircle className="w-5 h-5 mr-2" />
@@ -264,11 +272,43 @@ export default function ClassifiedList({ classifieds, categories = [], paginatio
                       <BannerDisplay position="in-article" mode="slider" />
                     </div>
                   )}
-                  {renderAdCard()}
+                  {renderAdCard(ad, index)}
                 </div>
               );
-            })}
-          </div>
+            };
+
+            return (
+              <div className="space-y-12">
+                {featuredAds.length > 0 && (
+                  <section>
+                    <div className="flex items-center mb-6">
+                      <Star className="text-purple-500 w-8 h-8 mr-3 fill-purple-500" />
+                      <h2 className="text-3xl font-black bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-primary">
+                        DESTACADOS
+                      </h2>
+                    </div>
+                    <div className={viewMode === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8" : "flex flex-col space-y-6"}>
+                      {featuredAds.map((ad, i) => renderAdCard(ad, i))}
+                    </div>
+                  </section>
+                )}
+
+                {normalAds.length > 0 && (
+                  <section>
+                    {featuredAds.length > 0 && (
+                      <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center">
+                        <ListIcon className="w-6 h-6 mr-2 text-primary" />
+                        Más Clasificados
+                      </h2>
+                    )}
+                    <div className={viewMode === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8" : "flex flex-col space-y-6"}>
+                      {normalAds.map((ad, i) => renderAdCard(ad, i + featuredAds.length))}
+                    </div>
+                  </section>
+                )}
+              </div>
+            );
+          })()}
 
           {/* Pagination */}
           {pagination && pagination.totalPages > 1 && (
