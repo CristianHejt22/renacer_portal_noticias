@@ -23,6 +23,7 @@ model User {
   freeCreditsExpireAt DateTime?
   posts      Post[]
   classifieds ClassifiedAd[]
+  purchaseRequests PurchaseRequest[]
   createdAt  DateTime @default(now())
 }
 
@@ -135,4 +136,16 @@ model ClassifiedReview {
   classifiedAdId Int
   classifiedAd   ClassifiedAd @relation(fields: [classifiedAdId], references: [id], onDelete: Cascade)
   createdAt      DateTime     @default(now())
+}
+
+model PurchaseRequest {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  packageId   String
+  packageName String
+  amount      Float
+  status      String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

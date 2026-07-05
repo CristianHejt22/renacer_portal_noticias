@@ -2,6 +2,7 @@ import { Eye, FileText, Share2 } from "lucide-react";
 import { PrismaClient } from '@prisma/client';
 import Link from 'next/link';
 import MigrationButton from '@/components/admin/MigrationButton';
+import PurchaseRequestTable from '@/components/admin/PurchaseRequestTable';
 
 const prisma = new PrismaClient();
 
@@ -13,6 +14,14 @@ export default async function AdminDashboard() {
   const latestPosts = await prisma.post.findMany({
     orderBy: { createdAt: 'desc' },
     take: 5,
+  });
+
+  const pendingRequests = await prisma.purchaseRequest.findMany({
+    where: { status: 'PENDING' },
+    include: {
+      user: { select: { name: true, email: true } }
+    },
+    orderBy: { createdAt: 'desc' }
   });
 
   const banners = await prisma.bannerAd.findMany();
@@ -51,6 +60,8 @@ export default async function AdminDashboard() {
           <p className="text-sm text-green-500 mt-2">Interacciones y clics</p>
         </div>
       </div>
+
+      <PurchaseRequestTable initialRequests={pendingRequests} />
 
       <div className="glass p-6 rounded-xl border border-border">
         <div className="flex justify-between items-center mb-4">

@@ -3,7 +3,8 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { getAdSettings } from '@/app/actions/settings';
-import { CheckCircle, AlertTriangle, Building, Copy, ArrowLeft } from 'lucide-react';
+import { createPurchaseRequest } from '@/app/actions/purchases';
+import { CheckCircle, AlertTriangle, Building, Copy, ArrowLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
 function TransferenciaContent() {
@@ -15,6 +16,10 @@ function TransferenciaContent() {
   const [bankSettings, setBankSettings] = useState(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+  const router = useRouter();
 
   useEffect(() => {
     async function load() {
@@ -35,6 +40,27 @@ function TransferenciaContent() {
     navigator.clipboard.writeText(text);
     setCopied(type);
     setTimeout(() => setCopied(''), 2000);
+  };
+
+  const handleNotifyTransfer = async () => {
+    if (!packId) return;
+    setIsSubmitting(true);
+    setErrorMsg('');
+    const res = await createPurchaseRequest({
+      packageId: packId,
+      packageName: packName,
+      amount: Number(packPrice) || 0
+    });
+    
+    if (res.success) {
+      setSubmitted(true);
+      setTimeout(() => {
+        router.push('/mi-cuenta');
+      }, 3000);
+    } else {
+      setErrorMsg(res.error || 'Ocurrió un error. Intenta nuevamente.');
+      setIsSubmitting(false);
+    }
   };
 
   if (loading) {
@@ -103,12 +129,32 @@ function TransferenciaContent() {
           </div>
         </div>
 
-        <Link 
-          href="/mi-cuenta" 
-          className="w-full block text-center bg-primary hover:bg-accent text-white font-bold py-4 rounded-xl transition-all shadow-[0_0_15px_rgba(var(--primary-rgb),0.3)]"
-        >
-          Ya realicé la transferencia
-        </Link>
+        {errorMsg && (
+          <div className="bg-red-500/10 border border-red-500/30 p-4 rounded-xl text-red-500 mb-6 text-center text-sm">
+            {errorMsg}
+          </div>
+        )}
+
+        {submitted ? (
+          <div className="bg-green-500/10 border border-green-500/30 p-5 rounded-xl text-center mb-6">
+            <CheckCircle className="text-green-500 mx-auto mb-2" size={32} />
+            <h3 className="font-bold text-green-600 mb-1">¡Solicitud enviada!</h3>
+            <p className="text-sm text-green-700/80">
+              Hemos notificado al administrador. Serás redirigido a tu cuenta en breve...
+            </p>
+          </div>
+        ) : (
+          <button 
+            onClick={handleNotifyTransfer}
+            disabled={isSubmitting || !packId}
+            className="w-full flex justify-center items-center bg-primary hover:bg-accent text-white font-bold py-4 rounded-xl transition-all shadow-[0_0_15px_rgba(var(--primary-rgb),0.3)] disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isSubmitting ? (
+              <Loader2 className="animate-spin w-5 h-5 mr-2" />
+            ) : null}
+            {isSubmitting ? 'Notificando...' : 'Ya realicé la transferencia'}
+          </button>
+        )}
       </div>
     </div>
   );
