@@ -64,20 +64,20 @@ export default function PackagesPage() {
               )}
               
               <h2 className="text-2xl font-bold text-white mb-2">{pkg.name}</h2>
-              <p className="text-gray-400 text-sm mb-6 h-12">{pkg.description}</p>
+              <p className="text-gray-300 text-sm mb-6 h-12">{pkg.description}</p>
               
               <div className="text-4xl font-black text-white mb-6">
                 ${pkg.price.toLocaleString('es-AR')}
               </div>
               
-              <ul className="space-y-4 mb-8 flex-1">
-                <li className="flex items-center text-gray-200">
+              <ul className="space-y-4 mb-8 flex-1 text-white">
+                <li className="flex items-center">
                   <Package className="text-primary mr-3" size={20} />
                   <span><strong>{pkg.credits}</strong> Créditos Normales</span>
                 </li>
-                <li className="flex items-center text-gray-200">
-                  <Star className={`${pkg.featured > 0 ? 'text-purple-400 fill-purple-400' : 'text-gray-600'} mr-3`} size={20} />
-                  <span className={pkg.featured > 0 ? 'font-bold text-purple-300' : 'text-gray-500'}>
+                <li className="flex items-center">
+                  <Star className={`${pkg.featured > 0 ? 'text-purple-400 fill-purple-400' : 'text-gray-500'} mr-3`} size={20} />
+                  <span className={pkg.featured > 0 ? 'font-bold text-purple-300' : 'text-gray-400'}>
                     <strong>{pkg.featured}</strong> Créditos Destacados
                   </span>
                 </li>

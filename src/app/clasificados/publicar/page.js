@@ -252,7 +252,7 @@ export default function PublishClassifiedPage() {
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
-                  <span className={`font-bold text-lg ${credits.credits > 0 ? 'text-white' : 'text-gray-500'}`}>Anuncio Normal</span>
+                  <span className={`font-bold text-lg ${credits.credits > 0 ? 'text-white' : 'text-gray-400'}`}>Anuncio Normal</span>
                   <input 
                     type="radio" 
                     name="plan" 
@@ -263,7 +263,9 @@ export default function PublishClassifiedPage() {
                     className="w-5 h-5 text-primary accent-primary" 
                   />
                 </div>
-                <p className="text-gray-300 text-sm flex-1 font-medium">Aparecerá en la lista general. Consume 1 Crédito Normal.</p>
+                <p className={`text-sm flex-1 font-medium mt-2 ${formData.plan === 'free' ? 'text-white font-bold' : 'text-gray-300'}`}>
+                  Aparecerá en la lista general.<br/><span className="text-primary mt-1 inline-block font-black tracking-wide bg-primary/20 px-2 py-1 rounded">Consume 1 Crédito Normal.</span>
+                </p>
                 {credits.credits <= 0 && <p className="text-red-400 text-xs mt-2 font-bold">No tienes créditos normales</p>}
               </label>
 
@@ -275,7 +277,7 @@ export default function PublishClassifiedPage() {
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
-                  <span className={`font-bold text-lg flex items-center ${(credits.credits > 0 && credits.featuredCredits > 0) ? 'text-white' : 'text-gray-500'}`}>
+                  <span className={`font-bold text-lg flex items-center ${(credits.credits > 0 && credits.featuredCredits > 0) ? 'text-white' : 'text-gray-400'}`}>
                     <Star size={18} className="text-purple-400 mr-2 fill-purple-400" />
                     Destacado x7 Días
                   </span>
@@ -289,7 +291,9 @@ export default function PublishClassifiedPage() {
                     className="w-5 h-5 text-purple-500 accent-purple-500" 
                   />
                 </div>
-                <p className="text-gray-300 text-sm flex-1 font-medium">Aparecerá primero y resaltado. Consume 1 Crédito Normal + 1 Crédito Destacado.</p>
+                <p className={`text-sm flex-1 font-medium mt-2 ${formData.plan === 'highlight' ? 'text-white font-bold' : 'text-gray-300'}`}>
+                  Aparecerá primero y resaltado.<br/><span className="text-purple-400 mt-1 inline-block font-black tracking-wide bg-purple-500/20 px-2 py-1 rounded">Consume 1 Normal + 1 Destacado.</span>
+                </p>
                 {(credits.credits <= 0 || credits.featuredCredits <= 0) && <p className="text-red-400 text-xs mt-2 font-bold">Créditos insuficientes</p>}
               </label>
             </div>

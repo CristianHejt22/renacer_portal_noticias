@@ -25,7 +25,11 @@ export default function LoginPage() {
     const res = await login(formData.email, formData.password);
 
     if (res.success) {
-      router.push('/mi-cuenta');
+      if (res.role === 'ADMIN') {
+        router.push('/admin');
+      } else {
+        router.push('/mi-cuenta');
+      }
     } else {
       setError(res.error || 'Credenciales inválidas.');
       setLoading(false);

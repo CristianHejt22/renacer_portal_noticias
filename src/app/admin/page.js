@@ -55,7 +55,7 @@ export default async function AdminDashboard() {
       <div className="glass p-6 rounded-xl border border-border">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold">Últimas Publicaciones</h2>
-          <Link href="/admin/noticias" className="text-sm text-primary hover:underline">
+          <Link href="/admin/posts" className="text-sm text-primary hover:underline">
             Ver todas
           </Link>
         </div>
@@ -95,7 +95,7 @@ export default async function AdminDashboard() {
                       )}
                     </td>
                     <td className="py-4 text-sm">
-                      <Link href={`/admin/noticias?edit=${post.id}`} className="text-primary hover:underline">
+                      <Link href={`/admin/posts?edit=${post.id}`} className="text-primary hover:underline">
                         Editar
                       </Link>
                     </td>

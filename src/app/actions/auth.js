@@ -92,7 +92,7 @@ export async function login(email, password) {
     }
 
     await createSession(user.id, user.role);
-    return { success: true };
+    return { success: true, role: user.role };
   } catch (error) {
     console.error('Error in login:', error);
     return { success: false, error: 'Ocurrió un error al intentar iniciar sesión' };
