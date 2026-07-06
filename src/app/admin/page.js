@@ -16,13 +16,18 @@ export default async function AdminDashboard() {
     take: 5,
   });
 
-  const pendingRequests = await prisma.purchaseRequest.findMany({
-    where: { status: 'PENDING' },
-    include: {
-      user: { select: { name: true, email: true } }
-    },
-    orderBy: { createdAt: 'desc' }
-  });
+  let pendingRequests = [];
+  try {
+    pendingRequests = await prisma.purchaseRequest.findMany({
+      where: { status: 'PENDING' },
+      include: {
+        user: { select: { name: true, email: true } }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+  } catch (error) {
+    console.error("Error fetching purchase requests (DB may not be synced):", error);
+  }
 
   const banners = await prisma.bannerAd.findMany();
   const totalVisits = banners.reduce((sum, b) => sum + (b.views || 0), 0);
