@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { getPost, updatePost } from '@/app/actions/posts';
 import { getBanners } from '@/app/actions/banners';
 import { getCategories } from '@/app/actions/categories';
+import { compressImage } from '@/lib/imageCompression';
 
 export default function EditPostPage({ params }) {
   const resolvedParams = React.use(params);
@@ -66,9 +67,10 @@ export default function EditPostPage({ params }) {
     input.onchange = async (e) => {
       const file = e.target.files[0];
       if (file) {
-        const formData = new FormData();
-        formData.append('file', file);
         try {
+          const compressedFile = await compressImage(file, 1200, 1200, 0.8);
+          const formData = new FormData();
+          formData.append('file', compressedFile);
           const res = await fetch('/api/upload', { method: 'POST', body: formData });
           const data = await res.json();
           if (data.url) setCoverImage(data.url);

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Save, Share2 } from 'lucide-react';
 import { getAdSettings, saveAdSettings } from '@/app/actions/settings';
 import { getBanners } from '@/app/actions/banners';
+import { compressImage } from '@/lib/imageCompression';
 
 export default function GeneralSettingsPage() {
   const [loading, setLoading] = useState(true);
@@ -58,9 +59,10 @@ export default function GeneralSettingsPage() {
     input.onchange = async (e) => {
       const file = e.target.files[0];
       if (file) {
-        const formData = new FormData();
-        formData.append('file', file);
         try {
+          const compressedFile = await compressImage(file, 800, 800, 0.8);
+          const formData = new FormData();
+          formData.append('file', compressedFile);
           const res = await fetch('/api/upload', { method: 'POST', body: formData });
           const data = await res.json();
           if (data.url) setSettings({ ...settings, siteLogo: data.url });

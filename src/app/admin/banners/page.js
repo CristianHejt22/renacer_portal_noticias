@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Plus, Trash2, Eye, MousePointerClick, Image as ImageIcon, ToggleLeft, ToggleRight, Edit, RotateCcw, Percent } from 'lucide-react';
 import { getBanners, createBanner, toggleBannerStatus, deleteBanner, updateBanner } from '@/app/actions/banners';
+import { compressImage } from '@/lib/imageCompression';
 
 export default function BannersAdminPage() {
   const [banners, setBanners] = useState([]);
@@ -42,19 +43,23 @@ export default function BannersAdminPage() {
     if (!file) return;
 
     setUploading(true);
-    const data = new FormData();
-    data.append('file', file);
-
     try {
+      const compressedFile = await compressImage(file, 1200, 1200, 0.8);
+      const data = new FormData();
+      data.append('file', compressedFile);
+
       const res = await fetch('/api/upload', {
         method: 'POST',
         body: data,
       });
       const result = await res.json();
-      if (result.success) {
+      if (result.url || result.success) {
         setFormData({ ...formData, imageUrl: result.url });
+      } else {
+        alert(result.error || 'Error subiendo imagen');
       }
     } catch (error) {
+      console.error(error);
       alert('Error subiendo imagen');
     } finally {
       setUploading(false);
