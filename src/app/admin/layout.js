@@ -46,6 +46,10 @@ export default function AdminLayout({ children }) {
             <Image size={20} />
             <span>Planes Publicitarios</span>
           </Link>
+          <Link href="/admin/purchases" className="flex items-center space-x-3 text-foreground hover:text-primary p-2 rounded-lg hover:bg-white/5 transition-colors">
+            <DollarSign size={20} />
+            <span>Pagos y Solicitudes</span>
+          </Link>
           <Link href="/admin/social" className="flex items-center space-x-3 text-foreground hover:text-primary p-2 rounded-lg hover:bg-white/5 transition-colors">
             <Share2 size={20} />
             <span>Redes Sociales</span>
