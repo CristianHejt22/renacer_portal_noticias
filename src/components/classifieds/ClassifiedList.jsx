@@ -190,8 +190,9 @@ export default function ClassifiedList({ classifieds, categories = [], paginatio
     return (
       <div key={ad.id} className="contents">
         {isInjectAd && (
-          <div className="col-span-1 sm:col-span-2 lg:col-span-3 w-full my-4">
-            <BannerDisplay position="in-article" mode="slider" />
+          <div className="group flex flex-col bg-surface border border-border rounded-3xl overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl justify-center items-center relative">
+            <BannerDisplay position="plan-clasificados" mode="slider" className="m-0 p-2 sm:p-4 w-full h-full flex items-center justify-center [&>a]:border-none [&>a]:rounded-2xl" hideUI={true} />
+            <span className="absolute top-3 left-3 bg-gray-500/20 text-gray-400 text-[10px] font-black px-2 py-1 rounded uppercase tracking-widest z-10">Publicidad</span>
           </div>
         )}
         {cardContent}
