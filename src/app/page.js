@@ -106,6 +106,13 @@ export default async function Home() {
                         <BannerDisplay position="plan-local" />
                       </div>
                     )}
+                    
+                    {/* Insert Banner after 4th post */}
+                    {index === 3 && (
+                      <div className="md:col-span-2 my-4">
+                        <BannerDisplay position="plan-deportivo" />
+                      </div>
+                    )}
                   </React.Fragment>
                 ))}
               </div>
@@ -113,6 +120,11 @@ export default async function Home() {
               <p className="text-gray-500">No hay noticias recientes.</p>
             )}
           </section>
+
+          {/* Plan Internacional before Classifieds */}
+          <div className="mt-12 mb-6">
+            <BannerDisplay position="plan-internacional" />
+          </div>
 
           {/* Featured Classifieds */}
           <FeaturedClassifieds />

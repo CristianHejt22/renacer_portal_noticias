@@ -42,6 +42,7 @@ import WhatsAppFloatingButton from '@/components/shared/WhatsAppFloatingButton';
 import ScriptInjector from '@/components/shared/ScriptInjector';
 import { getBanners } from '@/app/actions/banners';
 import GoogleAnalytics from '@/components/shared/GoogleAnalytics';
+import BannerDisplay from '@/components/ads/BannerDisplay';
 
 export const dynamic = 'force-dynamic';
 
@@ -86,13 +87,7 @@ export default async function RootLayout({ children }) {
         ) : null}
 
         {/* PLAN CIELO TOTAL */}
-        {cieloTotal && (
-          <div className="w-full bg-black">
-            <a href={`/api/banner/click?id=${cieloTotal.id}&url=${encodeURIComponent(cieloTotal.targetUrl)}`} target="_blank" rel="noopener noreferrer" className="block w-full">
-              <img src={cieloTotal.imageUrl} alt={cieloTotal.name} className="w-full object-cover max-h-[400px]" />
-            </a>
-          </div>
-        )}
+        <BannerDisplay position="plan-cielo-total" mode="slider" className="mb-8 mt-2 bg-black/5 dark:bg-white/5 py-4 w-full border-b border-border" />
 
         <Navbar />
         <WhatsAppFloatingButton phoneNumber={currentPhone} />

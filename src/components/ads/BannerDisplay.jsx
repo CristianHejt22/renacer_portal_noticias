@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 
-export default function BannerDisplay({ position = 'in-article', specificId = null, mode = 'slider' }) {
+export default function BannerDisplay({ position = 'in-article', specificId = null, mode = 'slider', className = 'my-8' }) {
   const [banners, setBanners] = useState([]);
   const [hasViewed, setHasViewed] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -62,7 +62,7 @@ export default function BannerDisplay({ position = 'in-article', specificId = nu
   if (banners.length === 0) return null;
 
   return (
-    <div ref={containerRef} className="w-full flex flex-col items-center gap-2 my-8">
+    <div ref={containerRef} className={`w-full flex flex-col items-center gap-2 ${className}`}>
       <span className="text-[10px] uppercase tracking-widest text-gray-400 bg-gray-500/10 px-2 py-0.5 rounded">
         Publicidad
       </span>
