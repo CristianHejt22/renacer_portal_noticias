@@ -191,7 +191,7 @@ export default function RichTextEditor({ content, onChange, availableBanners = [
     },
     editorProps: {
       attributes: {
-        className: 'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none dark:prose-invert',
+        className: 'prose prose-slate dark:prose-invert max-w-none w-full min-h-[300px] focus:outline-none p-4',
       },
     },
   });
@@ -199,7 +199,7 @@ export default function RichTextEditor({ content, onChange, availableBanners = [
   return (
     <div className="border border-border rounded-xl overflow-hidden glass">
       <MenuBar editor={editor} availableBanners={availableBanners} />
-      <EditorContent editor={editor} className="p-4 min-h-[300px] bg-background text-foreground" />
+      <EditorContent editor={editor} className="bg-background text-foreground" />
     </div>
   );
 }
