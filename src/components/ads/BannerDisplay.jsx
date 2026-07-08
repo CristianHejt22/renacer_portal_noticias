@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 
-export default function BannerDisplay({ position = 'in-article', specificId = null, mode = 'slider', className = 'my-8' }) {
+export default function BannerDisplay({ position = 'in-article', specificId = null, mode = 'slider', className = 'my-8', hideUI = false }) {
   const [banners, setBanners] = useState([]);
   const [hasViewed, setHasViewed] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -63,9 +63,11 @@ export default function BannerDisplay({ position = 'in-article', specificId = nu
 
   return (
     <div ref={containerRef} className={`w-full flex flex-col items-center gap-2 ${className}`}>
-      <span className="text-[10px] uppercase tracking-widest text-gray-400 bg-gray-500/10 px-2 py-0.5 rounded">
-        Publicidad
-      </span>
+      {!hideUI && (
+        <span className="text-[10px] uppercase tracking-widest text-gray-400 bg-gray-500/10 px-2 py-0.5 rounded">
+          Publicidad
+        </span>
+      )}
       
       {mode === 'slider' ? (
         <a 
@@ -95,7 +97,7 @@ export default function BannerDisplay({ position = 'in-article', specificId = nu
         ))
       )}
 
-      {mode === 'slider' && banners.length > 1 && (
+      {!hideUI && mode === 'slider' && banners.length > 1 && (
         <div className="flex gap-2 mt-1">
           {banners.map((_, idx) => (
             <button

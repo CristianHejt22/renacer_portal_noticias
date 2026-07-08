@@ -87,7 +87,7 @@ export default async function RootLayout({ children }) {
         ) : null}
 
         {/* PLAN CIELO TOTAL */}
-        <BannerDisplay position="plan-cielo-total" mode="slider" className="mb-8 mt-2 bg-black/5 dark:bg-white/5 py-4 w-full border-b border-border" />
+        <BannerDisplay position="plan-cielo-total" mode="slider" hideUI={true} className="mb-8 mt-2 bg-black/5 dark:bg-white/5 py-4 w-full border-b border-border" />
 
         <Navbar />
         <WhatsAppFloatingButton phoneNumber={currentPhone} />
