@@ -38,7 +38,7 @@ export async function createPurchaseRequest(data) {
     return { success: true, data: request };
   } catch (error) {
     console.error('Error creating purchase request:', error);
-    return { success: false, error: 'Error al procesar la solicitud' };
+    return { success: false, error: 'Error al procesar la solicitud: ' + (error.message || String(error)) };
   }
 }
 
