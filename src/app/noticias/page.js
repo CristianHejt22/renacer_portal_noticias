@@ -63,7 +63,7 @@ export default async function NoticiasPage({ searchParams }) {
                     {post.title}
                   </h3>
                   <p className="text-gray-400 text-sm mb-4 line-clamp-3 flex-1">
-                    {post.content?.replace(/<[^>]+>/g, '').substring(0, 150)}...
+                    {post.excerpt || post.content?.replace(/<[^>]+>/g, '')}
                   </p>
                   <div className="text-sm text-gray-500 font-medium">
                     {formatDate(post.createdAt)}

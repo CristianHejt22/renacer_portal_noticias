@@ -26,8 +26,8 @@ export async function generateMetadata({ params }) {
     };
   }
 
-  // Extract a brief excerpt for description by stripping HTML
-  const description = post.content?.replace(/<[^>]+>/g, '').substring(0, 160) + '...';
+  // Use explicit excerpt if available, otherwise fallback to truncated content
+  const description = post.excerpt || (post.content?.replace(/<[^>]+>/g, '').substring(0, 160) + '...');
 
   return {
     title: post.title,
@@ -103,11 +103,12 @@ export default async function ArticlePage({ params }) {
               {post.title}
             </h1>
             
-            {/* Bajada / Subtitle */}
-            <p className="text-lg md:text-xl text-gray-500 font-medium leading-relaxed mb-6">
-              {/* Extracting a subtitle if it doesn't exist by removing tags and taking first 150 chars */}
-              {post.content?.replace(/<[^>]+>/g, '').substring(0, 150)}...
-            </p>
+            {/* Bajada / Subtitle (Copete) */}
+            {post.excerpt && (
+              <p className="text-lg md:text-xl text-gray-500 font-medium leading-relaxed mb-6">
+                {post.excerpt}
+              </p>
+            )}
 
             <div className="flex flex-wrap items-center text-sm text-gray-500 gap-4 mb-6 pb-6 border-b border-border">
               <span className="font-bold text-foreground">{post.author?.name || 'Redacción Renacer'}</span>
@@ -140,7 +141,7 @@ export default async function ArticlePage({ params }) {
 
             {/* Article Content */}
             <div className="flex-1">
-              <div className="prose prose-lg dark:prose-invert max-w-none font-serif text-gray-800 dark:text-gray-200 leading-relaxed">
+              <div className="prose prose-lg dark:prose-invert max-w-none font-serif text-gray-800 dark:text-gray-200 leading-relaxed [&>div:first-child>p:first-of-type]:text-xl [&>div:first-child>p:first-of-type]:text-gray-500 [&>div:first-child>p:first-of-type]:font-medium [&>div:first-child>p:first-of-type]:mb-8">
                 {(post.content?.split(/(\[banner:in-article\]|\[adsterra:in-article\]|\[banner:id:\d+\]|\[embed\][A-Za-z0-9+/=]+\[\/embed\])/g) || []).map((part, index) => {
                   if (part === '[banner:in-article]') {
                     return (

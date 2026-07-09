@@ -51,7 +51,7 @@ export default async function Home() {
                     {featuredPost.title}
                   </h1>
                   <p className="text-gray-300 text-lg mb-6 line-clamp-2 w-full md:w-3/4">
-                    {featuredPost.content?.replace(/<[^>]+>/g, '') || featuredPost.excerpt}
+                    {featuredPost.excerpt || featuredPost.content?.replace(/<[^>]+>/g, '')}
                   </p>
                   <div className="flex items-center text-sm text-gray-400">
                     <span>{formatDate(featuredPost.createdAt)}</span>
