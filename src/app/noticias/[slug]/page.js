@@ -175,9 +175,8 @@ export default async function ArticlePage({ params }) {
                       if (typeof Buffer !== 'undefined') {
                         decoded = Buffer.from(base64Content, 'base64').toString('utf-8');
                       } else {
-                        decoded = atob(base64Content);
+                        decoded = decodeURIComponent(escape(atob(base64Content)));
                       }
-                      decoded = decodeURIComponent(escape(decoded));
                       return (
                         <div key={index} className="my-8 not-prose w-full overflow-hidden flex justify-center">
                           <div dangerouslySetInnerHTML={{ __html: decoded }} />

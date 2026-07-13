@@ -74,7 +74,7 @@ export default async function DynamicPage({ params }) {
   const page = res.data;
   
   // Simple shortcode parser
-  const parts = page.content.split(/(\[latest-news\]|\[banner:home\])/g);
+  const parts = page.content.split(/(\[latest-news\]|\[banner:home\]|\[embed\][A-Za-z0-9+/=]+\[\/embed\])/g);
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pt-28">
@@ -87,6 +87,24 @@ export default async function DynamicPage({ params }) {
           }
           if (part === '[banner:home]') {
             return <div key={index} className="my-8"><BannerDisplay position="home" /></div>;
+          }
+          if (part && part.startsWith('[embed]') && part.endsWith('[/embed]')) {
+            const base64Content = part.replace('[embed]', '').replace('[/embed]', '');
+            try {
+              let decoded = '';
+              if (typeof Buffer !== 'undefined') {
+                decoded = Buffer.from(base64Content, 'base64').toString('utf-8');
+              } else {
+                decoded = decodeURIComponent(escape(atob(base64Content)));
+              }
+              return (
+                <div key={index} className="my-8 not-prose w-full overflow-hidden flex justify-center">
+                  <div dangerouslySetInnerHTML={{ __html: decoded }} />
+                </div>
+              );
+            } catch (e) {
+              return null;
+            }
           }
           return <div key={index} dangerouslySetInnerHTML={{ __html: part }} />;
         })}
