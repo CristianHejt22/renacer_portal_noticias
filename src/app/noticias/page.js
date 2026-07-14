@@ -74,12 +74,14 @@ export default async function NoticiasPage({ searchParams }) {
               </Link>
             );
 
-              // Insert a banner after every 3 posts
-            if ((index + 1) % 3 === 0) {
+            let showCieloTotal = planPosition === 'plan-cielo-total' && (index + 1) % 6 === 0;
+            let showOtherPlans = planPosition !== 'plan-cielo-total' && planPosition !== null && (index + 1) % 3 === 0;
+
+            if (showCieloTotal || showOtherPlans) {
               return (
                 <React.Fragment key={`group-${index}`}>
                   {postCard}
-                  {(planPosition === 'plan-nacional' || planPosition === 'plan-cielo-total') && (
+                  {(planPosition === 'plan-nacional' || showCieloTotal) && (
                     <div className="col-span-1 md:col-span-2 lg:col-span-3 my-4">
                       <BannerDisplay position={planPosition} />
                     </div>

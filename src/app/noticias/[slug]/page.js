@@ -239,7 +239,7 @@ export default async function ArticlePage({ params }) {
           <div className="mt-8 p-6 bg-surface border border-border text-center text-gray-500 flex flex-col items-center justify-center">
             <span className="text-[10px] uppercase tracking-widest mb-2 opacity-50">Publicidad</span>
             {inArticleScript ? (
-              <div dangerouslySetInnerHTML={{ __html: inArticleScript }} />
+              <AdIframeInjector htmlCode={inArticleScript} minHeight="90px" />
             ) : (
               <div className="w-full max-w-[728px] h-[90px] bg-background border border-dashed border-gray-600 flex items-center justify-center text-sm">
                 Espacio de Script Adsterra (728x90)

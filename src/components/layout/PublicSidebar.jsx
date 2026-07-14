@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { getRecentPosts } from '@/app/actions/posts';
 import { getAdSettings } from '@/app/actions/settings';
 import AdIframeInjector from '@/components/shared/AdIframeInjector';
+import SidebarClassifieds from '@/components/classifieds/SidebarClassifieds';
 
 export default async function PublicSidebar() {
   const [res, settingsRes] = await Promise.all([
@@ -51,6 +52,9 @@ export default async function PublicSidebar() {
           </div>
         </div>
       )}
+
+      {/* Clasificados en el Sidebar */}
+      <SidebarClassifieds />
 
       {/* Banner Inferior del Sidebar */}
       <div className="w-full sticky top-24 space-y-8">
