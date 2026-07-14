@@ -11,6 +11,7 @@ import SocialShareButtons from '@/components/shared/SocialShareButtons';
 import CommentsSection from '@/components/news/CommentsSection';
 import RelatedArticles from '@/components/noticias/RelatedArticles';
 import { getPostBySlug } from '@/app/actions/posts';
+import { Tweet } from 'react-tweet';
 
 export const revalidate = 60; // Cache ISR por 60 segundos (mejora radical de velocidad)
 export const dynamicParams = true;
@@ -142,7 +143,7 @@ export default async function ArticlePage({ params }) {
             {/* Article Content */}
             <div className="flex-1">
               <div className="prose prose-lg dark:prose-invert max-w-none font-serif text-gray-800 dark:text-gray-200 leading-relaxed [&>div:first-child>p:first-of-type]:text-xl [&>div:first-child>p:first-of-type]:text-gray-500 [&>div:first-child>p:first-of-type]:font-medium [&>div:first-child>p:first-of-type]:mb-8">
-                {(post.content?.split(/(\[banner:in-article\]|\[adsterra:in-article\]|\[banner:id:\d+\]|\[embed\][A-Za-z0-9+/=]+\[\/embed\])/g) || []).map((part, index) => {
+                {(post.content?.split(/(\[banner:in-article\]|\[adsterra:in-article\]|\[banner:id:\d+\]|\[tweet:\d+\]|\[embed\][A-Za-z0-9+/=]+\[\/embed\])/g) || []).map((part, index) => {
                   if (part === '[banner:in-article]') {
                     return (
                       <div key={index} className="my-8 not-prose">
@@ -164,6 +165,15 @@ export default async function ArticlePage({ params }) {
                     return (
                       <div key={index} className="my-8 not-prose flex justify-center">
                         <BannerDisplay position="in-article" specificId={parseInt(bannerId)} />
+                      </div>
+                    );
+                  }
+
+                  if (part.startsWith('[tweet:')) {
+                    const tweetId = part.replace('[tweet:', '').replace(']', '');
+                    return (
+                      <div key={index} className="my-8 not-prose flex justify-center w-full">
+                        <Tweet id={tweetId} />
                       </div>
                     );
                   }

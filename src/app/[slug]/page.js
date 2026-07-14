@@ -2,6 +2,7 @@ import { getPageBySlug } from '@/app/actions/pages';
 import { getPosts } from '@/app/actions/posts';
 import BannerDisplay from '@/components/ads/BannerDisplay';
 import Link from 'next/link';
+import { Tweet } from 'react-tweet';
 
 export async function generateMetadata({ params }) {
   const resolvedParams = await params;
@@ -74,7 +75,7 @@ export default async function DynamicPage({ params }) {
   const page = res.data;
   
   // Simple shortcode parser
-  const parts = page.content.split(/(\[latest-news\]|\[banner:home\]|\[embed\][A-Za-z0-9+/=]+\[\/embed\])/g);
+  const parts = page.content.split(/(\[latest-news\]|\[banner:home\]|\[tweet:\d+\]|\[embed\][A-Za-z0-9+/=]+\[\/embed\])/g);
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pt-28">
@@ -87,6 +88,14 @@ export default async function DynamicPage({ params }) {
           }
           if (part === '[banner:home]') {
             return <div key={index} className="my-8"><BannerDisplay position="home" /></div>;
+          }
+          if (part && part.startsWith('[tweet:')) {
+            const tweetId = part.replace('[tweet:', '').replace(']', '');
+            return (
+              <div key={index} className="my-8 not-prose flex justify-center w-full">
+                <Tweet id={tweetId} />
+              </div>
+            );
           }
           if (part && part.startsWith('[embed]') && part.endsWith('[/embed]')) {
             const base64Content = part.replace('[embed]', '').replace('[/embed]', '');
