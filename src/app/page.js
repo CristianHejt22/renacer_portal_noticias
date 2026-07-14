@@ -35,12 +35,18 @@ export default async function Home() {
           {/* Hero Section */}
           <section className="mb-12">
             {featuredPost ? (
-              <Link href={`/noticias/${featuredPost.slug}`} className="block relative rounded-2xl overflow-hidden group cursor-pointer h-[500px]">
+              <Link href={`/noticias/${featuredPost.slug}`} className="block relative rounded-2xl overflow-hidden group cursor-pointer h-[500px] bg-black/90">
+                {/* Blurred background */}
                 <div 
-                  className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+                  className="absolute inset-0 bg-cover bg-center opacity-40 blur-2xl scale-110 transition-transform duration-700 group-hover:scale-125"
                   style={{ backgroundImage: `url(${featuredPost.coverImage})` }}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+                {/* Contained image */}
+                <div 
+                  className="absolute inset-0 bg-contain bg-center bg-no-repeat transition-transform duration-700 group-hover:scale-105"
+                  style={{ backgroundImage: `url(${featuredPost.coverImage})` }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
                 <SponsorWatermark postSponsorId={featuredPost.sponsorId} />
                 
                 <div className="absolute bottom-0 left-0 p-8 md:p-12 w-full">
@@ -85,9 +91,15 @@ export default async function Home() {
                 {recentPosts.map((post, index) => (
                   <React.Fragment key={post.id}>
                     <Link href={`/noticias/${post.slug}`} className="group cursor-pointer block bg-surface rounded-xl overflow-hidden border border-border hover:border-primary/50 transition-colors">
-                      <div className="relative h-48 w-full overflow-hidden">
+                      <div className="relative h-48 w-full overflow-hidden bg-black/5 dark:bg-white/5">
+                        {/* Blurred background */}
                         <div 
-                          className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
+                          className="absolute inset-0 bg-cover bg-center opacity-30 blur-md scale-110 transition-transform duration-500 group-hover:scale-125"
+                          style={{ backgroundImage: `url(${post.coverImage})` }}
+                        />
+                        {/* Contained image */}
+                        <div 
+                          className="absolute inset-0 bg-contain bg-center bg-no-repeat transition-transform duration-500 group-hover:scale-110"
                           style={{ backgroundImage: `url(${post.coverImage})` }}
                         />
                       </div>

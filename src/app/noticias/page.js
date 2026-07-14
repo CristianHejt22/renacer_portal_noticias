@@ -2,6 +2,7 @@ import Link from 'next/link';
 import React from 'react';
 import { getPosts } from '@/app/actions/posts';
 import BannerDisplay from '@/components/ads/BannerDisplay';
+import FeaturedClassifieds from '@/components/classifieds/FeaturedClassifieds';
 
 export default async function NoticiasPage({ searchParams }) {
   const { category: categorySlug } = await searchParams;
@@ -34,6 +35,7 @@ export default async function NoticiasPage({ searchParams }) {
   else if (slug === 'local') planPosition = 'plan-local';
   else if (slug === 'deportes') planPosition = 'plan-deportivo';
   else if (['mundo', 'internacional', 'tendencias'].includes(slug)) planPosition = 'plan-internacional';
+  else if (!slug) planPosition = 'plan-cielo-total';
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -72,14 +74,14 @@ export default async function NoticiasPage({ searchParams }) {
               </Link>
             );
 
-            // Insert a banner after every 3 posts
+              // Insert a banner after every 3 posts
             if ((index + 1) % 3 === 0) {
               return (
                 <React.Fragment key={`group-${index}`}>
                   {postCard}
-                  {planPosition === 'plan-nacional' && (
+                  {(planPosition === 'plan-nacional' || planPosition === 'plan-cielo-total') && (
                     <div className="col-span-1 md:col-span-2 lg:col-span-3 my-4">
-                      <BannerDisplay position="plan-nacional" />
+                      <BannerDisplay position={planPosition} />
                     </div>
                   )}
                   {planPosition === 'plan-local' && (
@@ -102,6 +104,11 @@ export default async function NoticiasPage({ searchParams }) {
           <p className="text-xl text-gray-400">Aún no hay noticias publicadas.</p>
         </div>
       )}
+
+      {/* Featured Classifieds at the bottom of the news listing */}
+      <div className="mt-16">
+        <FeaturedClassifieds />
+      </div>
     </div>
   );
 }

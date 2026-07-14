@@ -34,27 +34,49 @@ const MenuBar = ({ editor, availableBanners = [] }) => {
   const addImage = () => {
     const input = document.createElement('input');
     input.type = 'file';
+    input.multiple = true; // Allow selecting multiple images
     input.accept = 'image/*,video/*,audio/*';
+    
+    // Append to body to ensure it works across all browsers
+    input.style.display = 'none';
+    document.body.appendChild(input);
+
     input.onchange = async (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        const formData = new FormData();
-        formData.append('file', file);
-        try {
-          const res = await fetch('/api/upload', {
-            method: 'POST',
-            body: formData,
-          });
-          const data = await res.json();
-          if (data.url) {
-            editor.chain().focus().setImage({ src: data.url }).run();
+      const files = Array.from(e.target.files);
+      if (files.length > 0) {
+        for (const file of files) {
+          const formData = new FormData();
+          formData.append('file', file);
+          try {
+            const res = await fetch('/api/upload', {
+              method: 'POST',
+              body: formData,
+            });
+            const data = await res.json();
+            if (data.url) {
+              // Use insertContent to avoid replacing an already selected image
+              editor.chain().focus().insertContent(`<img src="${data.url}" class="rounded-lg max-w-full h-auto" /><p></p>`).run();
+            }
+          } catch (err) {
+            console.error('Upload failed for', file.name, err);
+            alert(`Error al subir ${file.name}`);
           }
-        } catch (err) {
-          console.error('Upload failed', err);
-          alert('Error al subir el archivo');
         }
       }
+      if (document.body.contains(input)) {
+        document.body.removeChild(input);
+      }
     };
+    
+    // Cleanup if user cancels dialog
+    window.addEventListener('focus', () => {
+      setTimeout(() => {
+        if (document.body.contains(input)) {
+          document.body.removeChild(input);
+        }
+      }, 1000);
+    }, { once: true });
+
     input.click();
   };
 

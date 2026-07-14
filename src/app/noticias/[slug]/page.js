@@ -12,6 +12,7 @@ import CommentsSection from '@/components/news/CommentsSection';
 import RelatedArticles from '@/components/noticias/RelatedArticles';
 import { getPostBySlug } from '@/app/actions/posts';
 import { Tweet } from 'react-tweet';
+import FeaturedClassifieds from '@/components/classifieds/FeaturedClassifieds';
 
 export const revalidate = 60; // Cache ISR por 60 segundos (mejora radical de velocidad)
 export const dynamicParams = true;
@@ -124,9 +125,15 @@ export default async function ArticlePage({ params }) {
 
           {/* Featured Image */}
           {post.coverImage && (
-            <div className="relative w-full h-[350px] md:h-[500px] overflow-hidden mb-8 rounded-xl border border-border">
+            <div className="relative w-full h-[350px] md:h-[500px] overflow-hidden mb-8 rounded-xl border border-border bg-black/5 dark:bg-white/5">
+              {/* Blurred background */}
               <div 
-                className="absolute inset-0 bg-cover bg-center"
+                className="absolute inset-0 bg-cover bg-center opacity-40 blur-xl scale-110"
+                style={{ backgroundImage: `url(${post.coverImage})` }}
+              />
+              {/* Contained image */}
+              <div 
+                className="absolute inset-0 bg-contain bg-center bg-no-repeat"
                 style={{ backgroundImage: `url(${post.coverImage})` }}
               />
               <SponsorWatermark postSponsorId={post.sponsorId} />
@@ -241,6 +248,10 @@ export default async function ArticlePage({ params }) {
           </div>
 
           <RelatedArticles category={post.category} currentPostId={post.id} />
+
+          <div className="mt-12">
+            <FeaturedClassifieds />
+          </div>
 
         </article>
 
