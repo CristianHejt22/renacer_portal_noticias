@@ -57,10 +57,12 @@ export default async function RootLayout({ children }) {
   const adsenseClientId = adSettings.data?.adsenseClientId || '';
   const gaId = process.env.NEXT_PUBLIC_GA_ID || '';
   
-  // Reemplazo solicitado del número de WhatsApp antiguo por el nuevo
-  let currentPhone = adSettings.data?.whatsappNumber || '2915658321';
-  if (currentPhone === '2914658502' || currentPhone === '5492914658502') {
-    currentPhone = '2915658321';
+  // Configurar el botón flotante de WhatsApp para apuntar al Canal de WhatsApp
+  let currentPhone = adSettings.data?.whatsappNumber || 'https://whatsapp.com/channel/0029Vb8MBQq5a24Blg4Hvy0a';
+  
+  // Retrocompatibilidad: Si tienen configurados los números viejos, forzar al canal nuevo
+  if (currentPhone === '2914658502' || currentPhone === '5492914658502' || currentPhone === '2915658321') {
+    currentPhone = 'https://whatsapp.com/channel/0029Vb8MBQq5a24Blg4Hvy0a';
   }
 
   // Plan Cielo Total

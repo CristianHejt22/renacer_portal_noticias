@@ -3,17 +3,20 @@
 export default function WhatsAppFloatingButton({ phoneNumber }) {
   if (!phoneNumber) return null;
 
-  // Asegurar que el número no tenga espacios ni caracteres raros
-  const cleanNumber = phoneNumber.replace(/[^0-9]/g, '');
+  const isUrl = phoneNumber.startsWith('http');
+  const cleanNumber = !isUrl ? phoneNumber.replace(/[^0-9]/g, '') : '';
   const message = encodeURIComponent('Hola! Quiero enviar una noticia:');
+  const href = isUrl ? phoneNumber : `https://wa.me/${cleanNumber}?text=${message}`;
+  
+  const titleText = isUrl ? 'Únete a nuestro canal de WhatsApp' : 'Envíanos tu noticia por WhatsApp';
 
   return (
     <a
-      href={`https://wa.me/${cleanNumber}?text=${message}`}
+      href={href}
       target="_blank"
       rel="noopener noreferrer"
       className="fixed bottom-6 right-6 z-50 bg-[#25D366] text-white p-4 rounded-full shadow-lg hover:scale-110 hover:bg-[#20bd5a] transition-all duration-300 flex items-center justify-center group"
-      title="Envíanos tu noticia por WhatsApp"
+      title={titleText}
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -31,7 +34,7 @@ export default function WhatsAppFloatingButton({ phoneNumber }) {
       
       {/* Tooltip visible en hover para desktop */}
       <span className="absolute right-full mr-4 bg-gray-900 text-white text-sm px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pointer-events-none hidden md:block shadow-xl">
-        ¡Envíanos tu noticia!
+        {isUrl ? '¡Únete a nuestro canal!' : '¡Envíanos tu noticia!'}
         {/* Triangulito del tooltip */}
         <span className="absolute top-1/2 -right-1 -translate-y-1/2 border-4 border-transparent border-l-gray-900"></span>
       </span>
