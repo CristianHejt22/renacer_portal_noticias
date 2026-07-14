@@ -37,7 +37,7 @@ export async function getUserCredits() {
 }
 
 // Public: Get all active classifieds (with pagination, search, filter)
-export async function getActiveClassifieds({ q = '', categoryId = null, page = 1, limit = 12 } = {}) {
+export async function getActiveClassifieds({ q = '', categoryId = null, page = 1, limit = 12, featuredOnly = false } = {}) {
   try {
     // 30 days expiration logic (we only show ads created in the last 30 days)
     const thirtyDaysAgo = new Date();
@@ -46,6 +46,7 @@ export async function getActiveClassifieds({ q = '', categoryId = null, page = 1
     const where = {
       isActive: true,
       createdAt: { gte: thirtyDaysAgo },
+      ...(featuredOnly ? { isFeatured: true } : {}),
       ...(categoryId ? { classifiedCategoryId: parseInt(categoryId) } : {}),
       ...(q ? {
         OR: [

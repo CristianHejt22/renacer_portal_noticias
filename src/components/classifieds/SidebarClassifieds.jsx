@@ -3,7 +3,7 @@ import { Star } from 'lucide-react';
 import { getActiveClassifieds } from '@/app/actions/classifieds';
 
 export default async function SidebarClassifieds() {
-  const res = await getActiveClassifieds();
+  const res = await getActiveClassifieds({ featuredOnly: true });
   const classifieds = res.data?.slice(0, 3) || []; // Get top 3
 
   if (classifieds.length === 0) return null;
