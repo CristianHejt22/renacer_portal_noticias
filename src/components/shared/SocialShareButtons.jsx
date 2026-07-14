@@ -7,7 +7,10 @@ export default function SocialShareButtons({ title, slug }) {
 
   useEffect(() => {
     // Generar la URL solo en el cliente para evitar errores de hidratación
-    setUrl(window.location.href);
+    const timer = setTimeout(() => {
+      setUrl(window.location.href);
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   if (!url) return null;

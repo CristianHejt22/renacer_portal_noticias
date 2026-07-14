@@ -1,4 +1,6 @@
+import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import React from 'react';
 import { getPosts } from '@/app/actions/posts';
 import BannerDisplay from '@/components/ads/BannerDisplay';
@@ -54,9 +56,12 @@ export default async function NoticiasPage({ searchParams }) {
             const postCard = (
               <Link href={`/noticias/${post.slug}`} key={post.id} className="group cursor-pointer block bg-surface border border-border rounded-xl overflow-hidden hover:shadow-xl hover:shadow-primary/5 transition-all flex flex-col">
                 <div className="relative h-56 overflow-hidden">
-                  <div 
-                    className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
-                    style={{ backgroundImage: `url(${post.coverImage})` }}
+                  <Image 
+                    src={post.coverImage || '/placeholder.jpg'}
+                    alt={post.title}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 400px"
+                    className="object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                 </div>
                 <div className="p-6 flex-1 flex flex-col">

@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import fs from 'fs';
+import path from 'path';
 
 export async function POST(request) {
   try {
@@ -11,11 +13,24 @@ export async function POST(request) {
 
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    const mimeType = file.type || 'image/jpeg';
-    const base64 = buffer.toString('base64');
-    const fileUrl = `data:${mimeType};base64,${base64}`;
+    
+    // Generar nombre de archivo único
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const extension = file.name ? path.extname(file.name) : '.jpg';
+    const filename = `upload-${uniqueSuffix}${extension}`;
+    
+    // Asegurar que el directorio exista
+    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    
+    // Guardar archivo
+    const filepath = path.join(uploadDir, filename);
+    fs.writeFileSync(filepath, buffer);
 
-    // Devolver la URL pública en base64
+    // Devolver la URL pública (relativa a public)
+    const fileUrl = `/uploads/${filename}`;
     return NextResponse.json({ url: fileUrl });
   } catch (error) {
     console.error('Error uploading file:', error);

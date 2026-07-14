@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import BannerDisplay from "@/components/ads/BannerDisplay";
 import PublicSidebar from "@/components/layout/PublicSidebar";
@@ -37,14 +38,20 @@ export default async function Home() {
             {featuredPost ? (
               <Link href={`/noticias/${featuredPost.slug}`} className="block relative rounded-2xl overflow-hidden group cursor-pointer h-[500px] bg-black/90">
                 {/* Blurred background */}
-                <div 
-                  className="absolute inset-0 bg-cover bg-center opacity-40 blur-2xl scale-110 transition-transform duration-700 group-hover:scale-125"
-                  style={{ backgroundImage: `url(${featuredPost.coverImage})` }}
+                <Image 
+                  src={featuredPost.coverImage || '/placeholder.jpg'} 
+                  alt=""
+                  fill
+                  sizes="100vw"
+                  className="object-cover opacity-40 blur-2xl scale-110 transition-transform duration-700 group-hover:scale-125"
                 />
                 {/* Contained image */}
-                <div 
-                  className="absolute inset-0 bg-contain bg-center bg-no-repeat transition-transform duration-700 group-hover:scale-105"
-                  style={{ backgroundImage: `url(${featuredPost.coverImage})` }}
+                <Image 
+                  src={featuredPost.coverImage || '/placeholder.jpg'} 
+                  alt={featuredPost.title}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 800px"
+                  className="object-contain transition-transform duration-700 group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
                 <SponsorWatermark postSponsorId={featuredPost.sponsorId} />
@@ -93,14 +100,20 @@ export default async function Home() {
                     <Link href={`/noticias/${post.slug}`} className="group cursor-pointer block bg-surface rounded-xl overflow-hidden border border-border hover:border-primary/50 transition-colors">
                       <div className="relative h-48 w-full overflow-hidden bg-black/5 dark:bg-white/5">
                         {/* Blurred background */}
-                        <div 
-                          className="absolute inset-0 bg-cover bg-center opacity-30 blur-md scale-110 transition-transform duration-500 group-hover:scale-125"
-                          style={{ backgroundImage: `url(${post.coverImage})` }}
+                        <Image 
+                          src={post.coverImage || '/placeholder.jpg'} 
+                          alt=""
+                          fill
+                          sizes="100vw"
+                          className="object-cover opacity-30 blur-md scale-110 transition-transform duration-500 group-hover:scale-125"
                         />
                         {/* Contained image */}
-                        <div 
-                          className="absolute inset-0 bg-contain bg-center bg-no-repeat transition-transform duration-500 group-hover:scale-110"
-                          style={{ backgroundImage: `url(${post.coverImage})` }}
+                        <Image 
+                          src={post.coverImage || '/placeholder.jpg'} 
+                          alt={post.title}
+                          fill
+                          sizes="(max-width: 768px) 100vw, 400px"
+                          className="object-contain transition-transform duration-500 group-hover:scale-110"
                         />
                       </div>
                       <div className="p-5">

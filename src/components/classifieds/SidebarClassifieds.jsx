@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Star } from 'lucide-react';
 import { getActiveClassifieds } from '@/app/actions/classifieds';
 
@@ -27,9 +28,12 @@ export default async function SidebarClassifieds() {
               className="group flex gap-4 items-start bg-background p-2 rounded-lg border border-transparent hover:border-primary/30 hover:bg-primary/5 transition-all"
             >
               <div className="relative h-16 w-20 flex-shrink-0 rounded-md overflow-hidden bg-secondary">
-                <div 
-                  className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
-                  style={{ backgroundImage: `url(${ad.imageUrl})` }}
+                <Image 
+                  src={ad.imageUrl || '/placeholder.jpg'}
+                  alt={ad.title}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 80px"
+                  className="object-cover transition-transform duration-500 group-hover:scale-110"
                 />
               </div>
               <div className="flex-grow flex flex-col justify-center min-w-0">

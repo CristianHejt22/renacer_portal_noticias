@@ -39,6 +39,7 @@ export const revalidate = 60; // ISR cache for 60 seconds (improves speed)
 
 import Script from 'next/script';
 import WhatsAppFloatingButton from '@/components/shared/WhatsAppFloatingButton';
+import PWAInstallPrompt from '@/components/shared/PWAInstallPrompt';
 import ScriptInjector from '@/components/shared/ScriptInjector';
 import { getBanners } from '@/app/actions/banners';
 import GoogleAnalytics from '@/components/shared/GoogleAnalytics';
@@ -93,6 +94,7 @@ export default async function RootLayout({ children }) {
 
         <Navbar />
         <WhatsAppFloatingButton phoneNumber={currentPhone} />
+        <PWAInstallPrompt siteLogo={adSettings.data?.siteLogo} siteName={adSettings.data?.siteName} />
         <main className="flex-grow">
           {children}
         </main>

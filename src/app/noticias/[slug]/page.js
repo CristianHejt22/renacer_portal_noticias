@@ -127,14 +127,20 @@ export default async function ArticlePage({ params }) {
           {post.coverImage && (
             <div className="relative w-full h-[350px] md:h-[500px] overflow-hidden mb-8 rounded-xl border border-border bg-black/5 dark:bg-white/5">
               {/* Blurred background */}
-              <div 
-                className="absolute inset-0 bg-cover bg-center opacity-40 blur-xl scale-110"
-                style={{ backgroundImage: `url(${post.coverImage})` }}
+              <Image 
+                src={post.coverImage || '/placeholder.jpg'} 
+                alt=""
+                fill
+                sizes="100vw"
+                className="object-cover opacity-40 blur-xl scale-110"
               />
               {/* Contained image */}
-              <div 
-                className="absolute inset-0 bg-contain bg-center bg-no-repeat"
-                style={{ backgroundImage: `url(${post.coverImage})` }}
+              <Image 
+                src={post.coverImage || '/placeholder.jpg'} 
+                alt={post.title}
+                fill
+                sizes="(max-width: 768px) 100vw, 800px"
+                className="object-contain"
               />
               <SponsorWatermark postSponsorId={post.sponsorId} />
             </div>

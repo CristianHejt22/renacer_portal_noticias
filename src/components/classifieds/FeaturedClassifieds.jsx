@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowRight, Star } from 'lucide-react';
 import { getActiveClassifieds } from '@/app/actions/classifieds';
 
@@ -33,9 +34,12 @@ export default async function FeaturedClassifieds() {
               className="group flex flex-col bg-background border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-all duration-300"
             >
               <div className="relative h-48 w-full overflow-hidden bg-secondary">
-                <div 
-                  className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-700 group-hover:scale-110"
-                  style={{ backgroundImage: `url(${ad.imageUrl})` }}
+                <Image 
+                  src={ad.imageUrl || '/placeholder.jpg'}
+                  alt={ad.title}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 300px"
+                  className="object-cover transition-transform duration-700 group-hover:scale-110"
                 />
                 {ad.price && (
                   <div className="absolute top-3 right-3 bg-black/70 backdrop-blur-sm text-primary px-3 py-1 rounded-full text-sm font-bold">
