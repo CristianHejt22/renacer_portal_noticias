@@ -44,14 +44,18 @@ import ScriptInjector from '@/components/shared/ScriptInjector';
 import { getBanners } from '@/app/actions/banners';
 import GoogleAnalytics from '@/components/shared/GoogleAnalytics';
 import BannerDisplay from '@/components/ads/BannerDisplay';
+import NotificationSystem from '@/components/shared/NotificationSystem';
+import PromoPopup from '@/components/shared/PromoPopup';
+import { getActivePopup } from '@/app/actions/popups';
 
 export const dynamic = 'force-dynamic';
 
 export default async function RootLayout({ children }) {
-  // Fetch settings and banners in parallel for maximum performance
-  const [adSettings, bannersRes] = await Promise.all([
+  // Fetch settings, banners and active popup in parallel for maximum performance
+  const [adSettings, bannersRes, popupRes] = await Promise.all([
     getAdSettings(),
-    getBanners()
+    getBanners(),
+    getActivePopup()
   ]);
 
   const headScript = adSettings.data?.headScript || '';
@@ -95,6 +99,8 @@ export default async function RootLayout({ children }) {
         <Navbar />
         <WhatsAppFloatingButton phoneNumber={currentPhone} />
         <PWAInstallPrompt siteLogo={adSettings.data?.siteLogo} siteName={adSettings.data?.siteName} />
+        <NotificationSystem />
+        <PromoPopup popupData={popupRes?.data || null} />
         <main className="flex-grow">
           {children}
         </main>

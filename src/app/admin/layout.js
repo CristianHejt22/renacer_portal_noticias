@@ -1,70 +1,124 @@
 import Link from "next/link";
-import { LayoutDashboard, FileText, Settings, Share2, DollarSign, Image, LayoutGrid, Globe, Tag } from "lucide-react";
+import { LayoutDashboard, FileText, Settings, Share2, DollarSign, Image as ImageIcon, LayoutGrid, Globe, Tag, Tool, BarChart, ShieldAlert, Zap, LogOut } from "lucide-react";
 import LogoutButton from "@/components/admin/LogoutButton";
 
 export default function AdminLayout({ children }) {
   return (
     <div className="flex min-h-screen bg-background">
-      {/* Sidebar */}
-      <aside className="w-64 border-r border-border bg-surface glass p-6 hidden md:block">
-        <div className="mb-8">
-          <h2 className="text-xl font-bold text-primary">Panel Admin</h2>
+      {/* Sidebar Profesional */}
+      <aside className="w-64 border-r border-border/40 bg-black/40 backdrop-blur-xl p-6 hidden md:flex flex-col shadow-2xl relative z-10">
+        <div className="mb-8 flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg">
+            <ShieldAlert size={18} className="text-white" />
+          </div>
+          <h2 className="text-xl font-black bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">Admin Pro</h2>
         </div>
-        <nav className="space-y-2">
-          <Link href="/admin" className="flex items-center space-x-3 text-foreground hover:text-primary p-2 rounded-lg hover:bg-white/5 transition-colors">
-            <LayoutDashboard size={20} />
-            <span>Dashboard</span>
-          </Link>
-          <Link href="/admin/posts" className="flex items-center space-x-3 text-foreground hover:text-primary p-2 rounded-lg hover:bg-white/5 transition-colors">
-            <FileText size={20} />
-            <span>Noticias</span>
-          </Link>
-          <Link href="/admin/users" className="flex items-center space-x-3 text-foreground hover:text-primary p-2 rounded-lg hover:bg-white/5 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-            <span>Usuarios</span>
-          </Link>
-          <Link href="/admin/categories" className="flex items-center space-x-3 text-foreground hover:text-primary p-2 rounded-lg hover:bg-white/5 transition-colors">
-            <LayoutGrid size={20} />
-            <span>Categorías</span>
-          </Link>
-          <Link href="/admin/clasificados" className="flex items-center space-x-3 text-foreground hover:text-primary p-2 rounded-lg hover:bg-white/5 transition-colors">
-            <Tag size={20} />
-            <span>Clasificados</span>
-          </Link>
-          <Link href="/admin/clasificados/categorias" className="flex items-center space-x-3 text-foreground hover:text-primary p-2 rounded-lg hover:bg-white/5 transition-colors pl-8">
-            <span className="text-sm border-l-2 border-border pl-2">Categorías</span>
-          </Link>
-          <Link href="/admin/pages" className="flex items-center space-x-3 text-foreground hover:text-primary p-2 rounded-lg hover:bg-white/5 transition-colors">
-            <Globe size={20} />
-            <span>Páginas</span>
-          </Link>
-          <Link href="/admin/ads" className="flex items-center space-x-3 text-foreground hover:text-primary p-2 rounded-lg hover:bg-white/5 transition-colors">
-            <DollarSign size={20} />
-            <span>Scripts Adsterra</span>
-          </Link>
-          <Link href="/admin/banners" className="flex items-center space-x-3 text-foreground hover:text-primary p-2 rounded-lg hover:bg-white/5 transition-colors">
-            <Image size={20} />
-            <span>Planes Publicitarios</span>
-          </Link>
-          <Link href="/admin/purchases" className="flex items-center space-x-3 text-foreground hover:text-primary p-2 rounded-lg hover:bg-white/5 transition-colors">
-            <DollarSign size={20} />
-            <span>Pagos y Solicitudes</span>
-          </Link>
-          <Link href="/admin/social" className="flex items-center space-x-3 text-foreground hover:text-primary p-2 rounded-lg hover:bg-white/5 transition-colors">
-            <Share2 size={20} />
-            <span>Redes Sociales</span>
-          </Link>
-          <Link href="/admin/settings" className="flex items-center space-x-3 text-foreground hover:text-primary p-2 rounded-lg hover:bg-white/5 transition-colors">
-            <Settings size={20} />
-            <span>Configuración</span>
-          </Link>
-          <LogoutButton />
+        
+        <nav className="flex-1 space-y-6 overflow-y-auto pr-2 custom-scrollbar">
+          
+          {/* Main Group */}
+          <div>
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3 ml-2">General</p>
+            <div className="space-y-1">
+              <Link href="/admin" className="flex items-center space-x-3 text-foreground/80 hover:text-white p-2.5 rounded-xl hover:bg-white/10 transition-all duration-300 group">
+                <LayoutDashboard size={18} className="group-hover:text-primary transition-colors" />
+                <span className="font-medium text-sm">Dashboard</span>
+              </Link>
+              <Link href="/admin/posts" className="flex items-center space-x-3 text-foreground/80 hover:text-white p-2.5 rounded-xl hover:bg-white/10 transition-all duration-300 group">
+                <FileText size={18} className="group-hover:text-accent transition-colors" />
+                <span className="font-medium text-sm">Noticias</span>
+              </Link>
+              <Link href="/admin/categories" className="flex items-center space-x-3 text-foreground/80 hover:text-white p-2.5 rounded-xl hover:bg-white/10 transition-all duration-300 group">
+                <LayoutGrid size={18} className="group-hover:text-blue-400 transition-colors" />
+                <span className="font-medium text-sm">Categorías</span>
+              </Link>
+            </div>
+          </div>
+
+          {/* Clasificados Group */}
+          <div>
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3 ml-2">Comercio</p>
+            <div className="space-y-1">
+              <Link href="/admin/clasificados" className="flex items-center space-x-3 text-foreground/80 hover:text-white p-2.5 rounded-xl hover:bg-white/10 transition-all duration-300 group">
+                <Tag size={18} className="group-hover:text-green-400 transition-colors" />
+                <span className="font-medium text-sm">Clasificados</span>
+              </Link>
+              <Link href="/admin/clasificados/categorias" className="flex items-center space-x-3 text-foreground/80 hover:text-white p-2.5 rounded-xl hover:bg-white/10 transition-all duration-300 group pl-8">
+                <span className="w-1.5 h-1.5 rounded-full bg-border group-hover:bg-green-400 transition-colors"></span>
+                <span className="font-medium text-sm text-muted-foreground group-hover:text-white transition-colors">Cat. Clasificados</span>
+              </Link>
+            </div>
+          </div>
+
+          {/* Marketing & Ads */}
+          <div>
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3 ml-2">Marketing</p>
+            <div className="space-y-1">
+              <Link href="/admin/ads" className="flex items-center space-x-3 text-foreground/80 hover:text-white p-2.5 rounded-xl hover:bg-white/10 transition-all duration-300 group">
+                <Zap size={18} className="group-hover:text-yellow-400 transition-colors" />
+                <span className="font-medium text-sm">Scripts Adsterra</span>
+              </Link>
+              <Link href="/admin/banners" className="flex items-center space-x-3 text-foreground/80 hover:text-white p-2.5 rounded-xl hover:bg-white/10 transition-all duration-300 group">
+                <ImageIcon size={18} className="group-hover:text-pink-400 transition-colors" />
+                <span className="font-medium text-sm">Planes Publicitarios</span>
+              </Link>
+              <Link href="/admin/popups" className="flex items-center space-x-3 text-foreground/80 hover:text-white p-2.5 rounded-xl hover:bg-white/10 transition-all duration-300 group">
+                <Tag size={18} className="group-hover:text-orange-400 transition-colors" />
+                <span className="font-medium text-sm">Popups Promocionales</span>
+              </Link>
+              <Link href="/admin/purchases" className="flex items-center space-x-3 text-foreground/80 hover:text-white p-2.5 rounded-xl hover:bg-white/10 transition-all duration-300 group">
+                <DollarSign size={18} className="group-hover:text-green-500 transition-colors" />
+                <span className="font-medium text-sm">Pagos y Solicitudes</span>
+              </Link>
+            </div>
+          </div>
+
+          {/* Herramientas (New Section) */}
+          <div>
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3 ml-2">Herramientas</p>
+            <div className="space-y-1">
+              <Link href="/admin/users" className="flex items-center space-x-3 text-foreground/80 hover:text-white p-2.5 rounded-xl hover:bg-white/10 transition-all duration-300 group">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:text-indigo-400 transition-colors"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                <span className="font-medium text-sm">Gestión Usuarios</span>
+              </Link>
+              <Link href="/admin/pages" className="flex items-center space-x-3 text-foreground/80 hover:text-white p-2.5 rounded-xl hover:bg-white/10 transition-all duration-300 group">
+                <Globe size={18} className="group-hover:text-cyan-400 transition-colors" />
+                <span className="font-medium text-sm">Constructor Páginas</span>
+              </Link>
+              <Link href="/admin/social" className="flex items-center space-x-3 text-foreground/80 hover:text-white p-2.5 rounded-xl hover:bg-white/10 transition-all duration-300 group">
+                <Share2 size={18} className="group-hover:text-purple-400 transition-colors" />
+                <span className="font-medium text-sm">Redes Sociales</span>
+              </Link>
+              <button className="w-full flex items-center space-x-3 text-foreground/80 hover:text-white p-2.5 rounded-xl hover:bg-white/10 transition-all duration-300 group cursor-not-allowed opacity-50" title="Próximamente">
+                <BarChart size={18} className="group-hover:text-orange-400 transition-colors" />
+                <span className="font-medium text-sm">Analíticas Avanzadas</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Sistema */}
+          <div>
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3 ml-2">Sistema</p>
+            <div className="space-y-1">
+              <Link href="/admin/settings" className="flex items-center space-x-3 text-foreground/80 hover:text-white p-2.5 rounded-xl hover:bg-white/10 transition-all duration-300 group">
+                <Settings size={18} className="group-hover:text-gray-300 transition-colors" />
+                <span className="font-medium text-sm">Configuración Global</span>
+              </Link>
+            </div>
+          </div>
         </nav>
+
+        <div className="pt-6 mt-6 border-t border-border/40">
+          <LogoutButton />
+        </div>
       </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 p-8">
-        {children}
+      {/* Main Content con fondo sutil */}
+      <main className="flex-1 p-4 md:p-8 relative bg-gradient-to-br from-background via-background to-black/20 overflow-y-auto">
+        <div className="absolute top-0 left-0 w-full h-64 bg-primary/5 blur-3xl rounded-full -z-10 pointer-events-none"></div>
+        <div className="max-w-7xl mx-auto">
+          {children}
+        </div>
       </main>
     </div>
   );
