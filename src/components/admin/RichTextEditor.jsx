@@ -37,10 +37,6 @@ const MenuBar = ({ editor, availableBanners = [] }) => {
     input.multiple = true; // Allow selecting multiple images
     input.accept = 'image/*,video/*,audio/*';
     
-    // Append to body to ensure it works across all browsers
-    input.style.display = 'none';
-    document.body.appendChild(input);
-
     input.onchange = async (e) => {
       const files = Array.from(e.target.files);
       if (files.length > 0) {
@@ -63,20 +59,8 @@ const MenuBar = ({ editor, availableBanners = [] }) => {
           }
         }
       }
-      if (document.body.contains(input)) {
-        document.body.removeChild(input);
-      }
     };
     
-    // Cleanup if user cancels dialog
-    window.addEventListener('focus', () => {
-      setTimeout(() => {
-        if (document.body.contains(input)) {
-          document.body.removeChild(input);
-        }
-      }, 1000);
-    }, { once: true });
-
     input.click();
   };
 

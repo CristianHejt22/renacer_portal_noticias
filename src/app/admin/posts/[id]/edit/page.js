@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import RichTextEditor from '@/components/admin/RichTextEditor';
 import { Save, ArrowLeft, Image as ImageIcon } from 'lucide-react';
 import Link from 'next/link';
+import Toast from '@/components/shared/Toast';
 import { getPost, updatePost } from '@/app/actions/posts';
 import { getBanners } from '@/app/actions/banners';
 import { getCategories } from '@/app/actions/categories';
@@ -24,7 +25,12 @@ export default function EditPostPage({ params }) {
   const [slug, setSlug] = useState('');
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
   const router = useRouter();
+
+  const showToast = (message, type = 'success') => {
+    setToast({ show: true, message, type });
+  };
 
   useEffect(() => {
     async function load() {
@@ -52,8 +58,8 @@ export default function EditPostPage({ params }) {
         setTags(res.data.tags || '');
         setSponsorId(res.data.sponsorId ? res.data.sponsorId.toString() : '');
       } else {
-        alert('Error al cargar la noticia');
-        router.push('/admin/posts');
+        showToast('Error al cargar la noticia', 'error');
+        setTimeout(() => router.push('/admin/posts'), 1000);
       }
       setLoading(false);
     }
@@ -76,7 +82,7 @@ export default function EditPostPage({ params }) {
           if (data.url) setCoverImage(data.url);
         } catch (err) {
           console.error(err);
-          alert('Error al subir la imagen');
+          showToast('Error al subir la imagen', 'error');
         }
       }
     };
@@ -85,7 +91,7 @@ export default function EditPostPage({ params }) {
 
   const handleSave = async (isPublished = false) => {
     if (!title || !content || !category) {
-      alert('Por favor completa el título, categoría y contenido.');
+      showToast('Por favor completa el título, categoría y contenido.', 'error');
       return;
     }
 
@@ -106,17 +112,23 @@ export default function EditPostPage({ params }) {
     setSaving(false);
 
     if (res.success) {
-      alert(isPublished ? 'Noticia publicada con éxito' : 'Borrador guardado');
-      router.push('/admin/posts');
+      showToast(isPublished ? 'Noticia publicada con éxito' : 'Borrador guardado', 'success');
+      setTimeout(() => router.push('/admin/posts'), 1000);
     } else {
-      alert(res.error || 'Error al actualizar la noticia.');
+      showToast(res.error || 'Error al actualizar la noticia.', 'error');
     }
   };
 
   if (loading) return <p className="p-12 text-center text-gray-500">Cargando...</p>;
 
   return (
-    <div className="max-w-5xl mx-auto pb-12">
+    <div className="max-w-5xl mx-auto pb-12 relative">
+      <Toast 
+        isVisible={toast.show} 
+        message={toast.message} 
+        type={toast.type} 
+        onClose={() => setToast({ ...toast, show: false })} 
+      />
       <div className="flex justify-between items-center mb-8">
         <div className="flex items-center space-x-4">
           <Link href="/admin/posts" className="p-2 hover:bg-white/10 rounded-lg transition-colors">

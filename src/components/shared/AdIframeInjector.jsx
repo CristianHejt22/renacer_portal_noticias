@@ -25,7 +25,7 @@ export default function AdIframeInjector({ htmlCode, width = '100%', height = 'a
         srcDoc={srcDoc}
         style={{ border: 'none', background: 'transparent', width: width, height: height, minHeight: minHeight }}
         scrolling="no"
-        sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation"
+        sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
       />
     </div>
   );
