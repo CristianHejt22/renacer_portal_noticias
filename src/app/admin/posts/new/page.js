@@ -55,7 +55,7 @@ export default function NewPostPage() {
         try {
           const compressedFile = await compressImage(file, 1200, 1200, 0.8);
           const formData = new FormData();
-          formData.append('file', compressedFile);
+          formData.append('file', compressedFile, compressedFile.name);
           const res = await fetch('/api/upload', { method: 'POST', body: formData });
           const data = await res.json();
           if (data.url) setCoverImage(data.url);

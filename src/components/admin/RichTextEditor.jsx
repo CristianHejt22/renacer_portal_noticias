@@ -42,7 +42,7 @@ const MenuBar = ({ editor, availableBanners = [] }) => {
       if (files.length > 0) {
         for (const file of files) {
           const formData = new FormData();
-          formData.append('file', file);
+          formData.append('file', file, file.name);
           try {
             const res = await fetch('/api/upload', {
               method: 'POST',
