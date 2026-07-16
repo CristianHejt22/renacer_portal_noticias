@@ -1,22 +1,47 @@
 'use client';
 
 import { Toaster, toast } from 'sonner';
-import { useEffect } from 'react';
-import { Globe, Tag, Eye } from 'lucide-react';
+import { useEffect, useRef } from 'react';
+import { Globe, Tag, ShoppingCart } from 'lucide-react';
+import { getRecentActivity } from '@/app/actions/activity';
 
 export default function NotificationSystem() {
-  useEffect(() => {
-    // Simulador de notificaciones (Social Proof) para clasificados y web
-    const messages = [
-      { text: "Alguien acaba de publicar un nuevo clasificado", icon: <Tag className="w-5 h-5 text-primary" /> },
-      { text: "Nuevo visitante en la web", icon: <Globe className="w-5 h-5 text-accent" /> },
-      { text: "Un usuario está interesado en un clasificado", icon: <Eye className="w-5 h-5 text-blue-400" /> },
-      { text: "Se ha compartido un artículo", icon: <Globe className="w-5 h-5 text-green-400" /> },
-      { text: "Un clasificado ha sido vendido", icon: <Tag className="w-5 h-5 text-yellow-400" /> }
-    ];
+  const timerRef = useRef(null);
 
-    const showNotification = () => {
+  useEffect(() => {
+    let isMounted = true;
+    let messages = [];
+
+    const loadRealActivity = async () => {
+      const res = await getRecentActivity();
+      if (res.success && res.data.length > 0) {
+        messages = res.data.map(item => {
+          let icon = <Globe className="w-5 h-5 text-accent" />;
+          if (item.type === 'classified') icon = <Tag className="w-5 h-5 text-primary" />;
+          if (item.type === 'request') icon = <ShoppingCart className="w-5 h-5 text-blue-400" />;
+          
+          return {
+            text: item.text,
+            icon: icon
+          };
+        });
+      } else {
+        // Fallback in case there is no activity at all
+        messages = [
+          { text: "Bienvenido a Renacer Regional", icon: <Globe className="w-5 h-5 text-accent" /> }
+        ];
+      }
+
+      if (isMounted) {
+        scheduleNextNotification();
+      }
+    };
+
+    const scheduleNextNotification = () => {
+      if (messages.length === 0) return;
+      
       const randomMsg = messages[Math.floor(Math.random() * messages.length)];
+      
       toast(
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-full bg-white/5 border border-white/10">
@@ -24,12 +49,12 @@ export default function NotificationSystem() {
           </div>
           <div>
             <p className="font-semibold text-sm text-foreground">{randomMsg.text}</p>
-            <p className="text-xs text-muted-foreground">Hace un momento</p>
+            <p className="text-xs text-muted-foreground">Recientemente</p>
           </div>
         </div>,
         {
-          duration: 3000,
-          position: 'bottom-left', // A little less intrusive
+          duration: 3500,
+          position: 'bottom-left',
           style: {
             background: 'rgba(10, 10, 10, 0.7)',
             backdropFilter: 'blur(10px)',
@@ -43,13 +68,16 @@ export default function NotificationSystem() {
       
       // Mostrar notificaciones aleatorias cada 20 a 45 segundos
       const nextTime = Math.random() * 25000 + 20000;
-      setTimeout(showNotification, nextTime);
+      timerRef.current = setTimeout(scheduleNextNotification, nextTime);
     };
 
-    // Primera notificación después de 5 segundos
-    const initialTimer = setTimeout(showNotification, 5000); 
+    // Primera notificación después de 5 segundos, precedida por la carga de datos
+    setTimeout(loadRealActivity, 5000);
 
-    return () => clearTimeout(initialTimer);
+    return () => {
+      isMounted = false;
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
   }, []);
 
   return (
