@@ -16,7 +16,10 @@ export async function POST(request) {
     
     // Generar nombre de archivo único
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const extension = file.name ? path.extname(file.name) : '.jpg';
+    let extension = file.name ? path.extname(file.name) : '';
+    if (!extension || extension === '') {
+      extension = '.jpg';
+    }
     const filename = `upload-${uniqueSuffix}${extension}`;
     
     // Asegurar que el directorio exista
