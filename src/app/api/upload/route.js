@@ -32,8 +32,8 @@ export async function POST(request) {
     const filepath = path.join(uploadDir, filename);
     fs.writeFileSync(filepath, buffer);
 
-    // Devolver la URL pública (relativa a public)
-    const fileUrl = `/uploads/${filename}`;
+    // Devolver la URL pública apuntando a nuestra nueva API dinámica
+    const fileUrl = `/api/images/${filename}`;
     return NextResponse.json({ url: fileUrl });
   } catch (error) {
     console.error('Error uploading file:', error);

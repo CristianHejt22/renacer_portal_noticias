@@ -34,6 +34,16 @@ const nextConfig = {
         permanent: true,
       }
     ];
+  },
+  async rewrites() {
+    return {
+      fallback: [
+        {
+          source: '/uploads/:filename*',
+          destination: '/api/images/:filename*',
+        },
+      ],
+    };
   }
 };
 
