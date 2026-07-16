@@ -142,7 +142,8 @@ export default function PublishClassifiedPage() {
         const compressedFile = await compressImage(file);
 
         const imgData = new FormData();
-        imgData.append('file', compressedFile);
+        // compressedFile is now a Blob, so we must pass the original file.name
+        imgData.append('file', compressedFile, file.name || 'classified.jpg');
         const uploadRes = await fetch('/api/upload', { method: 'POST', body: imgData });
         
         if (!uploadRes.ok) {

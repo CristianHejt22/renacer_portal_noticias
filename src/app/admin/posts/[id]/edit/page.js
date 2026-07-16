@@ -77,7 +77,7 @@ export default function EditPostPage({ params }) {
         try {
           const compressedFile = await compressImage(file, 1200, 1200, 0.8);
           const formData = new FormData();
-          formData.append('file', compressedFile, compressedFile.name || 'cover.jpg');
+          formData.append('file', compressedFile, file.name || 'cover.jpg');
           const res = await fetch('/api/upload', { method: 'POST', body: formData });
           const data = await res.json();
           if (data.url) {

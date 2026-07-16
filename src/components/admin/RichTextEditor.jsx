@@ -47,7 +47,8 @@ const MenuBar = ({ editor, availableBanners = [] }) => {
           try {
             const compressedFile = await compressImage(file, 1000, 1000, 0.8);
             const formData = new FormData();
-            formData.append('file', compressedFile, compressedFile.name || 'image.jpg');
+            // file is the original File object, which has the name
+            formData.append('file', compressedFile, file.name || 'image.jpg');
             
             const res = await fetch('/api/upload', {
               method: 'POST',
