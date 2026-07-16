@@ -8,6 +8,8 @@ import ImageExtension from '@tiptap/extension-image';
 import Underline from '@tiptap/extension-underline';
 import TextAlign from '@tiptap/extension-text-align';
 import { Bold, Italic, Strikethrough, Underline as UnderlineIcon, Heading1, Heading2, List, ListOrdered, Quote, Link as LinkIcon, Image as ImageIcon, DollarSign, AlignLeft, AlignCenter, AlignRight, AlignJustify, Code } from 'lucide-react';
+import { compressImage } from '@/lib/imageCompression';
+import { toast } from 'sonner';
 
 
 const MenuBar = ({ editor, availableBanners = [] }) => {
@@ -41,21 +43,26 @@ const MenuBar = ({ editor, availableBanners = [] }) => {
       const files = Array.from(e.target.files);
       if (files.length > 0) {
         for (const file of files) {
-          const formData = new FormData();
-          formData.append('file', file, file.name);
+          const toastId = toast.loading(`Subiendo ${file.name || 'imagen'}...`);
           try {
+            const compressedFile = await compressImage(file, 1000, 1000, 0.8);
+            const formData = new FormData();
+            formData.append('file', compressedFile, compressedFile.name || 'image.jpg');
+            
             const res = await fetch('/api/upload', {
               method: 'POST',
               body: formData,
             });
             const data = await res.json();
             if (data.url) {
-              // Use insertContent to avoid replacing an already selected image
               editor.chain().focus().insertContent(`<img src="${data.url}" class="rounded-lg max-w-full h-auto" /><p></p>`).run();
+              toast.success('Imagen insertada', { id: toastId });
+            } else {
+              throw new Error('No URL returned');
             }
           } catch (err) {
             console.error('Upload failed for', file.name, err);
-            alert(`Error al subir ${file.name}`);
+            toast.error(`Error al subir ${file.name || 'imagen'}`, { id: toastId });
           }
         }
       }

@@ -73,13 +73,19 @@ export default function EditPostPage({ params }) {
     input.onchange = async (e) => {
       const file = e.target.files[0];
       if (file) {
+        showToast('Comprimiendo y subiendo...', 'success');
         try {
           const compressedFile = await compressImage(file, 1200, 1200, 0.8);
           const formData = new FormData();
-          formData.append('file', compressedFile, compressedFile.name);
+          formData.append('file', compressedFile, compressedFile.name || 'cover.jpg');
           const res = await fetch('/api/upload', { method: 'POST', body: formData });
           const data = await res.json();
-          if (data.url) setCoverImage(data.url);
+          if (data.url) {
+            setCoverImage(data.url);
+            showToast('Imagen subida con éxito', 'success');
+          } else {
+            throw new Error('Upload failed');
+          }
         } catch (err) {
           console.error(err);
           showToast('Error al subir la imagen', 'error');
