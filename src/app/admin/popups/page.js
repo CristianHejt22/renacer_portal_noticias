@@ -99,9 +99,9 @@ export default function PopupsAdminPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Check size limit (e.g. 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('La imagen es demasiado grande. Máximo 5MB.');
+    // Check size limit
+    if (file.size > 15 * 1024 * 1024) {
+      toast.error('La imagen es demasiado grande. Máximo 15MB.');
       return;
     }
 
@@ -109,7 +109,7 @@ export default function PopupsAdminPage() {
     const toastId = toast.loading('Subiendo imagen...');
 
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', file, file.name);
 
     try {
       const res = await fetch('/api/upload', {

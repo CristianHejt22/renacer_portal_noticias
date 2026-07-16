@@ -49,8 +49,8 @@ export default function PublishClassifiedPage() {
     
     const validFiles = [];
     for (let file of files) {
-      if (file.size > 2 * 1024 * 1024) {
-        alert(`La imagen ${file.name} pesa más de 2MB y fue descartada.`);
+      if (file.size > 8 * 1024 * 1024) {
+        alert(`La imagen ${file.name} pesa más de 8MB y fue descartada.`);
       } else {
         validFiles.push(file);
       }
@@ -286,7 +286,7 @@ export default function PublishClassifiedPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Fotos (Max 3, hasta 2MB c/u)</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Fotos (Max 3, hasta 8MB c/u)</label>
               
               <div className="flex flex-wrap gap-4 mb-2">
                 {imageFiles.map((file, index) => (
