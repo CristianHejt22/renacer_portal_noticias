@@ -19,10 +19,22 @@ export async function middleware(request) {
 
     try {
       const { payload } = await jwtVerify(token, encodedSecret);
-      if (payload.role !== 'ADMIN') {
+      const role = payload.role;
+
+      if (role !== 'ADMIN' && role !== 'CREATOR') {
         // Un usuario normal no puede entrar al admin, mandarlo a su cuenta
         return NextResponse.redirect(new URL('/mi-cuenta', request.url));
       }
+
+      // Si es CREATOR, restringir a qué partes del admin puede entrar
+      if (role === 'CREATOR') {
+        // Puede entrar al dashboard (/admin) y a /admin/posts
+        const isAllowed = pathname === '/admin' || pathname.startsWith('/admin/posts');
+        if (!isAllowed) {
+          return NextResponse.redirect(new URL('/admin', request.url));
+        }
+      }
+
       return NextResponse.next();
     } catch (error) {
       return NextResponse.redirect(new URL('/admin/login', request.url));

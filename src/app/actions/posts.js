@@ -2,31 +2,41 @@
 
 import { PrismaClient } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
+import { cookies } from 'next/headers';
+import { jwtVerify } from 'jose';
 
 const globalForPrisma = global;
 const prisma = globalForPrisma.prisma || new PrismaClient();
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 
-async function ensureUserExists() {
-  let user = await prisma.user.findFirst();
-  if (!user) {
-    user = await prisma.user.create({
-      data: {
-        email: 'admin@librecielo.com',
-        password: 'password', // in a real app this would be hashed
-        name: 'Redacción Renacer'
-      }
-    });
+const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_fallback_key_for_dev_123';
+const encodedSecret = new TextEncoder().encode(JWT_SECRET);
+
+async function getUserSession() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get('auth_token')?.value;
+  if (!token) return null;
+  try {
+    const { payload } = await jwtVerify(token, encodedSecret);
+    return payload; // { userId, role }
+  } catch (e) {
+    return null;
   }
-  return user;
 }
 
 export async function getPosts() {
   try {
+    const session = await getUserSession();
+    if (!session) return { success: false, data: [] };
+
+    // Si es CREATOR, solo ve sus propias noticias
+    const whereClause = session.role === 'CREATOR' ? { authorId: session.userId } : {};
+
     const posts = await prisma.post.findMany({
+      where: whereClause,
       orderBy: { createdAt: 'desc' },
       include: { author: true },
-      take: 30, // Límite de seguridad para no descargar miles de noticias
+      take: 50, // Límite de seguridad
     });
     return { success: true, data: posts };
   } catch (error) {
@@ -115,7 +125,11 @@ export async function getRelatedPosts(category, currentPostId) {
 
 export async function createPost(data) {
   try {
-    const user = await ensureUserExists();
+    const session = await getUserSession();
+    if (!session || (session.role !== 'ADMIN' && session.role !== 'CREATOR')) {
+      return { success: false, error: 'No tienes permiso para crear noticias.' };
+    }
+
     const post = await prisma.post.create({
       data: {
         title: data.title,
@@ -126,7 +140,7 @@ export async function createPost(data) {
         tags: data.tags,
         sponsorId: data.sponsorId ? parseInt(data.sponsorId) : null,
         isPublished: data.isPublished,
-        authorId: user.id
+        authorId: session.userId
       }
     });
     revalidatePath('/admin/posts');
@@ -140,6 +154,17 @@ export async function createPost(data) {
 
 export async function updatePost(id, data) {
   try {
+    const session = await getUserSession();
+    if (!session) return { success: false, error: 'No autorizado' };
+
+    // Si es CREATOR, verificar que sea el dueño
+    if (session.role === 'CREATOR') {
+      const existing = await prisma.post.findUnique({ where: { id: parseInt(id) } });
+      if (!existing || existing.authorId !== session.userId) {
+        return { success: false, error: 'No tienes permiso para editar esta noticia.' };
+      }
+    }
+
     const post = await prisma.post.update({
       where: { id: parseInt(id) },
       data: {
@@ -165,6 +190,17 @@ export async function updatePost(id, data) {
 
 export async function deletePost(id) {
   try {
+    const session = await getUserSession();
+    if (!session) return { success: false, error: 'No autorizado' };
+
+    // Si es CREATOR, verificar que sea el dueño
+    if (session.role === 'CREATOR') {
+      const existing = await prisma.post.findUnique({ where: { id: parseInt(id) } });
+      if (!existing || existing.authorId !== session.userId) {
+        return { success: false, error: 'No tienes permiso para borrar esta noticia.' };
+      }
+    }
+
     await prisma.post.delete({ where: { id: parseInt(id) } });
     revalidatePath('/admin/posts');
     revalidatePath('/');

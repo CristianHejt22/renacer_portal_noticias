@@ -63,3 +63,23 @@ export async function updateUserCredits(userId, { credits, featuredCredits }) {
     return { success: false, error: 'Error al actualizar créditos' };
   }
 }
+
+export async function updateUserRole(userId, newRole) {
+  const isAdmin = await checkIsAdmin();
+  if (!isAdmin) return { success: false, error: 'No autorizado' };
+
+  if (!['USER', 'CREATOR', 'ADMIN'].includes(newRole)) {
+    return { success: false, error: 'Rol inválido' };
+  }
+
+  try {
+    const updated = await prisma.user.update({
+      where: { id: parseInt(userId) },
+      data: { role: newRole }
+    });
+    return { success: true, data: updated };
+  } catch (error) {
+    console.error('Error updating user role:', error);
+    return { success: false, error: 'Error al actualizar el rol' };
+  }
+}

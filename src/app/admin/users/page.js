@@ -10,7 +10,7 @@ export default function AdminUsersPage() {
   const [searchTerm, setSearchTerm] = useState('');
   
   const [editingUser, setEditingUser] = useState(null);
-  const [editForm, setEditForm] = useState({ credits: 0, featuredCredits: 0 });
+  const [editForm, setEditForm] = useState({ credits: 0, featuredCredits: 0, role: 'USER' });
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -30,16 +30,29 @@ export default function AdminUsersPage() {
     setEditingUser(user);
     setEditForm({
       credits: user.credits,
-      featuredCredits: user.featuredCredits
+      featuredCredits: user.featuredCredits,
+      role: user.role || 'USER'
     });
   };
 
   const handleSaveCredits = async (e) => {
     e.preventDefault();
     setSaving(true);
+    
+    // Guardar créditos
     const res = await updateUserCredits(editingUser.id, editForm);
+    
+    // Si cambió el rol, guardarlo también
+    if (res.success && editForm.role !== editingUser.role) {
+      const { updateUserRole } = await import('@/app/actions/users');
+      const roleRes = await updateUserRole(editingUser.id, editForm.role);
+      if (!roleRes.success) {
+        alert(roleRes.error || 'Error al actualizar rol');
+      }
+    }
+
     if (res.success) {
-      alert('Créditos actualizados correctamente');
+      alert('Usuario actualizado correctamente');
       setEditingUser(null);
       loadUsers();
     } else {
@@ -131,7 +144,7 @@ export default function AdminUsersPage() {
                         className="inline-flex items-center px-3 py-1.5 bg-background border border-border rounded-lg text-sm hover:bg-muted transition-colors text-foreground"
                       >
                         <UserCog size={16} className="mr-2 text-primary" />
-                        Editar Créditos
+                        Editar Usuario
                       </button>
                     </td>
                   </tr>
@@ -147,7 +160,7 @@ export default function AdminUsersPage() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-surface border border-border rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
             <div className="flex justify-between items-center p-4 border-b border-border">
-              <h2 className="text-lg font-bold text-foreground">Editar Créditos de Usuario</h2>
+              <h2 className="text-lg font-bold text-foreground">Editar Usuario</h2>
               <button onClick={() => setEditingUser(null)} className="text-muted-foreground hover:text-foreground">
                 <X size={20} />
               </button>
@@ -181,6 +194,21 @@ export default function AdminUsersPage() {
                       onChange={(e) => setEditForm({...editForm, featuredCredits: parseInt(e.target.value) || 0})}
                       className="w-full bg-background border border-border rounded-lg p-2.5 text-foreground focus:border-primary focus:ring-1 focus:ring-primary outline-none"
                     />
+                  </div>
+                  
+                  <div className="pt-2 border-t border-border">
+                    <label className="block text-sm font-medium text-foreground mb-2">
+                      Rol del Usuario
+                    </label>
+                    <select 
+                      value={editForm.role}
+                      onChange={(e) => setEditForm({...editForm, role: e.target.value})}
+                      className="w-full bg-background border border-border rounded-lg p-2.5 text-foreground focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                    >
+                      <option value="USER">Usuario (Normal)</option>
+                      <option value="CREATOR">Creador de Noticias</option>
+                      <option value="ADMIN">Administrador</option>
+                    </select>
                   </div>
                 </div>
               </div>
