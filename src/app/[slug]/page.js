@@ -106,9 +106,18 @@ export default async function DynamicPage({ params }) {
               } else {
                 decoded = decodeURIComponent(escape(atob(base64Content)));
               }
+
+              if (decoded.trim().toLowerCase().startsWith('<iframe') && decoded.trim().toLowerCase().endsWith('</iframe>') && (decoded.match(/<iframe/ig) || []).length === 1) {
+                return (
+                  <div key={index} className="my-8 w-full flex justify-center">
+                    <div dangerouslySetInnerHTML={{ __html: decoded }} className="w-full max-w-[800px] flex justify-center" />
+                  </div>
+                );
+              }
+
               return (
-                <div key={index} className="my-8 not-prose w-full overflow-hidden flex justify-center">
-                  <div dangerouslySetInnerHTML={{ __html: decoded }} />
+                <div key={index} className="my-8 w-full overflow-hidden flex justify-center">
+                  <AdIframeInjector htmlCode={decoded} minHeight="600px" />
                 </div>
               );
             } catch (e) {

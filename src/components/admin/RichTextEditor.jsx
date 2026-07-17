@@ -78,37 +78,45 @@ const MenuBar = ({ editor, availableBanners = [] }) => {
   };
 
   const insertHtmlEmbed = () => {
-    let htmlCode = window.prompt('Pega aquí el enlace (YouTube, Twitter, Instagram, TikTok) o tu código HTML/Iframe:');
+    let htmlCode = window.prompt('Pega aquí el enlace (YouTube, Twitter, Instagram, Facebook, TikTok) o tu código HTML/Iframe:');
     if (!htmlCode) return;
     
     htmlCode = htmlCode.trim();
 
-    // Auto-detect Twitter/X URL
-    const twMatch = htmlCode.match(/^(?:https?:\/\/)?(?:www\.)?(?:twitter\.com|x\.com)\/[a-zA-Z0-9_]+\/status\/([0-9]+)/i);
-    if (twMatch && twMatch[1]) {
-      insertCode(`[tweet:${twMatch[1]}]`);
-      return;
-    }
+    // If it's just a URL without HTML tags, auto-detect the platform
+    if (htmlCode.match(/^https?:\/\//i) && !htmlCode.includes('<')) {
+      // Auto-detect Twitter/X URL
+      const twMatch = htmlCode.match(/(?:twitter\.com|x\.com)\/[a-zA-Z0-9_]+\/status\/([0-9]+)/i);
+      if (twMatch && twMatch[1]) {
+        insertCode(`[tweet:${twMatch[1]}]`);
+        return;
+      }
 
-    // Auto-detect YouTube URL
-    const ytMatch = htmlCode.match(/^(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
-    if (ytMatch && ytMatch[1]) {
-      htmlCode = `<iframe width="100%" height="400" src="https://www.youtube.com/embed/${ytMatch[1]}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
-    } 
-    // Auto-detect Instagram URL
-    else if (htmlCode.match(/^(?:https?:\/\/)?(?:www\.)?(?:instagram\.com|instagr\.am)\/(?:p|reel|tv)\/([a-zA-Z0-9_-]+)/i)) {
-      const igMatch = htmlCode.match(/^(?:https?:\/\/)?(?:www\.)?(?:instagram\.com|instagr\.am)\/(?:p|reel|tv)\/([a-zA-Z0-9_-]+)/i);
-      htmlCode = `<iframe src="https://www.instagram.com/p/${igMatch[1]}/embed" width="100%" height="480" frameborder="0" scrolling="no" allowtransparency="true"></iframe>`;
-    }
-    // Auto-detect TikTok URL
-    else if (htmlCode.match(/^(?:https?:\/\/)?(?:www\.)?tiktok\.com\/@[^\/]+\/video\/([0-9]+)/i)) {
-      const tkMatch = htmlCode.match(/^(?:https?:\/\/)?(?:www\.)?tiktok\.com\/@[^\/]+\/video\/([0-9]+)/i);
-      htmlCode = `<iframe src="https://www.tiktok.com/embed/v2/${tkMatch[1]}" width="100%" height="700" frameborder="0" allowfullscreen scrolling="no" allow="encrypted-media;"></iframe>`;
-    }
-    // Auto-detect Facebook Post URL
-    else if (htmlCode.match(/^(?:https?:\/\/)?(?:www\.)?facebook\.com\/.+/i) && !htmlCode.includes('<iframe')) {
-      const encodedFbUrl = encodeURIComponent(htmlCode);
-      htmlCode = `<iframe src="https://www.facebook.com/plugins/post.php?href=${encodedFbUrl}&show_text=true&width=500" width="100%" height="500" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>`;
+      // Auto-detect YouTube URL (includes shorts)
+      const ytMatch = htmlCode.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
+      if (ytMatch && ytMatch[1]) {
+        htmlCode = `<iframe width="100%" height="450" src="https://www.youtube.com/embed/${ytMatch[1]}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+      } 
+      // Auto-detect Instagram URL
+      else if (htmlCode.match(/(?:instagram\.com|instagr\.am)\/(?:p|reel|tv)\/([a-zA-Z0-9_-]+)/i)) {
+        const igMatch = htmlCode.match(/(?:instagram\.com|instagr\.am)\/(?:p|reel|tv)\/([a-zA-Z0-9_-]+)/i);
+        htmlCode = `<iframe src="https://www.instagram.com/p/${igMatch[1]}/embed/captioned" width="100%" height="600" frameborder="0" scrolling="no" allowtransparency="true"></iframe>`;
+      }
+      // Auto-detect TikTok URL
+      else if (htmlCode.match(/tiktok\.com\/@[^\/]+\/video\/([0-9]+)/i)) {
+        const tkMatch = htmlCode.match(/tiktok\.com\/@[^\/]+\/video\/([0-9]+)/i);
+        htmlCode = `<iframe src="https://www.tiktok.com/embed/v2/${tkMatch[1]}" width="100%" height="700" frameborder="0" allowfullscreen scrolling="no" allow="encrypted-media;"></iframe>`;
+      }
+      // Auto-detect Facebook Post URL
+      else if (htmlCode.match(/facebook\.com\/.+/i)) {
+        const encodedFbUrl = encodeURIComponent(htmlCode);
+        htmlCode = `<iframe src="https://www.facebook.com/plugins/post.php?href=${encodedFbUrl}&show_text=true&width=500" width="100%" height="500" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>`;
+      }
+      // Unrecognized URL
+      else {
+        alert('URL no reconocida. Intenta copiar y pegar el "código de inserción" (Embed HTML) directamente desde la plataforma.');
+        return;
+      }
     }
 
     try {
