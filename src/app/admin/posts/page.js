@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Plus, Edit, Trash2 } from 'lucide-react';
-import { getPosts, deletePost } from '@/app/actions/posts';
+import { Plus, Edit, Trash2, Send } from 'lucide-react';
+import { getPosts, deletePost, sendPostToMake } from '@/app/actions/posts';
 
 export default function PostsPage() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [sendingId, setSendingId] = useState(null);
 
   useEffect(() => {
     loadPosts();
@@ -26,6 +27,19 @@ export default function PostsPage() {
     if (confirm('¿Estás seguro de eliminar esta noticia?')) {
       await deletePost(id);
       loadPosts();
+    }
+  };
+
+  const handleSendToMake = async (id) => {
+    if (confirm('¿Enviar esta noticia a Redes Sociales a través de Make.com?')) {
+      setSendingId(id);
+      const res = await sendPostToMake(id);
+      if (res.success) {
+        alert('¡Enviado exitosamente a Make.com!');
+      } else {
+        alert(res.error || 'Error al enviar');
+      }
+      setSendingId(null);
     }
   };
 
@@ -72,6 +86,14 @@ export default function PostsPage() {
                     {new Date(post.createdAt).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
                   </td>
                   <td className="p-4 text-right flex justify-end space-x-2">
+                    <button 
+                      onClick={() => handleSendToMake(post.id)} 
+                      disabled={sendingId === post.id}
+                      title="Enviar a Make.com (Redes)"
+                      className="p-2 text-blue-500 hover:bg-blue-500/10 rounded-lg transition-colors disabled:opacity-50"
+                    >
+                      <Send size={18} className={sendingId === post.id ? 'animate-pulse' : ''} />
+                    </button>
                     <Link href={`/admin/posts/${post.id}/edit`} className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors">
                       <Edit size={18} />
                     </Link>

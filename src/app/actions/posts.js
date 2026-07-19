@@ -209,3 +209,59 @@ export async function deletePost(id) {
     return { success: false, error: 'Error eliminando post' };
   }
 }
+
+export async function sendPostToMake(id) {
+  try {
+    const session = await getUserSession();
+    if (!session) return { success: false, error: 'No autorizado' };
+
+    // 1. Obtener la noticia
+    const post = await prisma.post.findUnique({ where: { id: parseInt(id) } });
+    if (!post) return { success: false, error: 'Noticia no encontrada' };
+
+    // 2. Obtener la URL del webhook de Make.com
+    const setting = await prisma.setting.findUnique({ where: { key: 'make_webhook_url' } });
+    if (!setting || !setting.value) {
+      return { success: false, error: 'Debes configurar la URL de Make.com en la sección "Redes Sociales" primero.' };
+    }
+
+    // 3. Preparar los datos
+    // Limpiamos un poco el contenido HTML para el resumen
+    const cleanContent = post.content.replace(/<[^>]*>?/gm, '').substring(0, 200) + '...';
+    
+    // Obtener la URL base del sitio (o usar un setting si existe)
+    // Como estamos en servidor, no siempre sabemos el host absoluto, pero asumiremos producción si se puede,
+    // o enviaremos el slug para que Make.com lo construya.
+    const siteSetting = await prisma.setting.findUnique({ where: { key: 'site_name' } });
+    const siteName = siteSetting ? siteSetting.value : 'Portal de Noticias';
+
+    const payload = {
+      id: post.id,
+      title: post.title,
+      slug: post.slug,
+      summary: cleanContent,
+      coverImage: post.coverImage,
+      category: post.category,
+      tags: post.tags,
+      siteName: siteName
+    };
+
+    // 4. Enviar a Make.com
+    const response = await fetch(setting.value, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      throw new Error(`Make.com devolvió error: ${response.statusText}`);
+    }
+
+    return { success: true, message: '¡Noticia enviada a Make.com exitosamente!' };
+  } catch (error) {
+    console.error('Error enviando a Make.com:', error);
+    return { success: false, error: error.message || 'Error de conexión con Make.com' };
+  }
+}

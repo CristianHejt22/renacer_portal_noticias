@@ -47,6 +47,7 @@ export async function getAdSettings() {
         bankAlias: s['bank_alias'] || '',
         bankCvu: s['bank_cvu'] || '',
         bankName: s['bank_name'] || '',
+        makeWebhookUrl: s['make_webhook_url'] || '',
       }
     };
   } catch (error) {
@@ -64,6 +65,7 @@ export async function getAdSettings() {
         bankAlias: '',
         bankCvu: '',
         bankName: '',
+        makeWebhookUrl: '',
       }
     };
   }
