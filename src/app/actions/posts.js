@@ -241,6 +241,8 @@ export async function sendPostToMake(id) {
       slug: post.slug,
       summary: cleanContent,
       coverImage: post.coverImage,
+      coverImageAbsolute: post.coverImage ? `https://librecielo.com${post.coverImage}` : '',
+      postUrl: `https://librecielo.com/noticias/${post.slug}`,
       category: post.category,
       tags: post.tags,
       siteName: siteName
