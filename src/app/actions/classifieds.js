@@ -223,6 +223,35 @@ export async function publishUserClassified(data) {
   }
 }
 
+// User: Update classified (text/price/category only)
+export async function updateUserClassified(id, data) {
+  try {
+    const userId = await getSessionUserId();
+    if (!userId) return { success: false, error: 'Unauthorized' };
+
+    // Verify ownership
+    const existing = await prisma.classifiedAd.findUnique({ where: { id: parseInt(id) } });
+    if (!existing || existing.userId !== userId) {
+      return { success: false, error: 'No autorizado o aviso no encontrado' };
+    }
+
+    const updated = await prisma.classifiedAd.update({
+      where: { id: parseInt(id) },
+      data: {
+        title: data.title,
+        description: data.description,
+        price: data.price ? parseFloat(data.price) : null,
+        classifiedCategoryId: data.classifiedCategoryId ? parseInt(data.classifiedCategoryId) : null,
+      }
+    });
+
+    return { success: true, data: updated };
+  } catch (error) {
+    console.error('Error updating classified:', error);
+    return { success: false, error: 'Error al actualizar el clasificado' };
+  }
+}
+
 // User/Admin: Create classified
 export async function createClassified(data) {
   try {

@@ -1,6 +1,7 @@
 import { getClassifiedBySlug } from '@/app/actions/classifieds';
 import { notFound } from 'next/navigation';
-import { Star, MessageCircle, Clock, ExternalLink, Tag } from 'lucide-react';
+import { Star, MessageCircle, Clock, ExternalLink, Tag, ChevronRight } from 'lucide-react';
+import Link from 'next/link';
 import ClassifiedReviewForm from '@/components/classifieds/ClassifiedReviewForm';
 import ClassifiedGallery from '@/components/classifieds/ClassifiedGallery';
 import SocialShareButtons from '@/components/shared/SocialShareButtons';
@@ -22,72 +23,95 @@ export default async function ClassifiedDetailPage({ params }) {
     : 'Nuevo';
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
       <AdViewTracker adId={ad.id} />
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-        {/* Izquierda: Imagen */}
-        <div className="space-y-6">
-          <ClassifiedGallery mainImage={ad.imageUrl} images={ad.images} />
+      
+      {/* Breadcrumb / Top Info */}
+      <div className="flex items-center text-sm text-gray-500 mb-6">
+        <Link href="/clasificados" className="hover:text-primary transition-colors">Clasificados</Link>
+        <span className="mx-2">/</span>
+        {ad.category && (
+          <>
+            <span className="text-gray-900 dark:text-gray-300 font-medium">{ad.category.name}</span>
+            <span className="mx-2">/</span>
+          </>
+        )}
+        <span className="text-gray-400 truncate">{ad.title}</span>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+        
+        {/* Izquierda: Imagen y Descripción (Ocupa 8 columnas en Desktop) */}
+        <div className="lg:col-span-8 space-y-8">
+          {/* Galería de Imágenes */}
+          <div className="bg-surface border border-border rounded-2xl overflow-hidden shadow-sm">
+            <ClassifiedGallery mainImage={ad.imageUrl} images={ad.images} />
+          </div>
+
+          {/* Descripción */}
+          <div className="bg-surface border border-border rounded-2xl p-6 lg:p-8 shadow-sm">
+            <h2 className="text-2xl font-bold text-foreground mb-6 pb-4 border-b border-border">Descripción</h2>
+            <div className="prose prose-invert max-w-none">
+              <p className="text-gray-700 dark:text-gray-300 text-lg leading-relaxed whitespace-pre-wrap">
+                {ad.description}
+              </p>
+            </div>
+          </div>
         </div>
 
-        {/* Derecha: Detalles */}
-        <div className="flex flex-col">
-          {ad.category && (
-            <div className="flex items-center text-primary font-bold text-sm uppercase tracking-wider mb-2">
-              <Tag className="w-4 h-4 mr-2" />
-              {ad.category.name}
+        {/* Derecha: Sidebar (Ocupa 4 columnas en Desktop) */}
+        <div className="lg:col-span-4">
+          <div className="bg-surface border border-border rounded-2xl p-6 lg:p-8 shadow-lg sticky top-24">
+            
+            <div className="flex items-center space-x-2 text-sm text-gray-400 mb-4">
+              <span className="text-xs uppercase tracking-widest font-semibold bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 px-2 py-1 rounded">
+                Nuevo
+              </span>
+              <span>•</span>
+              <div className="flex items-center text-yellow-500 font-bold">
+                <Star className="w-4 h-4 fill-current mr-1" />
+                <span>{avgRating}</span>
+              </div>
             </div>
-          )}
-          
-          <h1 className="text-4xl font-bold text-foreground mb-4">{ad.title}</h1>
 
-          {ad.city && (
-            <div className="flex items-center text-gray-500 dark:text-gray-400 mb-6 font-medium">
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-              {ad.city}
-            </div>
-          )}
-          
-          {ad.price && (
-            <div className="text-3xl font-bold text-primary mb-6">
-              $ {ad.price.toLocaleString('es-AR')}
-            </div>
-          )}
-          
-          <div className="flex items-center space-x-4 mb-6 text-sm text-gray-400">
-            <div className="flex items-center text-yellow-500 font-bold">
-              <Star className="w-5 h-5 fill-current mr-1" />
-              <span>{avgRating}</span>
-              <span className="text-gray-600 dark:text-gray-500 font-normal ml-1">({ad.reviews.length} reseñas)</span>
-            </div>
-            <span>•</span>
-            <div className="flex items-center">
-              <Clock className="w-4 h-4 mr-1" />
-              <span>Publicado {new Date(ad.createdAt).toLocaleDateString()}</span>
-            </div>
-          </div>
+            <h1 className="text-2xl lg:text-3xl font-bold text-foreground mb-4 leading-tight">{ad.title}</h1>
+            
+            {ad.price && (
+              <div className="text-4xl font-light text-foreground mb-6">
+                $ {ad.price.toLocaleString('es-AR')}
+              </div>
+            )}
 
-          <div className="prose prose-invert max-w-none mb-8">
-            <p className="text-gray-700 dark:text-gray-300 text-lg leading-relaxed whitespace-pre-wrap">
-              {ad.description}
-            </p>
-          </div>
+            {ad.city && (
+              <div className="flex items-center text-gray-500 dark:text-gray-400 mb-6 font-medium text-sm">
+                <svg className="w-5 h-5 mr-2 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                {ad.city}
+              </div>
+            )}
 
-          <SocialShareButtons title={ad.title} slug={`/clasificados/${ad.slug}`} />
+            <div className="space-y-4 mb-8">
+              <a 
+                href={`/api/clasificados/click?id=${ad.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full flex items-center justify-center space-x-2 bg-[#00a650] hover:bg-[#008f45] text-white py-4 rounded-xl font-bold text-lg transition-colors shadow-lg shadow-green-500/20"
+              >
+                <MessageCircle className="w-6 h-6" />
+                <span>Contactar Vendedor</span>
+              </a>
+              <p className="text-center text-gray-400 text-xs">
+                Al contactar, menciona que lo viste en el Portal.
+              </p>
+            </div>
 
-          <div className="mt-auto pt-8 border-t border-border">
-            <a 
-              href={`/api/clasificados/click?id=${ad.id}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full flex items-center justify-center space-x-2 bg-[#25D366] hover:bg-[#20bd5a] text-white py-4 rounded-xl font-bold text-lg transition-colors"
-            >
-              <MessageCircle className="w-6 h-6" />
-              <span>Contactar por WhatsApp</span>
-            </a>
-            <p className="text-center text-gray-500 text-sm mt-4">
-              Al contactar, menciona que lo viste en THE DINNER Portal.
-            </p>
+            <div className="pt-6 border-t border-border">
+              <div className="flex items-center text-sm text-gray-500 mb-4">
+                <Clock className="w-4 h-4 mr-2" />
+                <span>Publicado {new Date(ad.createdAt).toLocaleDateString()}</span>
+              </div>
+              <SocialShareButtons title={ad.title} slug={`/clasificados/${ad.slug}`} />
+            </div>
+
           </div>
         </div>
       </div>

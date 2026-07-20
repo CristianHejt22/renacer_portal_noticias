@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Tag, LogOut, CheckCircle, Clock, Trash2, RotateCw, Star, AlertTriangle, User, Mail, Calendar, Package } from 'lucide-react';
+import { Plus, LogOut, CheckCircle, Clock, Trash2, RotateCw, Star, AlertTriangle, User, Edit3, Settings, LayoutDashboard, Tag, Image as ImageIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { getUserClassifieds, deleteClassified, republishClassified, highlightClassified } from '@/app/actions/classifieds';
@@ -9,10 +9,12 @@ import { getMe, logout, updateMyProfile } from '@/app/actions/auth';
 
 export default function UserDashboard() {
   const router = useRouter();
+  const [activeTab, setActiveTab] = useState('avisos'); // 'avisos' | 'perfil'
   const [classifieds, setClassifieds] = useState([]);
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+  
   const [profileData, setProfileData] = useState({ whatsapp: '', province: '', city: '' });
   const [savingProfile, setSavingProfile] = useState(false);
 
@@ -110,7 +112,7 @@ export default function UserDashboard() {
       return { label: 'Eliminado por Vencimiento', color: 'text-red-500 bg-red-500/10', expired: true, pendingDelete: true };
     }
     if (daysSinceCreation > 30) {
-      return { label: `Vencido (Se borrará en ${37 - daysSinceCreation} días)`, color: 'text-yellow-500 bg-yellow-500/10', expired: true, pendingDelete: false };
+      return { label: `Vencido (Borrable en ${37 - daysSinceCreation}d)`, color: 'text-yellow-500 bg-yellow-500/10', expired: true, pendingDelete: false };
     }
     return { 
       label: ad.isActive ? 'Activo' : 'Pausado', 
@@ -122,254 +124,287 @@ export default function UserDashboard() {
     };
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
+      {/* Top Navbar */}
       <header className="border-b border-border bg-surface glass sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-          <Link href="/" className="text-xl font-bold text-primary">Mi Portal</Link>
-          <div className="flex items-center space-x-4">
-            <Link href="/" className="text-sm text-gray-400 hover:text-white transition-colors">
-              Volver al Inicio
+        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+          <Link href="/" className="text-xl font-black text-primary tracking-tight">Mi Portal</Link>
+          <div className="flex items-center space-x-6">
+            <Link href="/" className="text-sm font-medium text-gray-500 hover:text-primary transition-colors hidden sm:block">
+              Ir a la Portada
             </Link>
-            <button onClick={handleLogout} className="flex items-center space-x-2 text-sm text-red-400 hover:text-red-300 transition-colors">
+            <button onClick={handleLogout} className="flex items-center space-x-2 text-sm font-bold text-red-500 hover:text-red-400 transition-colors">
               <LogOut size={16} />
-              <span>Salir</span>
+              <span className="hidden sm:inline">Cerrar Sesión</span>
             </button>
           </div>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 py-8">
-        <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground mb-2">Mi Cuenta</h1>
-            <p className="text-muted-foreground">Gestiona tu perfil y tus avisos publicados</p>
-          </div>
-          <div className="flex space-x-3">
-            <Link 
-              href="/paquetes" 
-              className="bg-surface border border-primary text-primary hover:bg-primary hover:text-white px-5 py-2.5 rounded-lg font-semibold flex items-center transition-all"
-            >
-              Comprar Créditos
-            </Link>
-            <Link 
-              href="/clasificados/publicar" 
-              className="bg-primary hover:bg-accent text-white px-5 py-2.5 rounded-lg font-semibold flex items-center transition-all shadow-lg"
-            >
-              <Plus size={20} className="mr-2" />
-              Publicar Aviso
-            </Link>
-          </div>
-        </div>
-
-        {/* User Profile Cards */}
-        {userProfile && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-surface glass rounded-2xl border border-border p-6 flex flex-col justify-center">
-              <div className="flex items-center mb-4">
-                <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mr-4">
-                  <User size={24} className="text-primary" />
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          
+          {/* Sidebar */}
+          <div className="lg:col-span-3">
+            <div className="bg-surface glass border border-border rounded-2xl p-6 sticky top-24 shadow-sm">
+              <div className="text-center pb-6 border-b border-border mb-6">
+                <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-primary/20">
+                  <User size={32} className="text-primary" />
                 </div>
-                <div>
-                  <h3 className="font-bold text-lg text-foreground">{userProfile.name}</h3>
-                  <p className="text-sm text-muted-foreground flex items-center">
-                    <Mail size={14} className="mr-1" /> {userProfile.email}
-                  </p>
+                <h2 className="text-xl font-bold text-foreground truncate">{userProfile?.name}</h2>
+                <p className="text-sm text-gray-500 truncate">{userProfile?.email}</p>
+              </div>
+
+              {/* Stats / Credits */}
+              <div className="bg-background rounded-xl p-4 mb-6 border border-border">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm text-gray-500">Créditos Normales</span>
+                  <span className="font-bold text-foreground">{userProfile?.credits || 0}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-500">Créditos Destacados</span>
+                  <span className="font-bold text-yellow-500 flex items-center">
+                    <Star size={12} className="mr-1 fill-current" />
+                    {userProfile?.featuredCredits || 0}
+                  </span>
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground flex items-center mt-2">
-                <Calendar size={14} className="mr-1" />
-                Registrado el {new Date(userProfile.createdAt).toLocaleDateString()}
-              </p>
-            </div>
 
-            <div className="bg-surface glass rounded-2xl border border-border p-6 relative overflow-hidden group">
-              <div className="absolute -right-4 -top-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                <Package size={100} />
-              </div>
-              <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2">Créditos Normales</h4>
-              <div className="flex items-baseline mb-2">
-                <span className="text-5xl font-black text-foreground mr-2">{userProfile.credits}</span>
-                <span className="text-sm font-medium text-muted-foreground">disponibles</span>
-              </div>
-              
-              {userProfile.freeCreditsExpireAt && new Date(userProfile.freeCreditsExpireAt) > new Date() && (
-                <div className="mt-3 bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 text-xs font-semibold px-3 py-2 rounded-lg flex items-start">
-                  <AlertTriangle size={14} className="mr-2 shrink-0 mt-0.5" />
-                  <span>Tienes créditos de bienvenida que expiran el {new Date(userProfile.freeCreditsExpireAt).toLocaleDateString()}.</span>
-                </div>
-              )}
-            </div>
-
-            <div className="bg-surface glass rounded-2xl border border-purple-500/30 p-6 relative overflow-hidden group shadow-[0_0_15px_rgba(168,85,247,0.1)]">
-              <div className="absolute -right-4 -top-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                <Star size={100} className="text-purple-500" />
-              </div>
-              <h4 className="text-sm font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-wider mb-2">Créditos Destacados</h4>
-              <div className="flex items-baseline mb-2">
-                <span className="text-5xl font-black text-foreground mr-2">{userProfile.featuredCredits}</span>
-                <span className="text-sm font-medium text-muted-foreground">disponibles</span>
-              </div>
-              <p className="text-xs text-muted-foreground mt-3">
-                Usa estos créditos para multiplicar x10 la visibilidad de tus avisos por 7 días.
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Profile Settings */}
-        {userProfile && (
-          <div className="bg-surface glass rounded-2xl border border-border p-6 shadow-xl mb-8">
-            <h2 className="text-xl font-bold mb-6 flex items-center text-foreground">
-              <User className="mr-2 text-primary" size={24} />
-              Datos del Perfil
-            </h2>
-            <form onSubmit={handleSaveProfile} className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div>
-                <label className="block text-sm font-semibold mb-2">WhatsApp</label>
-                <input
-                  type="text"
-                  value={profileData.whatsapp}
-                  onChange={(e) => setProfileData({...profileData, whatsapp: e.target.value})}
-                  placeholder="Ej: 549351000000"
-                  className="w-full border rounded-lg px-4 py-2 bg-background focus:border-primary outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold mb-2">Provincia y Ciudad</label>
-                <input
-                  type="text"
-                  value={profileData.city}
-                  onChange={(e) => setProfileData({...profileData, city: e.target.value})}
-                  placeholder="Ej: Rosario, Santa Fe"
-                  className="w-full border rounded-lg px-4 py-2 bg-background focus:border-primary outline-none"
-                />
-              </div>
-              <div className="flex items-end">
+              {/* Menu */}
+              <nav className="space-y-2">
                 <button 
-                  type="submit" 
-                  disabled={savingProfile}
-                  className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-2 px-4 rounded-lg transition-colors disabled:opacity-50"
+                  onClick={() => setActiveTab('avisos')}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'avisos' ? 'bg-primary text-white shadow-md shadow-primary/20 font-bold' : 'text-gray-500 hover:bg-white/5 hover:text-foreground'}`}
                 >
-                  {savingProfile ? 'Guardando...' : 'Guardar Cambios'}
+                  <LayoutDashboard size={18} />
+                  <span>Mis Clasificados</span>
                 </button>
+                <button 
+                  onClick={() => setActiveTab('perfil')}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'perfil' ? 'bg-primary text-white shadow-md shadow-primary/20 font-bold' : 'text-gray-500 hover:bg-white/5 hover:text-foreground'}`}
+                >
+                  <Settings size={18} />
+                  <span>Datos del Perfil</span>
+                </button>
+              </nav>
+
+              <div className="mt-8">
+                <Link href="/clasificados/publicar" className="w-full flex items-center justify-center space-x-2 bg-foreground text-background hover:bg-gray-800 dark:hover:bg-gray-200 py-3 rounded-xl font-bold transition-colors">
+                  <Plus size={18} />
+                  <span>Publicar Aviso</span>
+                </Link>
               </div>
-            </form>
-            <p className="text-xs text-muted-foreground mt-4">Estos datos se completarán automáticamente cuando vayas a publicar un nuevo aviso.</p>
+            </div>
           </div>
-        )}
 
-        <div className="bg-surface glass rounded-2xl border border-border p-6 shadow-xl">
-          <h2 className="text-xl font-bold mb-6 flex items-center text-foreground">
-            <Tag className="mr-2 text-primary" size={24} />
-            Mis Clasificados
-          </h2>
-
-          {loading ? (
-            <div className="text-center text-muted-foreground py-12">Cargando tus avisos...</div>
-          ) : classifieds.length === 0 ? (
-            <div className="text-center py-16">
-              <div className="w-16 h-16 bg-background rounded-full flex items-center justify-center mx-auto mb-4 border border-border">
-                <Tag className="text-gray-500" size={32} />
-              </div>
-              <h3 className="text-xl font-semibold text-foreground mb-2">Aún no tienes avisos</h3>
-              <p className="text-muted-foreground max-w-md mx-auto mb-6">Empieza a vender, alquilar o promocionar tus servicios hoy mismo publicando tu primer clasificado.</p>
-              <Link href="/clasificados/publicar" className="text-primary font-semibold hover:underline">
-                Publicar mi primer aviso
-              </Link>
-            </div>
-          ) : (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {classifieds.map(ad => {
-                const status = getStatus(ad);
-                
-                return (
-                  <div key={ad.id} className={`bg-background border rounded-xl flex flex-col h-full transition-all duration-300 ${status.expired ? 'border-red-500/30 opacity-80' : 'border-border hover:border-primary/50 hover:shadow-lg'}`}>
-                    <div className="relative h-40 bg-secondary rounded-t-xl overflow-hidden border-b border-border">
-                       <div 
-                        className="absolute inset-0 bg-cover bg-center"
-                        style={{ backgroundImage: `url(${ad.imageUrl})` }}
-                      />
-                      {status.isFeaturedActive && (
-                        <div className="absolute top-2 left-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-black px-2 py-1 rounded shadow-lg flex items-center">
-                          <Star className="w-3 h-3 mr-1 fill-white" /> DESTACADO
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="p-4 flex-1 flex flex-col">
-                      <h3 className="font-bold text-lg mb-1 truncate text-foreground">{ad.title}</h3>
-                      <p className="text-sm text-muted-foreground mb-4">{ad.category?.name || 'General'}</p>
-                      
-                      <div className="space-y-2 mb-4">
-                        <div className="flex items-center text-sm font-medium">
-                          <span className={`flex items-center px-2 py-1 rounded-full ${status.color}`}>
-                            {status.expired ? <AlertTriangle size={14} className="mr-1" /> : <CheckCircle size={14} className="mr-1" />} 
-                            {status.label}
-                          </span>
-                        </div>
-                        
-                        {status.isFeaturedActive && (
-                          <div className="flex items-center text-sm">
-                            <span className="flex items-center text-purple-600 dark:text-purple-400 font-medium">
-                              <Star size={14} className="mr-1 fill-current" /> Expira: {new Date(status.featuredUntil).toLocaleDateString()}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="mt-auto">
-                        <div className="flex justify-between items-center mb-4">
-                          <span className="font-bold text-primary text-lg">
-                            {ad.price ? `$${ad.price.toLocaleString('es-AR')}` : 'Consultar'}
-                          </span>
-                          <Link href={`/clasificados/${ad.slug}`} className="text-sm font-medium text-primary hover:underline">
-                            Ver aviso
-                          </Link>
-                        </div>
-                        
-                        {/* ACCIONES */}
-                        <div className="grid grid-cols-3 gap-2 pt-3 border-t border-border">
-                          <button 
-                            onClick={() => handleRepublish(ad.id)}
-                            disabled={actionLoading || (!status.expired && !ad.isFeatured)}
-                            title="Republicar Aviso (1 Crédito)"
-                            className={`flex flex-col items-center justify-center py-2 rounded-lg text-xs font-bold transition-colors ${status.expired ? 'text-blue-500 bg-blue-500/10 hover:bg-blue-500/20' : 'text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'}`}
-                          >
-                            <RotateCw size={18} className="mb-1" />
-                            Republicar
-                          </button>
-                          
-                          <button 
-                            onClick={() => handleHighlight(ad.id)}
-                            disabled={actionLoading || status.isFeaturedActive || status.expired}
-                            title="Destacar Aviso (1 Destacado)"
-                            className="flex flex-col items-center justify-center py-2 rounded-lg text-xs font-bold text-purple-500 hover:bg-purple-50 dark:hover:bg-purple-500/10 transition-colors disabled:opacity-50"
-                          >
-                            <Star size={18} className="mb-1" />
-                            Destacar
-                          </button>
-
-                          <button 
-                            onClick={() => handleDelete(ad.id)}
-                            disabled={actionLoading}
-                            title="Eliminar Aviso"
-                            className="flex flex-col items-center justify-center py-2 rounded-lg text-xs font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors disabled:opacity-50"
-                          >
-                            <Trash2 size={18} className="mb-1" />
-                            Eliminar
-                          </button>
-                        </div>
-                      </div>
-                    </div>
+          {/* Main Content Area */}
+          <div className="lg:col-span-9">
+            
+            {/* Tab: Mis Avisos */}
+            {activeTab === 'avisos' && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between mb-8">
+                  <div>
+                    <h1 className="text-3xl font-black text-foreground">Mis Clasificados</h1>
+                    <p className="text-gray-500 mt-1">Gestiona tus anuncios, republica o destaca para vender más rápido.</p>
                   </div>
-                );
-              })}
-            </div>
-          )}
+                </div>
+
+                {classifieds.length === 0 ? (
+                  <div className="bg-surface border border-dashed border-border rounded-2xl p-12 text-center">
+                    <div className="bg-background w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-border">
+                      <Tag size={24} className="text-gray-400" />
+                    </div>
+                    <h3 className="text-xl font-bold text-foreground mb-2">No tienes avisos publicados</h3>
+                    <p className="text-gray-500 mb-6">Publica tu primer anuncio y llega a miles de compradores.</p>
+                    <Link href="/clasificados/publicar" className="inline-flex items-center space-x-2 bg-primary hover:bg-primary/90 text-white font-bold py-3 px-8 rounded-xl transition-colors">
+                      <Plus size={18} />
+                      <span>Publicar ahora</span>
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 gap-6">
+                    {classifieds.map(ad => {
+                      const status = getStatus(ad);
+                      return (
+                        <div key={ad.id} className="bg-surface glass border border-border rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+                          {/* Banner Destacado */}
+                          {status.isFeaturedActive && (
+                            <div className="absolute top-4 right-[-35px] bg-yellow-500 text-white text-[10px] font-bold py-1 px-10 transform rotate-45 shadow-sm">
+                              DESTACADO
+                            </div>
+                          )}
+
+                          <div className="flex flex-col md:flex-row gap-6">
+                            {/* Image */}
+                            <div className="w-full md:w-48 h-32 md:h-full flex-shrink-0 bg-background rounded-xl overflow-hidden border border-border">
+                              {ad.imageUrl ? (
+                                <img src={ad.imageUrl} alt={ad.title} className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="w-full h-full flex flex-col items-center justify-center text-gray-400">
+                                  <ImageIcon size={32} className="mb-2 opacity-50" />
+                                  <span className="text-xs font-medium">Sin imagen</span>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Info */}
+                            <div className="flex-1 flex flex-col">
+                              <div className="flex justify-between items-start mb-2 pr-4">
+                                <Link href={`/clasificados/${ad.slug}`} className="text-xl font-bold text-foreground hover:text-primary transition-colors line-clamp-1">
+                                  {ad.title}
+                                </Link>
+                              </div>
+                              
+                              {ad.price && (
+                                <div className="text-lg font-bold text-foreground mb-3">
+                                  $ {ad.price.toLocaleString('es-AR')}
+                                </div>
+                              )}
+
+                              <div className="flex flex-wrap items-center gap-3 mb-4 mt-auto">
+                                <span className={`text-xs font-bold px-3 py-1 rounded-full ${status.color}`}>
+                                  {status.label}
+                                </span>
+                                <span className="flex items-center text-xs text-gray-500 font-medium">
+                                  <Clock size={12} className="mr-1" />
+                                  {new Date(ad.createdAt).toLocaleDateString()}
+                                </span>
+                                {ad.category && (
+                                  <span className="flex items-center text-xs text-gray-500 font-medium">
+                                    <Tag size={12} className="mr-1" />
+                                    {ad.category.name}
+                                  </span>
+                                )}
+                              </div>
+
+                              {/* Acciones */}
+                              <div className="flex flex-wrap items-center gap-2 pt-4 border-t border-border">
+                                {!status.pendingDelete && (
+                                  <Link 
+                                    href={`/clasificados/editar/${ad.id}`}
+                                    className="flex items-center space-x-1 px-3 py-2 bg-background hover:bg-gray-100 dark:hover:bg-white/5 border border-border rounded-lg text-sm font-medium transition-colors"
+                                  >
+                                    <Edit3 size={14} />
+                                    <span>Editar</span>
+                                  </Link>
+                                )}
+                                
+                                {status.expired && !status.pendingDelete && (
+                                  <button 
+                                    onClick={() => handleRepublish(ad.id)}
+                                    disabled={actionLoading}
+                                    className="flex items-center space-x-1 px-3 py-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/20 rounded-lg text-sm font-medium transition-colors"
+                                  >
+                                    <RotateCw size={14} />
+                                    <span>Republicar</span>
+                                  </button>
+                                )}
+
+                                {!status.isFeaturedActive && !status.expired && (
+                                  <button 
+                                    onClick={() => handleHighlight(ad.id)}
+                                    disabled={actionLoading}
+                                    className="flex items-center space-x-1 px-3 py-2 bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 border border-yellow-500/20 rounded-lg text-sm font-medium transition-colors"
+                                  >
+                                    <Star size={14} />
+                                    <span>Destacar</span>
+                                  </button>
+                                )}
+
+                                <button 
+                                  onClick={() => handleDelete(ad.id)}
+                                  disabled={actionLoading}
+                                  className="flex items-center space-x-1 px-3 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 border border-red-500/20 rounded-lg text-sm font-medium ml-auto transition-colors"
+                                >
+                                  <Trash2 size={14} />
+                                  <span>Eliminar</span>
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Tab: Perfil */}
+            {activeTab === 'perfil' && (
+              <div className="space-y-6 max-w-2xl">
+                <div className="mb-8">
+                  <h1 className="text-3xl font-black text-foreground">Datos del Perfil</h1>
+                  <p className="text-gray-500 mt-1">Configura tu información de contacto predeterminada para publicar más rápido.</p>
+                </div>
+
+                <div className="bg-surface glass border border-border p-8 rounded-2xl shadow-sm">
+                  <form onSubmit={handleSaveProfile} className="space-y-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">WhatsApp</label>
+                      <input 
+                        type="text" 
+                        value={profileData.whatsapp}
+                        onChange={e => setProfileData({...profileData, whatsapp: e.target.value})}
+                        placeholder="Ej: +5491112345678"
+                        className="w-full bg-background border border-border rounded-xl p-3 text-foreground focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" 
+                      />
+                      <p className="text-xs text-gray-500 mt-2 flex items-center">
+                        <AlertTriangle size={12} className="mr-1" />
+                        Se autocompletará al crear nuevos avisos.
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Provincia</label>
+                        <input 
+                          type="text" 
+                          value={profileData.province}
+                          onChange={e => setProfileData({...profileData, province: e.target.value})}
+                          placeholder="Ej: Santa Fe"
+                          className="w-full bg-background border border-border rounded-xl p-3 text-foreground focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" 
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Ciudad</label>
+                        <input 
+                          type="text" 
+                          value={profileData.city}
+                          onChange={e => setProfileData({...profileData, city: e.target.value})}
+                          placeholder="Ej: Rosario"
+                          className="w-full bg-background border border-border rounded-xl p-3 text-foreground focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" 
+                        />
+                      </div>
+                    </div>
+
+                    <div className="pt-6 mt-6 border-t border-border">
+                      <button 
+                        type="submit" 
+                        disabled={savingProfile}
+                        className="w-full sm:w-auto px-8 bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-xl transition-colors disabled:opacity-50"
+                      >
+                        {savingProfile ? 'Guardando...' : 'Guardar Cambios'}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
+          </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }
