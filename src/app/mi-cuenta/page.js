@@ -5,7 +5,7 @@ import { Plus, Tag, LogOut, CheckCircle, Clock, Trash2, RotateCw, Star, AlertTri
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { getUserClassifieds, deleteClassified, republishClassified, highlightClassified } from '@/app/actions/classifieds';
-import { getMe, logout } from '@/app/actions/auth';
+import { getMe, logout, updateMyProfile } from '@/app/actions/auth';
 
 export default function UserDashboard() {
   const router = useRouter();
@@ -48,7 +48,6 @@ export default function UserDashboard() {
   const handleSaveProfile = async (e) => {
     e.preventDefault();
     setSavingProfile(true);
-    const { updateMyProfile } = await import('@/app/actions/auth');
     const res = await updateMyProfile(profileData);
     if (res.success) {
       alert('Perfil guardado con éxito');

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getClassifiedCategories } from '@/app/actions/classifiedCategories';
 import { publishUserClassified, getUserCredits } from '@/app/actions/classifieds';
+import { getMe } from '@/app/actions/auth';
 import { Tag, Image as ImageIcon, DollarSign, Phone, AlignLeft, Star, Send, Upload, Package } from 'lucide-react';
 import Link from 'next/link';
 
@@ -35,7 +36,6 @@ export default function PublishClassifiedPage() {
   };
 
   const loadCredits = async () => {
-    const { getMe } = await import('@/app/actions/auth');
     const profileRes = await getMe();
     if (profileRes.success && profileRes.data) {
       const p = profileRes.data;
