@@ -178,6 +178,9 @@ export async function getMe() {
         credits: true,
         featuredCredits: true,
         freeCreditsExpireAt: true,
+        whatsapp: true,
+        province: true,
+        city: true,
         createdAt: true
       }
     });
@@ -187,5 +190,30 @@ export async function getMe() {
   } catch (error) {
     console.error('Error in getMe:', error);
     return { success: false, error: 'Error getting profile' };
+  }
+}
+
+export async function updateMyProfile(data) {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get('auth_token')?.value;
+    if (!token) return { success: false, error: 'No autorizado' };
+
+    const { payload } = await jwtVerify(token, encodedSecret);
+    const userId = payload.userId;
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        whatsapp: data.whatsapp || null,
+        province: data.province || null,
+        city: data.city || null,
+      },
+    });
+
+    return { success: true, data: updatedUser };
+  } catch (error) {
+    console.error('Error in updateMyProfile:', error);
+    return { success: false, error: 'Ocurrió un error al actualizar el perfil' };
   }
 }

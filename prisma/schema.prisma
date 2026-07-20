@@ -21,6 +21,9 @@ model User {
   planLevel  String   @default("free")
   planActive Boolean  @default(false)
   freeCreditsExpireAt DateTime?
+  whatsapp   String?
+  province   String?
+  city       String?
   posts      Post[]
   classifieds ClassifiedAd[]
   purchaseRequests PurchaseRequest[]
@@ -113,6 +116,8 @@ model ClassifiedAd {
   description String             @db.Text
   imageUrl    String
   whatsapp    String
+  province    String?
+  city        String?
   clicks      Int                @default(0)
   isActive             Boolean            @default(true)
   price                Float?

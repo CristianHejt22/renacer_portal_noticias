@@ -205,6 +205,8 @@ export async function publishUserClassified(data) {
           price: data.price ? parseFloat(data.price) : null,
           classifiedCategoryId: data.classifiedCategoryId ? parseInt(data.classifiedCategoryId) : null,
           whatsapp: data.whatsapp,
+          province: data.province,
+          city: data.city,
           isActive: true, // Auto publish
           isFeatured: isHighlight,
           featuredUntil: featuredUntil,

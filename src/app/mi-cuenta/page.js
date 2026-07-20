@@ -13,6 +13,8 @@ export default function UserDashboard() {
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+  const [profileData, setProfileData] = useState({ whatsapp: '', province: '', city: '' });
+  const [savingProfile, setSavingProfile] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -26,7 +28,14 @@ export default function UserDashboard() {
     ]);
     
     if (adsRes.success) setClassifieds(adsRes.data);
-    if (profileRes.success) setUserProfile(profileRes.data);
+    if (profileRes.success) {
+      setUserProfile(profileRes.data);
+      setProfileData({
+        whatsapp: profileRes.data.whatsapp || '',
+        province: profileRes.data.province || '',
+        city: profileRes.data.city || ''
+      });
+    }
     
     setLoading(false);
   };
@@ -34,6 +43,19 @@ export default function UserDashboard() {
   const handleLogout = async () => {
     await logout();
     router.push('/login');
+  };
+
+  const handleSaveProfile = async (e) => {
+    e.preventDefault();
+    setSavingProfile(true);
+    const { updateMyProfile } = await import('@/app/actions/auth');
+    const res = await updateMyProfile(profileData);
+    if (res.success) {
+      alert('Perfil guardado con éxito');
+    } else {
+      alert(res.error || 'Error al guardar el perfil');
+    }
+    setSavingProfile(false);
   };
 
   const handleDelete = async (id) => {
@@ -194,6 +216,48 @@ export default function UserDashboard() {
                 Usa estos créditos para multiplicar x10 la visibilidad de tus avisos por 7 días.
               </p>
             </div>
+          </div>
+        )}
+
+        {/* Profile Settings */}
+        {userProfile && (
+          <div className="bg-surface glass rounded-2xl border border-border p-6 shadow-xl mb-8">
+            <h2 className="text-xl font-bold mb-6 flex items-center text-foreground">
+              <User className="mr-2 text-primary" size={24} />
+              Datos del Perfil
+            </h2>
+            <form onSubmit={handleSaveProfile} className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <label className="block text-sm font-semibold mb-2">WhatsApp</label>
+                <input
+                  type="text"
+                  value={profileData.whatsapp}
+                  onChange={(e) => setProfileData({...profileData, whatsapp: e.target.value})}
+                  placeholder="Ej: 549351000000"
+                  className="w-full border rounded-lg px-4 py-2 bg-background focus:border-primary outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold mb-2">Provincia y Ciudad</label>
+                <input
+                  type="text"
+                  value={profileData.city}
+                  onChange={(e) => setProfileData({...profileData, city: e.target.value})}
+                  placeholder="Ej: Rosario, Santa Fe"
+                  className="w-full border rounded-lg px-4 py-2 bg-background focus:border-primary outline-none"
+                />
+              </div>
+              <div className="flex items-end">
+                <button 
+                  type="submit" 
+                  disabled={savingProfile}
+                  className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-2 px-4 rounded-lg transition-colors disabled:opacity-50"
+                >
+                  {savingProfile ? 'Guardando...' : 'Guardar Cambios'}
+                </button>
+              </div>
+            </form>
+            <p className="text-xs text-muted-foreground mt-4">Estos datos se completarán automáticamente cuando vayas a publicar un nuevo aviso.</p>
           </div>
         )}
 

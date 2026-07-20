@@ -40,6 +40,13 @@ export default async function ClassifiedDetailPage({ params }) {
           )}
           
           <h1 className="text-4xl font-bold text-foreground mb-4">{ad.title}</h1>
+
+          {ad.city && (
+            <div className="flex items-center text-gray-500 dark:text-gray-400 mb-6 font-medium">
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+              {ad.city}
+            </div>
+          )}
           
           {ad.price && (
             <div className="text-3xl font-bold text-primary mb-6">

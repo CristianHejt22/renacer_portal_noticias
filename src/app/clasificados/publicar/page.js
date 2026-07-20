@@ -18,9 +18,11 @@ export default function PublishClassifiedPage() {
     description: '',
     price: '',
     whatsapp: '',
+    city: '',
     classifiedCategoryId: '',
     plan: 'free' // 'free' | 'highlight'
   });
+  const [profile, setProfile] = useState(null);
 
   useEffect(() => {
     loadCategories();
@@ -33,6 +35,18 @@ export default function PublishClassifiedPage() {
   };
 
   const loadCredits = async () => {
+    const { getMe } = await import('@/app/actions/auth');
+    const profileRes = await getMe();
+    if (profileRes.success && profileRes.data) {
+      const p = profileRes.data;
+      setProfile(p);
+      setFormData(prev => ({
+        ...prev,
+        whatsapp: p.whatsapp || '',
+        city: p.city || '',
+      }));
+    }
+
     const res = await getUserCredits();
     if (res.success && res.data) {
       setCredits(res.data);
@@ -262,12 +276,30 @@ export default function PublishClassifiedPage() {
                     <Phone size={18} />
                   </div>
                   <input 
-                    type="text" required
-                    value={formData.whatsapp} onChange={e => setFormData({...formData, whatsapp: e.target.value})}
-                    className="w-full bg-background border border-border rounded-lg pl-10 p-3 text-foreground focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" 
-                    placeholder="Ej: 5491112345678" 
+                    type="text" required readOnly={true}
+                    value={formData.whatsapp} 
+                    className="w-full bg-gray-100 dark:bg-white/5 border border-border rounded-lg pl-10 p-3 text-gray-500 cursor-not-allowed outline-none" 
+                    placeholder="Configúralo en Mi Cuenta" 
                   />
                 </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Tu número se configura automáticamente desde <Link href="/mi-cuenta" className="text-primary hover:underline">Mi Cuenta</Link>.
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Provincia y Ciudad</label>
+                <div className="relative">
+                  <input 
+                    type="text" required readOnly={true}
+                    value={formData.city} 
+                    className="w-full bg-gray-100 dark:bg-white/5 border border-border rounded-lg p-3 text-gray-500 cursor-not-allowed outline-none" 
+                    placeholder="Configúralo en Mi Cuenta" 
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Tu ciudad se configura automáticamente desde <Link href="/mi-cuenta" className="text-primary hover:underline">Mi Cuenta</Link>.
+                </p>
               </div>
             </div>
 
