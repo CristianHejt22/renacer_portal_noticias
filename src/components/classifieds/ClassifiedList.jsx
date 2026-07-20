@@ -222,18 +222,38 @@ export default function ClassifiedList({ classifieds, categories = [], paginatio
                       Todas las categorías
                     </button>
                   </li>
-                  {categories.map(cat => (
-                    <li key={cat.id}>
+                  {categories.filter(c => !c.parentId).map(cat => (
+                    <li key={cat.id} className="mb-2">
                       <button
                         onClick={() => handleCategoryClick(cat.id)}
                         className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
                           currentCategory == cat.id 
                             ? 'bg-primary/10 text-primary font-bold' 
-                            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5'
+                            : 'text-gray-800 dark:text-gray-200 font-semibold hover:bg-gray-100 dark:hover:bg-white/5'
                         }`}
                       >
                         {cat.name}
                       </button>
+                      
+                      {/* Subcategorías */}
+                      {cat.children && cat.children.length > 0 && (
+                        <ul className="ml-4 mt-1 space-y-1 border-l-2 border-gray-100 dark:border-white/10 pl-2">
+                          {cat.children.map(subcat => (
+                            <li key={subcat.id}>
+                              <button
+                                onClick={() => handleCategoryClick(subcat.id)}
+                                className={`w-full text-left px-3 py-1.5 rounded-lg text-xs transition-colors ${
+                                  currentCategory == subcat.id 
+                                    ? 'text-primary font-bold bg-primary/5' 
+                                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5'
+                                }`}
+                              >
+                                {subcat.name}
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                     </li>
                   ))}
                 </ul>
