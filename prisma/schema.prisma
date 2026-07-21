@@ -21,6 +21,7 @@ model User {
   planLevel  String   @default("free")
   planActive Boolean  @default(false)
   freeCreditsExpireAt DateTime?
+  lastMonthlyCreditsReset DateTime?
   whatsapp   String?
   province   String?
   city       String?

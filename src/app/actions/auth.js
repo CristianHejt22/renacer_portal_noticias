@@ -124,8 +124,9 @@ export async function registerUser(name, email, password) {
         email,
         password: hashedPassword,
         role: 'USER',
-        credits: 3,
+        credits: 5, // Now 5 credits per month
         freeCreditsExpireAt: expireDate,
+        lastMonthlyCreditsReset: new Date(),
       },
     });
 
@@ -178,6 +179,7 @@ export async function getMe() {
         credits: true,
         featuredCredits: true,
         freeCreditsExpireAt: true,
+        lastMonthlyCreditsReset: true,
         whatsapp: true,
         province: true,
         city: true,
@@ -186,6 +188,27 @@ export async function getMe() {
     });
 
     if (!user) return { success: false, error: 'User not found' };
+
+    // Verificación de reseteo mensual (5 créditos no acumulables)
+    const now = new Date();
+    const lastReset = user.lastMonthlyCreditsReset ? new Date(user.lastMonthlyCreditsReset) : new Date(user.createdAt);
+    
+    // Si estamos en un mes distinto, o si ya pasó 1 mes
+    if (now.getMonth() !== lastReset.getMonth() || now.getFullYear() !== lastReset.getFullYear()) {
+      // Recargamos hasta 5, respetando si ya tienen más por haber comprado
+      const newCredits = Math.max(user.credits, 5);
+      
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { 
+          credits: newCredits,
+          lastMonthlyCreditsReset: now
+        }
+      });
+      user.credits = newCredits;
+      user.lastMonthlyCreditsReset = now;
+    }
+
     return { success: true, data: user };
   } catch (error) {
     console.error('Error in getMe:', error);

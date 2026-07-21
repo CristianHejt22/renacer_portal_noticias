@@ -7,6 +7,7 @@ import { publishUserClassified, getUserCredits } from '@/app/actions/classifieds
 import { getMe } from '@/app/actions/auth';
 import { Tag, Image as ImageIcon, DollarSign, Phone, AlignLeft, Star, Send, Upload, Package } from 'lucide-react';
 import Link from 'next/link';
+import { toast } from 'sonner';
 
 export default function PublishClassifiedPage() {
   const router = useRouter();
@@ -131,19 +132,19 @@ export default function PublishClassifiedPage() {
     setLoading(true);
 
     if (imageFiles.length === 0) {
-      alert('Por favor selecciona al menos una imagen para tu anuncio.');
+      toast.error('Por favor selecciona al menos una imagen para tu anuncio.');
       setLoading(false);
       return;
     }
 
     if (formData.plan === 'free' && credits.credits <= 0) {
-      alert('No tienes suficientes créditos normales.');
+      toast.error('No tienes créditos normales. Por favor, compra un pack.');
       setLoading(false);
       return;
     }
 
     if (formData.plan === 'highlight' && (credits.credits <= 0 || credits.featuredCredits <= 0)) {
-      alert('No tienes suficientes créditos o destacados.');
+      toast.error('No tienes créditos destacados. Por favor, compra un pack.');
       setLoading(false);
       return;
     }
@@ -171,7 +172,7 @@ export default function PublishClassifiedPage() {
       }
       
       if (uploadedUrls.length === 0) {
-        alert('Error al subir las imágenes.');
+        toast.error('Error al subir las imágenes.');
         setLoading(false);
         return;
       }
@@ -187,12 +188,12 @@ export default function PublishClassifiedPage() {
       const adRes = await publishUserClassified(adData);
 
       if (!adRes.success) {
-        alert(adRes.error || 'Error al publicar el aviso');
+        toast.error(adRes.error || 'Error al publicar el aviso');
         setLoading(false);
         return;
       }
 
-      alert('¡Tu aviso ha sido publicado con éxito!');
+      toast.success('¡Tu aviso ha sido publicado con éxito!');
       router.push('/mi-cuenta');
 
     } catch (error) {

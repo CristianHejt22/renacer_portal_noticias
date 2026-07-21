@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Plus, LogOut, CheckCircle, Clock, Trash2, RotateCw, Star, AlertTriangle, User, Edit3, Settings, LayoutDashboard, Tag, Image as ImageIcon } from 'lucide-react';
 import Link from 'next/link';
+import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { getUserClassifieds, deleteClassified, republishClassified, highlightClassified } from '@/app/actions/classifieds';
 import { getMe, logout, updateMyProfile } from '@/app/actions/auth';
@@ -52,9 +53,9 @@ export default function UserDashboard() {
     setSavingProfile(true);
     const res = await updateMyProfile(profileData);
     if (res.success) {
-      alert('Perfil guardado con éxito');
+      toast.success('Perfil guardado con éxito');
     } else {
-      alert(res.error || 'Error al guardar el perfil');
+      toast.error(res.error || 'Error al guardar el perfil');
     }
     setSavingProfile(false);
   };
@@ -64,10 +65,10 @@ export default function UserDashboard() {
     setActionLoading(true);
     const res = await deleteClassified(id);
     if (res.success) {
-      alert('Aviso eliminado');
+      toast.success('Aviso eliminado');
       loadData();
     } else {
-      alert(res.error || 'Error al eliminar');
+      toast.error(res.error || 'Error al eliminar');
     }
     setActionLoading(false);
   };
@@ -77,10 +78,10 @@ export default function UserDashboard() {
     setActionLoading(true);
     const res = await republishClassified(id);
     if (res.success) {
-      alert('Aviso republicado con éxito');
+      toast.success('Aviso republicado con éxito');
       loadData();
     } else {
-      alert(res.error || 'Error al republicar');
+      toast.error(res.error || 'Error al republicar');
     }
     setActionLoading(false);
   };
@@ -90,10 +91,10 @@ export default function UserDashboard() {
     setActionLoading(true);
     const res = await highlightClassified(id);
     if (res.success) {
-      alert('Aviso destacado con éxito');
+      toast.success('Aviso destacado con éxito');
       loadData();
     } else {
-      alert(res.error || 'Error al destacar');
+      toast.error(res.error || 'Error al destacar');
     }
     setActionLoading(false);
   };

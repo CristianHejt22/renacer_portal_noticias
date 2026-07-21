@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { getClassifiedCategories } from '@/app/actions/classifiedCategories';
 import { Tag, DollarSign, AlignLeft } from 'lucide-react';
 import Link from 'next/link';
+import { toast } from 'sonner';
 
 export default function EditClassifiedPage({ params }) {
   const resolvedParams = use(params);
@@ -46,7 +47,7 @@ export default function EditClassifiedPage({ params }) {
         classifiedCategoryId: ad.classifiedCategoryId ? ad.classifiedCategoryId.toString() : '',
       });
     } else {
-      alert('Aviso no encontrado o no autorizado');
+      toast.error('Aviso no encontrado o no autorizado');
       router.push('/mi-cuenta');
     }
     
@@ -61,10 +62,10 @@ export default function EditClassifiedPage({ params }) {
     const res = await updateUserClassified(id, formData);
 
     if (res.success) {
-      alert('¡Tu aviso ha sido actualizado con éxito!');
+      toast.success('¡Tu aviso ha sido actualizado con éxito!');
       router.push('/mi-cuenta');
     } else {
-      alert(res.error || 'Error al actualizar el aviso');
+      toast.error(res.error || 'Error al actualizar el aviso');
     }
     setLoading(false);
   };

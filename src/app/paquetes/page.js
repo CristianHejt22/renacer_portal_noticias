@@ -110,6 +110,56 @@ export default function PackagesPage() {
             </div>
           ))}
         </div>
+
+        {/* Individual Featured Credits Section */}
+        <div className="mt-24 pt-16 border-t border-border">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-foreground mb-4">Créditos Destacados Individuales</h2>
+            <p className="text-gray-600 dark:text-gray-400 text-lg max-w-2xl mx-auto">
+              ¿Solo necesitas resaltar tus anuncios actuales? Compra Créditos Destacados por unidad.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              { id: 'destacado-1', qty: 1, price: 1500 },
+              { id: 'destacado-2', qty: 2, price: 2500 },
+              { id: 'destacado-5', qty: 5, price: 5500, popular: true },
+              { id: 'destacado-10', qty: 10, price: 10000 }
+            ].map((pkg) => (
+              <div 
+                key={pkg.id} 
+                className={`relative bg-surface glass border rounded-3xl p-6 flex flex-col text-center transition-transform hover:-translate-y-2 ${pkg.popular ? 'border-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.2)]' : 'border-border'}`}
+              >
+                {pkg.popular && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-purple-500 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                    Mejor Precio
+                  </div>
+                )}
+                
+                <div className="w-12 h-12 bg-purple-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-purple-500/20">
+                  <Star className="text-purple-500 fill-purple-500" size={24} />
+                </div>
+                
+                <h3 className="text-xl font-bold text-foreground mb-1">
+                  {pkg.qty} {pkg.qty === 1 ? 'Destacado' : 'Destacados'}
+                </h3>
+                
+                <div className="text-3xl font-black text-foreground my-4">
+                  ${pkg.price.toLocaleString('es-AR')}
+                </div>
+                
+                <Link 
+                  href={`/transferencia?pack=${pkg.id}&price=${pkg.price}&name=${encodeURIComponent(pkg.qty + ' Crédito(s) Destacado(s)')}`}
+                  className={`w-full py-3 mt-auto rounded-xl flex justify-center items-center font-bold transition-all ${pkg.popular ? 'bg-purple-600 hover:bg-purple-700 text-white' : 'bg-background hover:bg-white/5 border border-border text-foreground'}`}
+                >
+                  Comprar
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
+
       </div>
     </div>
   );

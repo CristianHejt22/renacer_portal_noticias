@@ -1,6 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
+import { Toaster } from 'sonner';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -121,6 +122,7 @@ export default async function RootLayout({ children }) {
           </div>
           <p className="text-sm text-gray-500">© {new Date().getFullYear()} THE DINNER Portal. Todos los derechos reservados.</p>
         </footer>
+        <Toaster theme="dark" position="bottom-right" richColors />
       </body>
     </html>
   );

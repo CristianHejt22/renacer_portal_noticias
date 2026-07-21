@@ -1,4 +1,5 @@
 import { getClassifiedBySlug } from '@/app/actions/classifieds';
+import { getMe } from '@/app/actions/auth';
 import { notFound } from 'next/navigation';
 import { Star, MessageCircle, Clock, ExternalLink, Tag, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
@@ -11,7 +12,10 @@ export const revalidate = 60; // ISR
 
 export default async function ClassifiedDetailPage({ params }) {
   const { slug } = await params;
-  const res = await getClassifiedBySlug(slug);
+  const [res, sessionRes] = await Promise.all([
+    getClassifiedBySlug(slug),
+    getMe()
+  ]);
 
   if (!res.success || !res.data) {
     notFound();
@@ -123,7 +127,7 @@ export default async function ClassifiedDetailPage({ params }) {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
           {/* Formulario */}
           <div className="lg:col-span-4">
-            <ClassifiedReviewForm classifiedAdId={ad.id} />
+            <ClassifiedReviewForm classifiedAdId={ad.id} user={sessionRes.success ? sessionRes.data : null} />
           </div>
 
           {/* Lista de Reseñas */}

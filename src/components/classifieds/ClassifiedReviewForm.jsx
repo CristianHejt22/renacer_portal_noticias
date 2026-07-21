@@ -2,15 +2,16 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Star } from 'lucide-react';
+import { Star, LogIn } from 'lucide-react';
+import { toast } from 'sonner';
+import Link from 'next/link';
 
-export default function ClassifiedReviewForm({ classifiedAdId }) {
+export default function ClassifiedReviewForm({ classifiedAdId, user }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [rating, setRating] = useState(5);
   const [hoverRating, setHoverRating] = useState(0);
   const [formData, setFormData] = useState({
-    authorName: '',
     content: ''
   });
 
@@ -21,25 +22,44 @@ export default function ClassifiedReviewForm({ classifiedAdId }) {
     try {
       const { createReview } = await import('@/app/actions/classifieds');
       const res = await createReview({
-        ...formData,
+        authorName: user.name,
+        content: formData.content,
         rating,
         classifiedAdId
       });
 
       if (res.success) {
-        setFormData({ authorName: '', content: '' });
+        setFormData({ content: '' });
         setRating(5);
-        alert('Reseña enviada con éxito');
+        toast.success('Reseña publicada con éxito');
         router.refresh();
       } else {
-        alert('Hubo un error al enviar la reseña');
+        toast.error(res.error || 'Hubo un error al enviar la reseña');
       }
     } catch (error) {
-      alert('Error de conexión');
+      toast.error('Error de conexión al enviar la reseña');
     }
     
     setLoading(false);
   };
+
+  if (!user) {
+    return (
+      <div className="bg-surface border border-border p-8 rounded-xl sticky top-24 text-center">
+        <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-primary/20">
+          <LogIn className="text-primary" size={32} />
+        </div>
+        <h3 className="text-xl font-bold mb-2">Dejar una Reseña</h3>
+        <p className="text-gray-500 mb-6">Debes iniciar sesión para poder dejar tu opinión sobre este anuncio.</p>
+        <Link 
+          href="/login"
+          className="inline-block bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg font-bold transition-colors"
+        >
+          Iniciar Sesión
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-surface border border-border p-6 rounded-xl sticky top-24">
@@ -71,15 +91,10 @@ export default function ClassifiedReviewForm({ classifiedAdId }) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-400 mb-2">Tu Nombre</label>
-          <input
-            type="text"
-            required
-            className="w-full bg-background border border-border rounded-lg px-4 py-2 text-white focus:outline-none focus:border-primary"
-            value={formData.authorName}
-            onChange={e => setFormData({ ...formData, authorName: e.target.value })}
-            placeholder="Ej. Juan Pérez"
-          />
+          <label className="block text-sm font-medium text-gray-400 mb-2">Publicando como</label>
+          <div className="w-full bg-background border border-border rounded-lg px-4 py-3 text-white font-bold opacity-75">
+            {user.name}
+          </div>
         </div>
 
         <div>
