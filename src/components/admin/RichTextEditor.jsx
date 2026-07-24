@@ -7,13 +7,49 @@ import LinkExtension from '@tiptap/extension-link';
 import ImageExtension from '@tiptap/extension-image';
 import Underline from '@tiptap/extension-underline';
 import TextAlign from '@tiptap/extension-text-align';
-import { Bold, Italic, Strikethrough, Underline as UnderlineIcon, Heading1, Heading2, List, ListOrdered, Quote, Link as LinkIcon, Image as ImageIcon, DollarSign, AlignLeft, AlignCenter, AlignRight, AlignJustify, Code } from 'lucide-react';
+import { Bold, Italic, Strikethrough, Underline as UnderlineIcon, Heading1, Heading2, List, ListOrdered, Quote, Link as LinkIcon, Image as ImageIcon, Video, DollarSign, AlignLeft, AlignCenter, AlignRight, AlignJustify, Code } from 'lucide-react';
 import { compressImage } from '@/lib/imageCompression';
 import { toast } from 'sonner';
+import { Node, mergeAttributes } from '@tiptap/core';
+
+const VideoExtension = Node.create({
+  name: 'video',
+  group: 'block',
+  selectable: true,
+  draggable: true,
+  atom: true,
+
+  addAttributes() {
+    return {
+      src: {
+        default: null,
+      },
+      controls: {
+        default: true,
+      },
+      class: {
+        default: 'w-full max-h-[500px] object-contain rounded-xl my-4 bg-black',
+      }
+    };
+  },
+
+  parseHTML() {
+    return [
+      {
+        tag: 'video',
+      },
+    ];
+  },
+
+  renderHTML({ HTMLAttributes }) {
+    return ['video', mergeAttributes(HTMLAttributes)];
+  },
+});
 
 
 const MenuBar = ({ editor, availableBanners = [] }) => {
   const [showAdMenu, setShowAdMenu] = useState(false);
+  const [showVideoMenu, setShowVideoMenu] = useState(false);
 
   if (!editor) {
     return null;
@@ -37,7 +73,7 @@ const MenuBar = ({ editor, availableBanners = [] }) => {
     const input = document.createElement('input');
     input.type = 'file';
     input.multiple = true; // Allow selecting multiple images
-    input.accept = 'image/*,video/*,audio/*';
+    input.accept = 'image/*';
     
     input.onchange = async (e) => {
       const files = Array.from(e.target.files);
@@ -70,6 +106,47 @@ const MenuBar = ({ editor, availableBanners = [] }) => {
     };
     
     input.click();
+  };
+
+  const uploadVideo = () => {
+    setShowVideoMenu(false);
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'video/*';
+    input.onchange = async (e) => {
+      const files = Array.from(e.target.files);
+      if (files.length > 0) {
+        const file = files[0];
+        const toastId = toast.loading(`Subiendo video...`);
+        try {
+          const formData = new FormData();
+          formData.append('file', file, file.name || 'video.mp4');
+          const res = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData,
+          });
+          const data = await res.json();
+          if (data.url) {
+            editor.chain().focus().insertContent(`<video src="${data.url}" controls class="w-full max-h-[500px] object-contain rounded-xl my-4 bg-black"></video><p></p>`).run();
+            toast.success('Video insertado', { id: toastId });
+          } else {
+            throw new Error('No URL returned');
+          }
+        } catch (err) {
+          console.error('Upload failed for', file.name, err);
+          toast.error(`Error al subir video`, { id: toastId });
+        }
+      }
+    };
+    input.click();
+  };
+
+  const addVideoUrl = () => {
+    setShowVideoMenu(false);
+    const url = window.prompt('Pega la URL directa del video (.mp4, .webm, etc):');
+    if (url) {
+      editor.chain().focus().insertContent(`<video src="${url}" controls class="w-full max-h-[500px] object-contain rounded-xl my-4 bg-black"></video><p></p>`).run();
+    }
   };
 
   const insertCode = (code) => {
@@ -183,6 +260,21 @@ const MenuBar = ({ editor, availableBanners = [] }) => {
       <button onClick={addImage} className={buttonClass()} title="Imagen">
         <ImageIcon size={18} />
       </button>
+      <div className="relative">
+        <button onClick={() => setShowVideoMenu(!showVideoMenu)} className={buttonClass(showVideoMenu)} title="Video">
+          <Video size={18} />
+        </button>
+        {showVideoMenu && (
+          <div className="absolute top-full right-0 mt-1 w-48 bg-surface border border-border rounded-lg shadow-xl z-50 py-2">
+            <button onClick={uploadVideo} className="w-full text-left px-4 py-2 text-sm hover:bg-white/10 transition-colors">
+              Subir desde dispositivo
+            </button>
+            <button onClick={addVideoUrl} className="w-full text-left px-4 py-2 text-sm hover:bg-white/10 transition-colors">
+              Insertar desde URL
+            </button>
+          </div>
+        )}
+      </div>
       <button onClick={insertHtmlEmbed} className={buttonClass()} title="Insertar Código HTML / Iframe (YouTube, etc.)">
         <Code size={18} className="text-blue-400" />
       </button>
@@ -236,6 +328,7 @@ export default function RichTextEditor({ content, onChange, availableBanners = [
           class: 'rounded-lg max-w-full h-auto',
         },
       }),
+      VideoExtension,
     ],
     content: content || '<p>Escribe tu artículo aquí...</p>',
     onUpdate: ({ editor }) => {
