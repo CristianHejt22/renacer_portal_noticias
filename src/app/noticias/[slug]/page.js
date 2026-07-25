@@ -149,7 +149,7 @@ export default async function ArticlePage({ params }) {
           {/* Body and Share */}
           <div className="flex flex-col md:flex-row gap-8">
             <ShareButtons 
-              url={`https://librecielo.com/noticias/${post.slug}`} 
+              url={`https://librecielo.com/n/${post.id}`} 
               title={post.title} 
             />
 
@@ -241,7 +241,7 @@ export default async function ArticlePage({ params }) {
               )}
 
               {/* Botones adicionales al final */}
-              <SocialShareButtons title={post.title} slug={post.slug} />
+              <SocialShareButtons title={post.title} slug={post.slug} shortPath={`/n/${post.id}`} />
             </div>
           </div>
 

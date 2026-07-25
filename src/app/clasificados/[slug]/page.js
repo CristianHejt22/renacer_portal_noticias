@@ -113,7 +113,7 @@ export default async function ClassifiedDetailPage({ params }) {
                 <Clock className="w-4 h-4 mr-2" />
                 <span>Publicado {new Date(ad.createdAt).toLocaleDateString()}</span>
               </div>
-              <SocialShareButtons title={ad.title} slug={`/clasificados/${ad.slug}`} />
+              <SocialShareButtons title={ad.title} slug={`/clasificados/${ad.slug}`} shortPath={`/c/${ad.id}`} />
             </div>
 
           </div>

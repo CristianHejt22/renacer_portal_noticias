@@ -2,16 +2,17 @@
 
 import { useState, useEffect } from 'react';
 
-export default function SocialShareButtons({ title, slug }) {
+export default function SocialShareButtons({ title, slug, shortPath }) {
   const [url, setUrl] = useState('');
 
   useEffect(() => {
     // Generar la URL solo en el cliente para evitar errores de hidratación
     const timer = setTimeout(() => {
-      setUrl(window.location.href);
+      const baseUrl = window.location.origin;
+      setUrl(shortPath ? `${baseUrl}${shortPath}` : window.location.href);
     }, 0);
     return () => clearTimeout(timer);
-  }, []);
+  }, [shortPath]);
 
   if (!url) return null;
 
