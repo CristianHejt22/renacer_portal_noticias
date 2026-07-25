@@ -1,8 +1,18 @@
 'use client';
 
 import { Link as LinkIcon } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
-export default function ShareButtons({ url, title }) {
+export default function ShareButtons({ shortPath, title }) {
+  const [url, setUrl] = useState('');
+
+  useEffect(() => {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://librecielo.com';
+    setUrl(shortPath ? `${baseUrl}${shortPath}` : window.location.href);
+  }, [shortPath]);
+
+  if (!url) return null;
+
   const encodedUrl = encodeURIComponent(url);
   const encodedTitle = encodeURIComponent(title);
 

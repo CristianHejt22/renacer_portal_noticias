@@ -149,7 +149,7 @@ export default async function ArticlePage({ params }) {
           {/* Body and Share */}
           <div className="flex flex-col md:flex-row gap-8">
             <ShareButtons 
-              url={`https://librecielo.com/n/${post.id}`} 
+              shortPath={`/n/${post.id}`} 
               title={post.title} 
             />
 

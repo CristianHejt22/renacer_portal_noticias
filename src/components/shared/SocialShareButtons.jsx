@@ -8,7 +8,7 @@ export default function SocialShareButtons({ title, slug, shortPath }) {
   useEffect(() => {
     // Generar la URL solo en el cliente para evitar errores de hidratación
     const timer = setTimeout(() => {
-      const baseUrl = window.location.origin;
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://librecielo.com';
       setUrl(shortPath ? `${baseUrl}${shortPath}` : window.location.href);
     }, 0);
     return () => clearTimeout(timer);
