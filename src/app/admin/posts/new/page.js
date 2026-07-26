@@ -18,10 +18,12 @@ export default function NewPostPage() {
   const [coverImage, setCoverImage] = useState('');
   const [tags, setTags] = useState('');
   const [sponsorId, setSponsorId] = useState('');
+  const [scheduledFor, setScheduledFor] = useState('');
   const [availableSponsors, setAvailableSponsors] = useState([]);
   const [allBanners, setAllBanners] = useState([]);
   const [availableCategories, setAvailableCategories] = useState([]);
   const [saving, setSaving] = useState(false);
+  const [showRestorePrompt, setShowRestorePrompt] = useState(false);
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
   const router = useRouter();
 
@@ -41,9 +43,51 @@ export default function NewPostPage() {
       if (catRes.success && catRes.data) {
         setAvailableCategories(catRes.data.filter(c => c.isActive));
       }
+
+      // Check for auto-saved draft
+      const draft = localStorage.getItem('post_draft');
+      if (draft) {
+        setShowRestorePrompt(true);
+      }
     }
     loadData();
   }, []);
+
+  // Auto-save effect
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (title || content.length > 20) {
+        localStorage.setItem('post_draft', JSON.stringify({
+          title, content, category, coverImage, tags, sponsorId, scheduledFor
+        }));
+      }
+    }, 10000); // Autosave every 10s
+    return () => clearInterval(timer);
+  }, [title, content, category, coverImage, tags, sponsorId, scheduledFor]);
+
+  const restoreDraft = () => {
+    try {
+      const draft = JSON.parse(localStorage.getItem('post_draft'));
+      if (draft) {
+        if (draft.title) setTitle(draft.title);
+        if (draft.content) setContent(draft.content);
+        if (draft.category) setCategory(draft.category);
+        if (draft.coverImage) setCoverImage(draft.coverImage);
+        if (draft.tags) setTags(draft.tags);
+        if (draft.sponsorId) setSponsorId(draft.sponsorId);
+        if (draft.scheduledFor) setScheduledFor(draft.scheduledFor);
+        showToast('Borrador restaurado', 'success');
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    setShowRestorePrompt(false);
+  };
+
+  const clearDraft = () => {
+    localStorage.removeItem('post_draft');
+    setShowRestorePrompt(false);
+  };
 
   const handleCoverUpload = () => {
     const input = document.createElement('input');
@@ -100,13 +144,15 @@ export default function NewPostPage() {
       coverImage,
       tags,
       sponsorId: sponsorId || null,
-      isPublished
+      isPublished,
+      scheduledFor: scheduledFor ? new Date(scheduledFor).toISOString() : null
     };
 
     const res = await createPost(postData);
     setSaving(false);
 
     if (res.success) {
+      localStorage.removeItem('post_draft');
       showToast(isPublished ? 'Noticia publicada con éxito' : 'Borrador guardado', 'success');
       setTimeout(() => router.push('/admin/posts'), 1000);
     } else {
@@ -122,6 +168,17 @@ export default function NewPostPage() {
         type={toast.type} 
         onClose={() => setToast({ ...toast, show: false })} 
       />
+      
+      {showRestorePrompt && (
+        <div className="mb-6 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl flex items-center justify-between">
+          <p className="text-yellow-200 text-sm">Tienes un borrador sin guardar guardado localmente.</p>
+          <div className="flex space-x-3">
+            <button onClick={clearDraft} className="text-sm text-gray-400 hover:text-white">Descartar</button>
+            <button onClick={restoreDraft} className="text-sm bg-yellow-500 text-black px-3 py-1.5 rounded-lg font-bold hover:bg-yellow-400">Restaurar</button>
+          </div>
+        </div>
+      )}
+
       <div className="flex justify-between items-center mb-8">
         <div className="flex items-center space-x-4">
           <Link href="/admin/posts" className="p-2 hover:bg-white/10 rounded-lg transition-colors">
@@ -219,6 +276,17 @@ export default function NewPostPage() {
                 </option>
               ))}
             </select>
+          </div>
+
+          <div className="glass p-6 rounded-xl border border-border">
+            <label className="block text-sm font-medium text-gray-400 mb-2">Programar Publicación (Opcional)</label>
+            <input
+              type="datetime-local"
+              value={scheduledFor}
+              onChange={(e) => setScheduledFor(e.target.value)}
+              className="w-full bg-background border border-border rounded-lg px-4 py-3 focus:outline-none focus:border-primary transition-colors text-white"
+            />
+            <p className="text-xs text-gray-500 mt-2">Si dejas esto en blanco, se publicará inmediatamente (si seleccionas "Publicar").</p>
           </div>
         </div>
 

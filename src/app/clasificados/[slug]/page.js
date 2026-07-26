@@ -7,6 +7,7 @@ import ClassifiedReviewForm from '@/components/classifieds/ClassifiedReviewForm'
 import ClassifiedGallery from '@/components/classifieds/ClassifiedGallery';
 import SocialShareButtons from '@/components/shared/SocialShareButtons';
 import AdViewTracker from '@/components/classifieds/AdViewTracker';
+import SaveButton from '@/components/shared/SaveButton';
 
 export const revalidate = 60; // ISR
 
@@ -78,7 +79,12 @@ export default async function ClassifiedDetailPage({ params }) {
               </div>
             </div>
 
-            <h1 className="text-2xl lg:text-3xl font-bold text-foreground mb-4 leading-tight">{ad.title}</h1>
+            <div className="flex items-start justify-between mb-4">
+              <h1 className="text-2xl lg:text-3xl font-bold text-foreground leading-tight">{ad.title}</h1>
+              <div className="ml-4 flex-shrink-0">
+                <SaveButton type="ad" id={ad.id} />
+              </div>
+            </div>
             
             {ad.price && (
               <div className="text-4xl font-light text-foreground mb-6">

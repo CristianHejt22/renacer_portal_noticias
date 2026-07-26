@@ -30,6 +30,7 @@ export async function getPosts() {
     if (!session) return { success: false, data: [] };
 
     // Si es CREATOR, solo ve sus propias noticias
+    // Los publicadores/admins ven todo (incluyendo programadas, para poder gestionarlas).
     const whereClause = session.role === 'CREATOR' ? { authorId: session.userId } : {};
 
     const posts = await prisma.post.findMany({
@@ -71,7 +72,10 @@ export async function getPostBySlug(slug) {
 export async function getHomePosts() {
   try {
     const posts = await prisma.post.findMany({
-      where: { isPublished: true },
+      where: { 
+        isPublished: true,
+        OR: [{ scheduledFor: null }, { scheduledFor: { lte: new Date() } }]
+      },
       orderBy: { createdAt: 'desc' },
       take: 7,
       // We don't use select here because we need the content for the hero snippet, 
@@ -86,7 +90,10 @@ export async function getHomePosts() {
 export async function getRecentPosts(limit = 4) {
   try {
     const posts = await prisma.post.findMany({
-      where: { isPublished: true },
+      where: { 
+        isPublished: true,
+        OR: [{ scheduledFor: null }, { scheduledFor: { lte: new Date() } }]
+      },
       orderBy: { createdAt: 'desc' },
       take: limit,
       select: {
@@ -112,6 +119,7 @@ export async function getRelatedPosts(category, currentPostId) {
         category: category,
         isPublished: true,
         id: { not: parseInt(currentPostId) },
+        OR: [{ scheduledFor: null }, { scheduledFor: { lte: new Date() } }]
       },
       orderBy: { createdAt: 'desc' },
       take: 6,
@@ -140,6 +148,7 @@ export async function createPost(data) {
         tags: data.tags,
         sponsorId: data.sponsorId ? parseInt(data.sponsorId) : null,
         isPublished: data.isPublished,
+        scheduledFor: data.scheduledFor ? new Date(data.scheduledFor) : null,
         authorId: session.userId
       }
     });
@@ -176,6 +185,7 @@ export async function updatePost(id, data) {
         tags: data.tags,
         sponsorId: data.sponsorId ? parseInt(data.sponsorId) : null,
         isPublished: data.isPublished,
+        scheduledFor: data.scheduledFor ? new Date(data.scheduledFor) : null,
       }
     });
     revalidatePath('/admin/posts');

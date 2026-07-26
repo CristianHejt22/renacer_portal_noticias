@@ -117,6 +117,9 @@ export default function NavbarClient({ categories, pages, siteLogo, siteName }) 
           })}
 
           <div className="pt-4 mt-4 border-t border-[#d1c9b4] space-y-2">
+            <Link href="/mi-cuenta/favoritos" onClick={() => setIsMobileMenuOpen(false)} className="block px-3 py-2 text-sm text-gray-700 hover:text-black rounded-md hover:bg-black/5 font-bold">
+              Mis Favoritos
+            </Link>
             {pages.map((page) => (
               <Link key={page.id} href={`/${page.slug}`} onClick={() => setIsMobileMenuOpen(false)} className="block px-3 py-2 text-sm text-gray-700 hover:text-black rounded-md hover:bg-black/5">
                 {page.title}

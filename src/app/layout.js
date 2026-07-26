@@ -48,6 +48,7 @@ import BannerDisplay from '@/components/ads/BannerDisplay';
 import NotificationSystem from '@/components/shared/NotificationSystem';
 import PromoPopup from '@/components/shared/PromoPopup';
 import { getActivePopup } from '@/app/actions/popups';
+import BreakingNewsBar from '@/components/layout/BreakingNewsBar';
 
 export const dynamic = 'force-dynamic';
 
@@ -98,6 +99,7 @@ export default async function RootLayout({ children }) {
         <BannerDisplay position="plan-cielo-total" mode="slider" hideUI={true} className="mb-8 mt-2 bg-black/5 dark:bg-white/5 py-4 w-full border-b border-border" />
 
         <Navbar />
+        <BreakingNewsBar />
         <WhatsAppFloatingButton phoneNumber={currentPhone} />
         <PWAInstallPrompt siteLogo={adSettings.data?.siteLogo} siteName={adSettings.data?.siteName} />
         <NotificationSystem />

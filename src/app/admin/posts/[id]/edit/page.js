@@ -19,6 +19,7 @@ export default function EditPostPage({ params }) {
   const [coverImage, setCoverImage] = useState('');
   const [tags, setTags] = useState('');
   const [sponsorId, setSponsorId] = useState('');
+  const [scheduledFor, setScheduledFor] = useState('');
   const [availableSponsors, setAvailableSponsors] = useState([]);
   const [allBanners, setAllBanners] = useState([]);
   const [availableCategories, setAvailableCategories] = useState([]);
@@ -57,6 +58,13 @@ export default function EditPostPage({ params }) {
         setSlug(res.data.slug || '');
         setTags(res.data.tags || '');
         setSponsorId(res.data.sponsorId ? res.data.sponsorId.toString() : '');
+        
+        if (res.data.scheduledFor) {
+          // Format for datetime-local input: YYYY-MM-DDThh:mm
+          const d = new Date(res.data.scheduledFor);
+          const localString = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+          setScheduledFor(localString);
+        }
       } else {
         showToast('Error al cargar la noticia', 'error');
         setTimeout(() => router.push('/admin/posts'), 1000);
@@ -111,7 +119,8 @@ export default function EditPostPage({ params }) {
       coverImage,
       tags,
       sponsorId: sponsorId || null,
-      isPublished
+      isPublished,
+      scheduledFor: scheduledFor ? new Date(scheduledFor).toISOString() : null
     };
 
     const res = await updatePost(resolvedParams.id, postData);
@@ -241,6 +250,17 @@ export default function EditPostPage({ params }) {
                 </option>
               ))}
             </select>
+          </div>
+
+          <div className="glass p-6 rounded-xl border border-border">
+            <label className="block text-sm font-medium text-gray-400 mb-2">Programar Publicación (Opcional)</label>
+            <input
+              type="datetime-local"
+              value={scheduledFor}
+              onChange={(e) => setScheduledFor(e.target.value)}
+              className="w-full bg-background border border-border rounded-lg px-4 py-3 focus:outline-none focus:border-primary transition-colors text-white"
+            />
+            <p className="text-xs text-gray-500 mt-2">Si dejas esto en blanco, se publicará inmediatamente (si seleccionas "Publicar").</p>
           </div>
         </div>
 

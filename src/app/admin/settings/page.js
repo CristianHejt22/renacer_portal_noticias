@@ -22,6 +22,9 @@ export default function GeneralSettingsPage() {
     bankAlias: '',
     bankCvu: '',
     bankName: '',
+    breakingNewsActive: false,
+    breakingNewsText: '',
+    breakingNewsLink: '',
   });
 
   useEffect(() => {
@@ -45,6 +48,9 @@ export default function GeneralSettingsPage() {
           bankAlias: res.data.bankAlias || '',
           bankCvu: res.data.bankCvu || '',
           bankName: res.data.bankName || '',
+          breakingNewsActive: res.data.breakingNewsActive || false,
+          breakingNewsText: res.data.breakingNewsText || '',
+          breakingNewsLink: res.data.breakingNewsLink || '',
         }));
       }
       setLoading(false);
@@ -88,6 +94,9 @@ export default function GeneralSettingsPage() {
       'bank_alias': settings.bankAlias,
       'bank_cvu': settings.bankCvu,
       'bank_name': settings.bankName,
+      'breaking_news_active': settings.breakingNewsActive.toString(),
+      'breaking_news_text': settings.breakingNewsText,
+      'breaking_news_link': settings.breakingNewsLink,
     };
     const res = await saveAdSettings(dataToSave);
     setSaving(false);
@@ -209,6 +218,56 @@ export default function GeneralSettingsPage() {
                 <li>¡Listo! Tu web publicará sola.</li>
               </ol>
             </div>
+          </div>
+        </div>
+
+        {/* Breaking News Info */}
+        <div className="bg-card p-6 rounded-xl border border-border">
+          <h2 className="text-xl font-bold mb-4">Barra de Último Momento (Breaking News)</h2>
+          <p className="text-sm text-gray-400 mb-4">
+            Activa esta barra para mostrar un anuncio destacado en la parte superior de todas las páginas del portal.
+          </p>
+          <div className="space-y-4">
+            <div className="flex items-center space-x-3 mb-6">
+              <input
+                type="checkbox"
+                id="breakingNewsActive"
+                checked={settings.breakingNewsActive}
+                onChange={(e) => setSettings({...settings, breakingNewsActive: e.target.checked})}
+                className="w-5 h-5 rounded border-gray-600 bg-surface text-primary focus:ring-primary focus:ring-offset-background"
+              />
+              <label htmlFor="breakingNewsActive" className="text-sm font-bold text-gray-200">
+                Activar Barra de Último Momento
+              </label>
+            </div>
+            
+            {settings.breakingNewsActive && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-2">Texto de la Noticia</label>
+                  <input
+                    type="text"
+                    value={settings.breakingNewsText}
+                    onChange={(e) => setSettings({...settings, breakingNewsText: e.target.value})}
+                    className="w-full bg-background border border-border rounded-lg px-4 py-3 focus:outline-none focus:border-primary transition-colors"
+                    placeholder="Ej: ALERTA: Fuertes tormentas en la región..."
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-2">Enlace (Opcional)</label>
+                  <input
+                    type="text"
+                    value={settings.breakingNewsLink}
+                    onChange={(e) => setSettings({...settings, breakingNewsLink: e.target.value})}
+                    className="w-full bg-background border border-border rounded-lg px-4 py-3 focus:outline-none focus:border-primary transition-colors"
+                    placeholder="Ej: /noticias/alerta-tormentas o https://..."
+                  />
+                  <p className="text-xs text-gray-500 mt-2">
+                    Si el usuario hace clic en la barra, será redirigido a este enlace.
+                  </p>
+                </div>
+              </>
+            )}
           </div>
         </div>
 

@@ -48,6 +48,9 @@ export async function getAdSettings() {
         bankCvu: s['bank_cvu'] || '',
         bankName: s['bank_name'] || '',
         makeWebhookUrl: s['make_webhook_url'] || '',
+        breakingNewsActive: s['breaking_news_active'] === 'true' || false,
+        breakingNewsText: s['breaking_news_text'] || '',
+        breakingNewsLink: s['breaking_news_link'] || '',
       }
     };
   } catch (error) {
@@ -66,6 +69,9 @@ export async function getAdSettings() {
         bankCvu: '',
         bankName: '',
         makeWebhookUrl: '',
+        breakingNewsActive: false,
+        breakingNewsText: '',
+        breakingNewsLink: '',
       }
     };
   }

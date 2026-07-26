@@ -13,6 +13,7 @@ import RelatedArticles from '@/components/noticias/RelatedArticles';
 import { getPostBySlug } from '@/app/actions/posts';
 import { Tweet } from 'react-tweet';
 import FeaturedClassifieds from '@/components/classifieds/FeaturedClassifieds';
+import SaveButton from '@/components/shared/SaveButton';
 
 export const revalidate = 60; // Cache ISR por 60 segundos (mejora radical de velocidad)
 export const dynamicParams = true;
@@ -98,9 +99,12 @@ export default async function ArticlePage({ params }) {
         <article className="lg:col-span-8">
           
           <header className="mb-8">
-            <span className="inline-block px-3 py-1 bg-primary/10 text-primary rounded-sm font-bold text-xs uppercase tracking-wider mb-4">
-              {post.category || 'General'}
-            </span>
+            <div className="flex items-center justify-between mb-4">
+              <span className="inline-block px-3 py-1 bg-primary/10 text-primary rounded-sm font-bold text-xs uppercase tracking-wider">
+                {post.category || 'General'}
+              </span>
+              <SaveButton type="post" id={post.id} />
+            </div>
             <h1 className="text-3xl md:text-5xl lg:text-5xl font-bold leading-tight mb-6">
               {post.title}
             </h1>

@@ -84,7 +84,7 @@ export default function PWAInstallPrompt({ siteLogo, siteName }) {
 
         {/* Text */}
         <div className="flex-grow pr-6">
-          <h4 className="font-bold text-foreground text-sm">Instalar {siteName}</h4>
+          <h4 className="font-bold text-foreground text-sm">Instalar APP</h4>
           <p className="text-xs text-gray-400 mt-0.5">Acceso más rápido y sin conexión.</p>
         </div>
 
