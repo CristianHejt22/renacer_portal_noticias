@@ -44,9 +44,14 @@ export default function BannersAdminPage() {
 
     setUploading(true);
     try {
-      const compressedFile = await compressImage(file, 1200, 1200, 0.8);
+      let fileToUpload = file;
+      // Skip image compression for videos and GIFs
+      if (file.type.startsWith('image/') && file.type !== 'image/gif') {
+        fileToUpload = await compressImage(file, 1200, 1200, 0.8);
+      }
+      
       const data = new FormData();
-      data.append('file', compressedFile);
+      data.append('file', fileToUpload);
 
       const res = await fetch('/api/upload', {
         method: 'POST',
@@ -227,10 +232,10 @@ export default function BannersAdminPage() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium mb-1">Imagen del Banner / Sello (Sube o pega un enlace)</label>
+                <label className="block text-sm font-medium mb-1">Archivo (Sube un archivo o pega un enlace)</label>
                 <div className="flex flex-col space-y-3">
                   <div className="flex items-center space-x-4">
-                    <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" id="bannerImage" />
+                    <input type="file" accept="image/*,video/*" onChange={handleFileChange} className="hidden" id="bannerImage" />
                     <label htmlFor="bannerImage" className="cursor-pointer bg-background border border-border px-4 py-2 rounded-lg hover:border-primary transition-colors text-center shrink-0">
                       {uploading ? 'Subiendo...' : 'Seleccionar de PC'}
                     </label>
@@ -240,14 +245,22 @@ export default function BannersAdminPage() {
                       value={formData.imageUrl} 
                       onChange={e => setFormData({...formData, imageUrl: e.target.value})} 
                       className="flex-1 bg-background border border-border rounded-lg p-2.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none" 
-                      placeholder="https://ejemplo.com/imagen.jpg" 
+                      placeholder="https://ejemplo.com/archivo.jpg o VAST XML" 
                     />
                   </div>
-                  {formData.imageUrl && (
+                  {formData.imageUrl && formData.imageUrl.match(/\.(mp4|webm|ogg)$/i) ? (
+                    <div className="flex justify-center bg-white/5 p-2 rounded-lg">
+                      <video src={formData.imageUrl} controls className="h-32 object-contain rounded" />
+                    </div>
+                  ) : formData.imageUrl && formData.imageUrl.match(/\.(jpeg|jpg|gif|png|webp|svg)$/i) ? (
                     <div className="flex justify-center bg-white/5 p-2 rounded-lg">
                       <img src={formData.imageUrl} className="h-20 object-contain rounded" />
                     </div>
-                  )}
+                  ) : formData.imageUrl && formData.position === 'vast-preroll' ? (
+                     <div className="text-xs text-yellow-500 bg-yellow-500/10 p-2 rounded">
+                        URL VAST Externa detectada.
+                     </div>
+                  ) : null}
                 </div>
               </div>
 
@@ -266,6 +279,7 @@ export default function BannersAdminPage() {
                   <option value="plan-cielo-total">Plan Cielo Total (Megabanner 100% superior)</option>
                   <option value="plan-clasificados">Plan Clasificados (Banner en sección Clasificados)</option>
                   <option value="watermark">Sello de Agua (Patrocinador en foto de portada)</option>
+                  <option value="vast-preroll">VAST / Pre-Roll (Publicidad en Reproductores de Video)</option>
                 </select>
               </div>
 

@@ -1,13 +1,21 @@
 import { NextResponse } from 'next/server';
-import { getAdSettings } from '@/app/actions/settings';
+import { prisma } from '@/lib/prisma';
 
 export async function GET(request) {
   try {
-    const { data } = await getAdSettings();
-    const { vastCustomVideo, vastCustomLink } = data;
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
 
-    if (!vastCustomVideo) {
-      return new NextResponse('No custom video configured', { status: 404 });
+    if (!id) {
+      return new NextResponse('Banner ID is required', { status: 400 });
+    }
+
+    const banner = await prisma.bannerAd.findUnique({
+      where: { id: parseInt(id) }
+    });
+
+    if (!banner || !banner.isActive || banner.position !== 'vast-preroll') {
+      return new NextResponse('Banner not found or inactive', { status: 404 });
     }
 
     // Asegurarnos de que las URLs son absolutas si es posible (recomendado para VAST)
@@ -15,30 +23,31 @@ export async function GET(request) {
     const protocol = request.headers.get('x-forwarded-proto') || 'https';
     const baseUrl = `${protocol}://${host}`;
 
-    const videoUrl = vastCustomVideo.startsWith('http') ? vastCustomVideo : `${baseUrl}${vastCustomVideo}`;
-    const clickUrl = vastCustomLink ? (vastCustomLink.startsWith('http') ? vastCustomLink : `${baseUrl}${vastCustomLink}`) : baseUrl;
+    // Si la URL del banner ya es un XML externo, simplemente redirigimos o devolvemos error (aunque el frontend debería haberlo manejado)
+    if (banner.imageUrl.endsWith('.xml')) {
+       return NextResponse.redirect(banner.imageUrl);
+    }
+
+    const videoUrl = banner.imageUrl.startsWith('http') ? banner.imageUrl : `${baseUrl}${banner.imageUrl}`;
+    const clickUrl = banner.targetUrl ? (banner.targetUrl.startsWith('http') ? banner.targetUrl : `${baseUrl}${banner.targetUrl}`) : baseUrl;
 
     // Generar XML VAST 3.0
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <VAST version="3.0">
-  <Ad id="1">
+  <Ad id="${banner.id}">
     <InLine>
       <AdSystem>Renacer VAST Server</AdSystem>
-      <AdTitle>Patrocinador Propio</AdTitle>
-      <Impression><![CDATA[${baseUrl}/api/vast/impression]]></Impression>
+      <AdTitle><![CDATA[${banner.name}]]></AdTitle>
+      <Impression><![CDATA[${baseUrl}/api/banner/click?id=${banner.id}&type=view]]></Impression>
       <Creatives>
-        <Creative id="video-ad-1">
+        <Creative id="video-ad-${banner.id}">
           <Linear>
             <Duration>00:00:15</Duration>
             <TrackingEvents>
-              <Tracking event="start"><![CDATA[${baseUrl}/api/vast/start]]></Tracking>
-              <Tracking event="firstQuartile"><![CDATA[${baseUrl}/api/vast/firstQuartile]]></Tracking>
-              <Tracking event="midpoint"><![CDATA[${baseUrl}/api/vast/midpoint]]></Tracking>
-              <Tracking event="thirdQuartile"><![CDATA[${baseUrl}/api/vast/thirdQuartile]]></Tracking>
-              <Tracking event="complete"><![CDATA[${baseUrl}/api/vast/complete]]></Tracking>
+              <Tracking event="start"><![CDATA[${baseUrl}/api/banner/click?id=${banner.id}&type=view]]></Tracking>
             </TrackingEvents>
             <VideoClicks>
-              <ClickThrough><![CDATA[${clickUrl}]]></ClickThrough>
+              <ClickThrough><![CDATA[${baseUrl}/api/banner/click?id=${banner.id}]]></ClickThrough>
             </VideoClicks>
             <MediaFiles>
               <MediaFile delivery="progressive" type="video/mp4" width="1280" height="720" scalable="true" maintainAspectRatio="true">

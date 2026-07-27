@@ -73,9 +73,6 @@ export default async function ArticlePage({ params }) {
   ]);
   
   const inArticleScript = adSettings.data?.inArticleScript || '';
-  const vastUrl = adSettings.data?.vastUrl || '';
-  const vastActive = adSettings.data?.vastActive || false;
-  const vastCustomVideo = adSettings.data?.vastCustomVideo || '';
   const post = res.data;
 
   if (!post) {
@@ -253,7 +250,7 @@ export default async function ArticlePage({ params }) {
             </div>
           </div>
 
-          <VideoVastHydrator vastActive={vastActive} vastUrl={vastUrl} vastCustomVideo={vastCustomVideo} />
+          <VideoVastHydrator />
 
           {/* In-Article / Bottom Banners */}
           <div className="mt-12">
