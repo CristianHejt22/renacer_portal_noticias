@@ -51,6 +51,10 @@ export async function getAdSettings() {
         breakingNewsActive: s['breaking_news_active'] === 'true' || false,
         breakingNewsText: s['breaking_news_text'] || '',
         breakingNewsLink: s['breaking_news_link'] || '',
+        vastActive: s['vast_active'] === 'true' || false,
+        vastUrl: s['vast_url'] || '',
+        vastCustomVideo: s['vast_custom_video'] || '',
+        vastCustomLink: s['vast_custom_link'] || '',
       }
     };
   } catch (error) {
@@ -72,6 +76,10 @@ export async function getAdSettings() {
         breakingNewsActive: false,
         breakingNewsText: '',
         breakingNewsLink: '',
+        vastActive: false,
+        vastUrl: '',
+        vastCustomVideo: '',
+        vastCustomLink: '',
       }
     };
   }

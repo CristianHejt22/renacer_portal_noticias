@@ -25,6 +25,10 @@ export default function GeneralSettingsPage() {
     breakingNewsActive: false,
     breakingNewsText: '',
     breakingNewsLink: '',
+    vastActive: false,
+    vastUrl: '',
+    vastCustomVideo: '',
+    vastCustomLink: '',
   });
 
   useEffect(() => {
@@ -51,6 +55,10 @@ export default function GeneralSettingsPage() {
           breakingNewsActive: res.data.breakingNewsActive || false,
           breakingNewsText: res.data.breakingNewsText || '',
           breakingNewsLink: res.data.breakingNewsLink || '',
+          vastActive: res.data.vastActive || false,
+          vastUrl: res.data.vastUrl || '',
+          vastCustomVideo: res.data.vastCustomVideo || '',
+          vastCustomLink: res.data.vastCustomLink || '',
         }));
       }
       setLoading(false);
@@ -81,6 +89,30 @@ export default function GeneralSettingsPage() {
     input.click();
   };
 
+  const handleCustomVideoUpload = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'video/*';
+    input.onchange = async (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        setSaving(true);
+        try {
+          const formData = new FormData();
+          formData.append('file', file, file.name);
+          const res = await fetch('/api/upload', { method: 'POST', body: formData });
+          const data = await res.json();
+          if (data.url) setSettings({ ...settings, vastCustomVideo: data.url });
+        } catch (err) {
+          console.error(err);
+          alert('Error al subir el video');
+        }
+        setSaving(false);
+      }
+    };
+    input.click();
+  };
+
   const handleSave = async () => {
     setSaving(true);
     const dataToSave = {
@@ -97,6 +129,10 @@ export default function GeneralSettingsPage() {
       'breaking_news_active': settings.breakingNewsActive.toString(),
       'breaking_news_text': settings.breakingNewsText,
       'breaking_news_link': settings.breakingNewsLink,
+      'vast_active': settings.vastActive.toString(),
+      'vast_url': settings.vastUrl,
+      'vast_custom_video': settings.vastCustomVideo,
+      'vast_custom_link': settings.vastCustomLink,
     };
     const res = await saveAdSettings(dataToSave);
     setSaving(false);
@@ -140,6 +176,75 @@ export default function GeneralSettingsPage() {
                 Introduce tu ID de cliente de AdSense. El sistema insertará el código automáticamente y Google mostrará anuncios en los mejores lugares de tu portal.
               </p>
             </div>
+          </div>
+
+          <h2 className="text-xl font-bold mb-4 mt-8">Publicidad en Videos (VAST / Pre-Roll)</h2>
+          <p className="text-sm text-gray-400 mb-4">
+            Al activarlo, todos los videos nativos de las noticias se reproducirán usando un formato profesional (Fluid Player) e inyectarán publicidad VAST antes de que empiece el video.
+          </p>
+          <div className="space-y-4">
+            <div className="flex items-center space-x-3 mb-6">
+              <input
+                type="checkbox"
+                id="vastActive"
+                checked={settings.vastActive}
+                onChange={(e) => setSettings({...settings, vastActive: e.target.checked})}
+                className="w-5 h-5 rounded border-gray-600 bg-surface text-primary focus:ring-primary focus:ring-offset-background"
+              />
+              <label htmlFor="vastActive" className="text-sm font-bold text-gray-200">
+                Activar Anuncios en Video (VAST)
+              </label>
+            </div>
+            
+            {settings.vastActive && (
+              <div className="bg-background border border-border p-4 rounded-xl space-y-6">
+                <div>
+                  <h3 className="text-md font-bold mb-2">Opción A: Proveedor Externo (Adsterra, Google Ad Manager, etc)</h3>
+                  <label className="block text-sm font-medium text-gray-400 mb-2">URL del VAST XML</label>
+                  <input
+                    type="url"
+                    value={settings.vastUrl}
+                    onChange={(e) => setSettings({...settings, vastUrl: e.target.value})}
+                    className="w-full bg-surface border border-border rounded-lg px-4 py-2 focus:outline-none focus:border-primary transition-colors"
+                    placeholder="https://..."
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Si usas esto, se ignorará el video propio de abajo.</p>
+                </div>
+                
+                <div className="border-t border-border pt-6">
+                  <h3 className="text-md font-bold mb-2">Opción B: Anuncio de Video Propio</h3>
+                  <p className="text-xs text-gray-400 mb-3">Si no tienes un proveedor VAST, puedes subir tu propio anuncio y nosotros creamos el VAST internamente.</p>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-400 mb-2">Subir Video (.mp4)</label>
+                      <div className="flex items-center space-x-4">
+                        <button 
+                          onClick={handleCustomVideoUpload}
+                          className="px-4 py-2 bg-primary/20 text-primary border border-primary/50 rounded-lg hover:bg-primary/30 transition-colors text-sm font-bold"
+                        >
+                          Subir Video
+                        </button>
+                        {settings.vastCustomVideo && (
+                          <span className="text-sm text-green-400 truncate max-w-xs">{settings.vastCustomVideo}</span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-400 mb-2">Enlace del Anuncio Propio (Al hacer clic)</label>
+                      <input
+                        type="url"
+                        value={settings.vastCustomLink}
+                        onChange={(e) => setSettings({...settings, vastCustomLink: e.target.value})}
+                        className="w-full bg-surface border border-border rounded-lg px-4 py-2 focus:outline-none focus:border-primary transition-colors"
+                        placeholder="https://sponsor.com"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           <h2 className="text-xl font-bold mb-4 mt-8">Patrocinadores (Sello de Agua)</h2>

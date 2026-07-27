@@ -6,6 +6,7 @@ import BannerDisplay from '@/components/ads/BannerDisplay';
 import AdIframeInjector from '@/components/shared/AdIframeInjector';
 import PublicSidebar from '@/components/layout/PublicSidebar';
 import SponsorWatermark from '@/components/ads/SponsorWatermark';
+import VideoVastHydrator from '@/components/news/VideoVastHydrator';
 import ShareButtons from '@/components/news/ShareButtons';
 import SocialShareButtons from '@/components/shared/SocialShareButtons';
 import CommentsSection from '@/components/news/CommentsSection';
@@ -72,6 +73,9 @@ export default async function ArticlePage({ params }) {
   ]);
   
   const inArticleScript = adSettings.data?.inArticleScript || '';
+  const vastUrl = adSettings.data?.vastUrl || '';
+  const vastActive = adSettings.data?.vastActive || false;
+  const vastCustomVideo = adSettings.data?.vastCustomVideo || '';
   const post = res.data;
 
   if (!post) {
@@ -248,6 +252,8 @@ export default async function ArticlePage({ params }) {
               <SocialShareButtons title={post.title} slug={post.slug} shortPath={`/n/${post.id}`} />
             </div>
           </div>
+
+          <VideoVastHydrator vastActive={vastActive} vastUrl={vastUrl} vastCustomVideo={vastCustomVideo} />
 
           {/* In-Article / Bottom Banners */}
           <div className="mt-12">

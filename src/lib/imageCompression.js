@@ -1,4 +1,9 @@
 export const compressImage = (file, maxWidth = 1200, maxHeight = 1200, quality = 0.8) => {
+  // Return early for GIFs to preserve animation
+  if (file.type === 'image/gif') {
+    return Promise.resolve(file);
+  }
+
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
