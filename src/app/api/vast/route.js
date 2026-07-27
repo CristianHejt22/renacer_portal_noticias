@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { PrismaClient } from '@prisma/client';
+
+const globalForPrisma = global;
+const prisma = globalForPrisma.prisma || new PrismaClient();
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 
 export async function GET(request) {
   try {
@@ -47,7 +51,7 @@ export async function GET(request) {
               <Tracking event="start"><![CDATA[${baseUrl}/api/banner/click?id=${banner.id}&type=view]]></Tracking>
             </TrackingEvents>
             <VideoClicks>
-              <ClickThrough><![CDATA[${baseUrl}/api/banner/click?id=${banner.id}]]></ClickThrough>
+              <ClickThrough><![CDATA[${baseUrl}/api/banner/click?id=${banner.id}&url=${encodeURIComponent(clickUrl)}]]></ClickThrough>
             </VideoClicks>
             <MediaFiles>
               <MediaFile delivery="progressive" type="video/mp4" width="1280" height="720" scalable="true" maintainAspectRatio="true">

@@ -34,8 +34,12 @@ export default function VideoVastHydrator() {
       }
 
       // Find all native <video> tags
-      const videos = document.querySelectorAll('article video:not([data-fluid-id])');
+      const videos = document.querySelectorAll('video:not([data-fluid-id])');
       
+      if (videos.length === 0) {
+        return;
+      }
+
       videos.forEach((video, index) => {
         // Asignar ID único si no lo tiene
         const uniqueId = `fluid-player-${Date.now()}-${index}`;
@@ -55,7 +59,7 @@ export default function VideoVastHydrator() {
         // Determinar URL del VAST: Si el imageUrl es .xml lo usamos directo, si no usamos nuestro endpoint
         let vastTagUrl = randomAd.imageUrl;
         if (!vastTagUrl.endsWith('.xml')) {
-           vastTagUrl = `/api/vast?id=${randomAd.id}`;
+           vastTagUrl = `${window.location.origin}/api/vast?id=${randomAd.id}`;
         }
 
         // Inicializar Fluid Player en este video
@@ -101,7 +105,7 @@ export default function VideoVastHydrator() {
   return (
     <>
       <link rel="stylesheet" href="https://cdn.fluidplayer.com/v3/current/fluidplayer.min.css" type="text/css" />
-      <Script src="https://cdn.fluidplayer.com/v3/current/fluidplayer.min.js" strategy="lazyOnload" />
+      <Script src="https://cdn.fluidplayer.com/v3/current/fluidplayer.min.js" strategy="afterInteractive" />
       <style dangerouslySetInnerHTML={{__html: `
         .fluid_video_wrapper {
           border-radius: 12px !important;
