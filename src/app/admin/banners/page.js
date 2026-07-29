@@ -10,7 +10,7 @@ export default function BannersAdminPage() {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  const [formData, setFormData] = useState({ name: '', imageUrl: '', targetUrl: '', position: 'plan-local' });
+  const [formData, setFormData] = useState({ name: '', imageUrl: '', targetUrl: '', position: 'plan-local', duration: 5 });
 
   const [uploading, setUploading] = useState(false);
 
@@ -59,7 +59,32 @@ export default function BannersAdminPage() {
       });
       const result = await res.json();
       if (result.url || result.success) {
-        setFormData({ ...formData, imageUrl: result.url });
+        let durationToSet = formData.duration || 5;
+
+        // Si es GIF, intentamos leer la duración aproximada leyendo el archivo como ArrayBuffer
+        if (file.type === 'image/gif') {
+          try {
+            const buffer = await file.arrayBuffer();
+            const uint8 = new Uint8Array(buffer);
+            let durationMs = 0;
+            for (let i = 0; i < uint8.length; i++) {
+              if (uint8[i] === 0x21 && uint8[i + 1] === 0xF9 && uint8[i + 2] === 0x04) {
+                const delay = uint8[i + 4] | (uint8[i + 5] << 8);
+                // Si el delay es muy corto o 0, el estándar dice que el navegador asume 10 (100ms)
+                durationMs += (delay === 0 ? 10 : delay) * 10; 
+                i += 7;
+              }
+            }
+            if (durationMs > 0) {
+              // Convertimos a segundos y redondeamos hacia arriba, mínimo 1 segundo
+              durationToSet = Math.max(1, Math.ceil(durationMs / 1000));
+            }
+          } catch (err) {
+            console.error('Error parseando duración del GIF:', err);
+          }
+        }
+
+        setFormData({ ...formData, imageUrl: result.url, duration: durationToSet });
       } else {
         alert(result.error || 'Error subiendo imagen');
       }
@@ -73,13 +98,13 @@ export default function BannersAdminPage() {
 
   const openNewModal = () => {
     setEditingId(null);
-    setFormData({ name: '', imageUrl: '', targetUrl: '', position: 'plan-local' });
+    setFormData({ name: '', imageUrl: '', targetUrl: '', position: 'plan-local', duration: 5 });
     setIsModalOpen(true);
   };
 
   const openEditModal = (banner) => {
     setEditingId(banner.id);
-    setFormData({ name: banner.name, imageUrl: banner.imageUrl, targetUrl: banner.targetUrl, position: banner.position || 'plan-local' });
+    setFormData({ name: banner.name, imageUrl: banner.imageUrl, targetUrl: banner.targetUrl, position: banner.position || 'plan-local', duration: banner.duration || 5 });
     setIsModalOpen(true);
   };
 
@@ -95,7 +120,7 @@ export default function BannersAdminPage() {
     if (res.success) {
       setIsModalOpen(false);
       setEditingId(null);
-      setFormData({ name: '', imageUrl: '', targetUrl: '', position: 'plan-local' });
+      setFormData({ name: '', imageUrl: '', targetUrl: '', position: 'plan-local', duration: 5 });
       loadBanners();
     } else {
       alert('Error: Asegúrate de tener la Base de Datos configurada para guardar permanentemente.');
@@ -281,6 +306,11 @@ export default function BannersAdminPage() {
                   <option value="watermark">Sello de Agua (Patrocinador en foto de portada)</option>
                   <option value="vast-preroll">VAST / Pre-Roll (Publicidad en Reproductores de Video)</option>
                 </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Duración en pantalla (Segundos)</label>
+                <input type="number" min="1" max="300" value={formData.duration} onChange={e => setFormData({...formData, duration: e.target.value})} className="w-full bg-background border border-border rounded-lg p-2.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none" />
+                <p className="text-xs text-gray-500 mt-1">Si subes un GIF, la duración se calculará automáticamente.</p>
               </div>
 
               <div className="pt-4 flex justify-end space-x-3">

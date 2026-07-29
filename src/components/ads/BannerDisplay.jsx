@@ -52,12 +52,13 @@ export default function BannerDisplay({ position = 'in-article', specificId = nu
 
   useEffect(() => {
     if (mode === 'slider' && banners.length > 1) {
-      const interval = setInterval(() => {
+      const currentDuration = (banners[currentIndex]?.duration || 5) * 1000;
+      const timeoutId = setTimeout(() => {
         setCurrentIndex((prev) => (prev + 1) % banners.length);
-      }, 5000);
-      return () => clearInterval(interval);
+      }, currentDuration);
+      return () => clearTimeout(timeoutId);
     }
-  }, [banners.length, mode]);
+  }, [banners, mode, currentIndex]);
 
   if (banners.length === 0) return null;
 

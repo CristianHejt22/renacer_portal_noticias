@@ -75,6 +75,7 @@ model BannerAd {
   clicks     Int      @default(0)
   position   String   @default("in-article")
   isActive   Boolean  @default(true)
+  duration   Int      @default(5)
   createdAt  DateTime @default(now())
 }
 
