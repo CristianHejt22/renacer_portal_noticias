@@ -92,7 +92,16 @@ const MenuBar = ({ editor, availableBanners = [] }) => {
             });
             const data = await res.json();
             if (data.url) {
-              editor.chain().focus().insertContent(`<img src="${data.url}" class="rounded-lg max-w-full h-auto" /><p></p>`).run();
+              const credit = window.prompt(`Derechos de autor / Fuente para la imagen "${file.name || 'imagen'}" (Opcional):`);
+              if (credit && credit.trim() !== '') {
+                editor.chain().focus()
+                  .insertContent(`<img src="${data.url}" class="rounded-lg max-w-full h-auto" />`)
+                  .insertContent(`<p style="text-align: right"><em>📸 Foto: ${credit.trim()}</em></p>`)
+                  .insertContent('<p></p>')
+                  .run();
+              } else {
+                editor.chain().focus().insertContent(`<img src="${data.url}" class="rounded-lg max-w-full h-auto" /><p></p>`).run();
+              }
               toast.success('Imagen insertada', { id: toastId });
             } else {
               throw new Error('No URL returned');
@@ -177,12 +186,12 @@ const MenuBar = ({ editor, availableBanners = [] }) => {
       // Auto-detect Instagram URL
       else if (htmlCode.match(/(?:instagram\.com|instagr\.am)\/(?:p|reel|tv)\/([a-zA-Z0-9_-]+)/i)) {
         const igMatch = htmlCode.match(/(?:instagram\.com|instagr\.am)\/(?:p|reel|tv)\/([a-zA-Z0-9_-]+)/i);
-        htmlCode = `<iframe src="https://www.instagram.com/p/${igMatch[1]}/embed/captioned" width="100%" height="600" frameborder="0" scrolling="no" allowtransparency="true"></iframe>`;
+        htmlCode = `<iframe src="https://www.instagram.com/p/${igMatch[1]}/embed/captioned" width="100%" height="850" style="max-width: 400px; display: block; margin: 0 auto; border-radius: 12px;" frameborder="0" scrolling="no" allowtransparency="true"></iframe>`;
       }
       // Auto-detect TikTok URL
       else if (htmlCode.match(/tiktok\.com\/@[^\/]+\/video\/([0-9]+)/i)) {
         const tkMatch = htmlCode.match(/tiktok\.com\/@[^\/]+\/video\/([0-9]+)/i);
-        htmlCode = `<iframe src="https://www.tiktok.com/embed/v2/${tkMatch[1]}" width="100%" height="700" frameborder="0" allowfullscreen scrolling="no" allow="encrypted-media;"></iframe>`;
+        htmlCode = `<iframe src="https://www.tiktok.com/embed/v2/${tkMatch[1]}" width="100%" height="750" style="max-width: 400px; display: block; margin: 0 auto;" frameborder="0" allowfullscreen scrolling="no" allow="encrypted-media;"></iframe>`;
       }
       // Auto-detect Facebook Post URL
       else if (htmlCode.match(/facebook\.com\/.+/i)) {
