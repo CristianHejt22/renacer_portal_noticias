@@ -62,11 +62,10 @@ export default async function FavoritesPage() {
                   >
                     <div className="relative h-48 w-full bg-black/20">
                       {fav.post.coverImage ? (
-                        <Image 
+                        <img 
                           src={fav.post.coverImage} 
                           alt={fav.post.title} 
-                          fill 
-                          className="object-cover group-hover:scale-105 transition-transform duration-500" 
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center bg-gray-800 text-gray-500">
@@ -110,11 +109,10 @@ export default async function FavoritesPage() {
                   >
                     <div className="relative w-32 h-full flex-shrink-0 bg-black/20">
                       {fav.ad.imageUrl ? (
-                        <Image 
+                        <img 
                           src={fav.ad.imageUrl} 
                           alt={fav.ad.title} 
-                          fill 
-                          className="object-cover" 
+                          className="w-full h-full object-cover" 
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center bg-gray-800 text-gray-500 text-xs">

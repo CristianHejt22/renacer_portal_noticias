@@ -67,12 +67,10 @@ export default async function NoticiasPage({ searchParams }) {
             const postCard = (
               <Link href={`/noticias/${post.slug}`} key={post.id} className="group cursor-pointer block bg-surface border border-border rounded-xl overflow-hidden hover:shadow-xl hover:shadow-primary/5 transition-all flex flex-col">
                 <div className="relative h-56 overflow-hidden">
-                  <Image 
+                  <img 
                     src={post.coverImage || '/placeholder.jpg'}
                     alt={post.title}
-                    fill
-                    sizes="(max-width: 768px) 100vw, 400px"
-                    className="object-cover transition-transform duration-500 group-hover:scale-110"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                 </div>
                 <div className="p-6 flex-1 flex flex-col">

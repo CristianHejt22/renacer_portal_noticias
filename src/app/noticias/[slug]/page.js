@@ -132,20 +132,16 @@ export default async function ArticlePage({ params }) {
           {post.coverImage && (
             <div className="relative w-full h-[350px] md:h-[500px] overflow-hidden mb-8 rounded-xl border border-border bg-black/5 dark:bg-white/5">
               {/* Blurred background */}
-              <Image 
+              <img 
                 src={post.coverImage || '/placeholder.jpg'} 
                 alt=""
-                fill
-                sizes="100vw"
-                className="object-cover opacity-40 blur-xl scale-110"
+                className="absolute inset-0 w-full h-full object-cover opacity-40 blur-xl scale-110"
               />
               {/* Contained image */}
-              <Image 
+              <img 
                 src={post.coverImage || '/placeholder.jpg'} 
                 alt={post.title}
-                fill
-                sizes="(max-width: 768px) 100vw, 800px"
-                className="object-contain"
+                className="absolute inset-0 w-full h-full object-contain"
               />
               <SponsorWatermark postSponsorId={post.sponsorId} />
             </div>

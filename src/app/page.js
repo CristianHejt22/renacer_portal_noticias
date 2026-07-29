@@ -46,14 +46,11 @@ export default async function Home() {
                   className="object-cover opacity-40 blur-2xl scale-110 transition-transform duration-700 group-hover:scale-125"
                 />
                 {/* Contained image */}
-                <Image 
+                <img 
                   src={featuredPost.coverImage || '/placeholder.jpg'} 
                   alt={featuredPost.title}
-                  fill
-                  sizes="(max-width: 768px) 100vw, 800px"
-                  className="object-contain transition-transform duration-700 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                /><div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
                 <SponsorWatermark postSponsorId={featuredPost.sponsorId} />
                 
                 <div className="absolute bottom-0 left-0 p-8 md:p-12 w-full">
@@ -108,12 +105,10 @@ export default async function Home() {
                           className="object-cover opacity-30 blur-md scale-110 transition-transform duration-500 group-hover:scale-125"
                         />
                         {/* Contained image */}
-                        <Image 
+                        <img 
                           src={post.coverImage || '/placeholder.jpg'} 
                           alt={post.title}
-                          fill
-                          sizes="(max-width: 768px) 100vw, 400px"
-                          className="object-contain transition-transform duration-500 group-hover:scale-110"
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                         />
                       </div>
                       <div className="p-5">
