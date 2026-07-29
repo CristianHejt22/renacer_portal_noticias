@@ -28,15 +28,37 @@ function cleanText(text) {
 export async function GET(request) {
   try {
     // 1. Fetch Sitemap
-    const sitemapRes = await fetch('https://www.minutouno.com/sitemap.xml', { next: { revalidate: 0 } });
+    const sitemapRes = await fetch('https://www.minutouno.com/sitemap.xml', { 
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' },
+      next: { revalidate: 0 } 
+    });
     const sitemapXml = await sitemapRes.text();
     
     // Parse XML
-    const $xml = cheerio.load(sitemapXml, { xmlMode: true });
-    const urls = [];
+    let $xml = cheerio.load(sitemapXml, { xmlMode: true });
+    let urls = [];
     $xml('url loc').each((i, el) => {
       urls.push($xml(el).text());
     });
+
+    // If it's a sitemap index, fetch the first sitemap
+    if (urls.length === 0) {
+      const sitemaps = [];
+      $xml('sitemap loc').each((i, el) => {
+        sitemaps.push($xml(el).text());
+      });
+      if (sitemaps.length > 0) {
+        const innerSitemapRes = await fetch(sitemaps[0], { 
+          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' },
+          next: { revalidate: 0 } 
+        });
+        const innerXml = await innerSitemapRes.text();
+        $xml = cheerio.load(innerXml, { xmlMode: true });
+        $xml('url loc').each((i, el) => {
+          urls.push($xml(el).text());
+        });
+      }
+    }
 
     // Get the most recent 15 urls
     const recentUrls = urls.reverse().slice(0, 15);
