@@ -5,6 +5,9 @@ import { getPosts } from '@/app/actions/posts';
 import BannerDisplay from '@/components/ads/BannerDisplay';
 import FeaturedClassifieds from '@/components/classifieds/FeaturedClassifieds';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function NoticiasPage({ searchParams }) {
   const { category: categorySlug } = await searchParams;
   
@@ -31,21 +34,30 @@ export default async function NoticiasPage({ searchParams }) {
 
   // Determine which banner plan to show based on category
   const slug = (categorySlug || '').toLowerCase();
-  let planPosition = null;
-  if (slug === 'nacional') planPosition = 'plan-nacional';
-  else if (slug === 'local') planPosition = 'plan-local';
-  else if (slug === 'deportes') planPosition = 'plan-deportivo';
-  else if (['mundo', 'internacional', 'tendencias'].includes(slug)) planPosition = 'plan-internacional';
-  else if (!slug) planPosition = 'plan-cielo-total';
+  
+  let headerPlan = null;
+  let gridPlan = 'plan-cielo-total'; // Default fallback for all categories
+
+  if (slug === 'nacional') {
+    gridPlan = 'plan-nacional';
+  } else if (slug === 'local') {
+    gridPlan = 'plan-local';
+  } else if (slug === 'deportes') {
+    headerPlan = 'plan-deportivo';
+    gridPlan = 'plan-cielo-total';
+  } else if (['mundo', 'internacional', 'tendencias'].includes(slug)) {
+    headerPlan = 'plan-internacional';
+    gridPlan = 'plan-cielo-total';
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <h1 className="text-4xl font-bold mb-10 text-center capitalize">{categoryName}</h1>
       
       {/* HEADER BANNER PARA PLAN INTERNACIONAL O DEPORTIVO */}
-      {(planPosition === 'plan-internacional' || planPosition === 'plan-deportivo') && (
+      {headerPlan && (
         <div className="mb-8">
-          <BannerDisplay position={planPosition} />
+          <BannerDisplay position={headerPlan} />
         </div>
       )}
 
@@ -78,19 +90,19 @@ export default async function NoticiasPage({ searchParams }) {
               </Link>
             );
 
-            let showCieloTotal = planPosition === 'plan-cielo-total' && (index + 1) % 6 === 0;
-            let showOtherPlans = planPosition !== 'plan-cielo-total' && planPosition !== null && (index + 1) % 3 === 0;
+            let showCieloTotal = gridPlan === 'plan-cielo-total' && (index + 1) % 6 === 0;
+            let showOtherPlans = gridPlan !== 'plan-cielo-total' && gridPlan !== null && (index + 1) % 3 === 0;
 
             if (showCieloTotal || showOtherPlans) {
               return (
                 <React.Fragment key={`group-${index}`}>
                   {postCard}
-                  {(planPosition === 'plan-nacional' || showCieloTotal) && (
+                  {(gridPlan === 'plan-nacional' || showCieloTotal) && (
                     <div className="col-span-1 md:col-span-2 lg:col-span-3 my-4">
-                      <BannerDisplay position={planPosition} />
+                      <BannerDisplay position={gridPlan} />
                     </div>
                   )}
-                  {planPosition === 'plan-local' && (
+                  {gridPlan === 'plan-local' && (
                     <div className="col-span-1 md:col-span-2 lg:col-span-3 my-4 flex justify-center">
                        {/* El plan local es cuadrado, le damos un ancho máximo */}
                       <div className="max-w-md w-full">
