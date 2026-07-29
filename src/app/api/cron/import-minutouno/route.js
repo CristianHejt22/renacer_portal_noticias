@@ -101,33 +101,49 @@ export async function GET(request) {
       const $ = cheerio.load(articleHtml);
 
       const title = $('meta[property="og:title"]').attr('content') || $('title').text();
-      const coverImage = $('meta[property="og:image"]').attr('content') || '';
+      let coverImage = $('meta[property="og:image"]').attr('content') || $('meta[name="twitter:image"]').attr('content') || '';
       
-      // Extract paragraphs inside article
+      // Fix relative image URLs
+      if (coverImage && coverImage.startsWith('/')) {
+        coverImage = 'https://www.minutouno.com' + coverImage;
+      }
+      
+      // Extract paragraphs and images inside article
       const paragraphs = [];
-      $('article p').each((i, el) => {
-        const text = cleanText($(el).text());
-        if (text && text.length > 20) {
-          paragraphs.push(`<p>${text}</p>`);
-        }
-      });
       
-      // Fallback if no <article> tag is found
-      if (paragraphs.length === 0) {
-        $('.article-body p, .detail-body p, .content p').each((i, el) => {
+      function processElement(el) {
+        if (el.tagName.toLowerCase() === 'img') {
+          let src = $(el).attr('src') || $(el).attr('data-src') || '';
+          if (src && !src.includes('data:image')) {
+            if (src.startsWith('/')) src = 'https://www.minutouno.com' + src;
+            paragraphs.push(`<img src="${src}" alt="Imagen de la noticia" style="max-width: 100%; height: auto; border-radius: 8px; margin: 10px 0;" />`);
+          }
+        } else {
           const text = cleanText($(el).text());
           if (text && text.length > 20) {
             paragraphs.push(`<p>${text}</p>`);
           }
-        });
+        }
+      }
+
+      $('article').find('p, img').each((i, el) => processElement(el));
+      
+      // Fallback if no <article> tag is found
+      if (paragraphs.length === 0) {
+        $('.article-body, .detail-body, .content').find('p, img').each((i, el) => processElement(el));
       }
 
       // Ultimate fallback: Just get all P tags and heuristically filter
       if (paragraphs.length === 0) {
-        $('p').each((i, el) => {
-          const text = cleanText($(el).text());
-          if (text && text.length > 40 && !text.includes('Copyright') && !text.includes('Términos y condiciones')) {
-            paragraphs.push(`<p>${text}</p>`);
+        $('p, img').each((i, el) => {
+          if (el.tagName.toLowerCase() === 'img') {
+             // To prevent scraping icons/logos in ultimate fallback, skip small images or require specific classes. We will just skip imgs in ultimate fallback to be safe, or only take large ones if we could check size. 
+             // Safest is to skip img in ultimate fallback.
+          } else {
+            const text = cleanText($(el).text());
+            if (text && text.length > 40 && !text.includes('Copyright') && !text.includes('Términos y condiciones')) {
+              paragraphs.push(`<p>${text}</p>`);
+            }
           }
         });
       }
