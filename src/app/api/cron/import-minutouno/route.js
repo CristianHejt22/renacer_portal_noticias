@@ -110,8 +110,11 @@ export async function GET(request) {
       
       // Extract paragraphs and images inside article
       const paragraphs = [];
+      let isPremium = false;
       
       function processElement(el) {
+        if (isPremium) return;
+        
         if (el.tagName.toLowerCase() === 'img') {
           let src = $(el).attr('src') || $(el).attr('data-src') || '';
           if (src && !src.includes('data:image')) {
@@ -119,7 +122,12 @@ export async function GET(request) {
             paragraphs.push(`<img src="${src}" alt="Imagen de la noticia" style="max-width: 100%; height: auto; border-radius: 8px; margin: 10px 0;" />`);
           }
         } else {
-          const text = cleanText($(el).text());
+          const rawText = $(el).text();
+          if (rawText.toLowerCase().includes('exclusivo para suscriptores')) {
+            isPremium = true;
+            return;
+          }
+          const text = cleanText(rawText);
           if (text && text.length > 20) {
             paragraphs.push(`<p>${text}</p>`);
           }
@@ -134,18 +142,30 @@ export async function GET(request) {
       }
 
       // Ultimate fallback: Just get all P tags and heuristically filter
-      if (paragraphs.length === 0) {
+      if (paragraphs.length === 0 && !isPremium) {
         $('p, img').each((i, el) => {
+          if (isPremium) return;
+          
           if (el.tagName.toLowerCase() === 'img') {
              // To prevent scraping icons/logos in ultimate fallback, skip small images or require specific classes. We will just skip imgs in ultimate fallback to be safe, or only take large ones if we could check size. 
              // Safest is to skip img in ultimate fallback.
           } else {
-            const text = cleanText($(el).text());
+            const rawText = $(el).text();
+            if (rawText.toLowerCase().includes('exclusivo para suscriptores')) {
+              isPremium = true;
+              return;
+            }
+            const text = cleanText(rawText);
             if (text && text.length > 40 && !text.includes('Copyright') && !text.includes('Términos y condiciones')) {
               paragraphs.push(`<p>${text}</p>`);
             }
           }
         });
+      }
+
+      if (isPremium) {
+         addedPosts.push(`Omitido (Premium): ${title}`);
+         continue;
       }
 
       if (paragraphs.length === 0 || !title) {
