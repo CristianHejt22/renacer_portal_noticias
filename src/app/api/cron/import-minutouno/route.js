@@ -100,7 +100,20 @@ export async function GET(request) {
         });
       }
 
-      if (paragraphs.length === 0 || !title) continue;
+      // Ultimate fallback: Just get all P tags and heuristically filter
+      if (paragraphs.length === 0) {
+        $('p').each((i, el) => {
+          const text = cleanText($(el).text());
+          if (text && text.length > 40 && !text.includes('Copyright') && !text.includes('Términos y condiciones')) {
+            paragraphs.push(`<p>${text}</p>`);
+          }
+        });
+      }
+
+      if (paragraphs.length === 0 || !title) {
+        addedPosts.push(`Fallo al extraer contenido o título para: ${url}. Title: ${title}, P count: ${paragraphs.length}`);
+        continue;
+      }
 
       const content = paragraphs.join('\n');
 
