@@ -247,7 +247,9 @@ export default function NewPostPage() {
               </button>
             </div>
             {coverImage && (
-              <div className="mt-2 h-20 w-full rounded-md bg-cover bg-center" style={{backgroundImage: `url(${coverImage})`}}></div>
+              <div className="mt-2 h-20 w-full rounded-md overflow-hidden bg-slate-800">
+                <img src={coverImage} alt="Cover Preview" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+              </div>
             )}
           </div>
 
