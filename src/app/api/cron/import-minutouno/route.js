@@ -141,15 +141,19 @@ export async function GET(request) {
         }
       }
 
-      $('article').find('p, img').each((i, el) => processElement(el));
+      // Try to find the specific body container first
+      let targetArea = $('.article-body, .detail-body, .content, .cuerpo-nota, [itemprop="articleBody"]');
       
-      // Fallback if no <article> tag is found
-      if (paragraphs.length === 0) {
-        $('.article-body, .detail-body, .content').find('p, img').each((i, el) => processElement(el));
+      if (targetArea.length > 0) {
+        targetArea.find('p, img').each((i, el) => processElement(el));
+      } else {
+        // Fallback to article
+        $('article').find('p, img').each((i, el) => processElement(el));
       }
 
       // Ultimate fallback: Just get all P tags and heuristically filter
-      if (paragraphs.length === 0 && !isPremium) {
+      if (paragraphs.filter(p => p.startsWith('<p>')).length === 0 && !isPremium) {
+        paragraphs.length = 0; // Reset array to discard isolated images from header
         $('p, img').each((i, el) => {
           if (isPremium) return;
           
