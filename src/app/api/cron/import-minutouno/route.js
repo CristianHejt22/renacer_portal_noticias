@@ -102,6 +102,9 @@ export async function GET(request) {
 
       const title = $('meta[property="og:title"]').attr('content') || $('title').text();
       let coverImage = $('meta[property="og:image"]').attr('content') || $('meta[name="twitter:image"]').attr('content') || '';
+      if (!coverImage) {
+        coverImage = $('article img').first().attr('src') || $('article img').first().attr('data-src') || $('.article-body img').first().attr('src') || '';
+      }
       
       // Fix relative image URLs
       if (coverImage && coverImage.startsWith('/')) {
@@ -119,7 +122,7 @@ export async function GET(request) {
           let src = $(el).attr('src') || $(el).attr('data-src') || '';
           if (src && !src.includes('data:image')) {
             if (src.startsWith('/')) src = 'https://www.minutouno.com' + src;
-            paragraphs.push(`<img src="${src}" alt="Imagen de la noticia" style="max-width: 100%; height: auto; border-radius: 8px; margin: 10px 0;" />`);
+            paragraphs.push(`<img src="${src}" class="rounded-xl w-full my-4" alt="Imagen de la noticia" referrerpolicy="no-referrer" />`);
           }
         } else {
           const rawText = $(el).text();
