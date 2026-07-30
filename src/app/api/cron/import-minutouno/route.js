@@ -141,7 +141,21 @@ export async function GET(request) {
       
       // Fallback if no <article> tag is found
       if (paragraphs.length === 0) {
-        $('.article-body, .detail-body, .content').find('p, img').each((i, el) => processElement(el));
+        $('.article-body, .detail-body, .content, .cuerpo-nota, [itemprop="articleBody"]').find('p, img').each((i, el) => processElement(el));
+      }
+
+      // If still no paragraphs, maybe they don't use <p> tags but raw text in a div
+      if (paragraphs.length === 0) {
+        const bodyDiv = $('.article-body, .detail-body, .content, .cuerpo-nota, [itemprop="articleBody"]').first();
+        if (bodyDiv.length > 0) {
+          const rawText = bodyDiv.text();
+          if (rawText.toLowerCase().includes('exclusivo para suscriptores')) {
+            isPremium = true;
+          } else {
+            const lines = rawText.split('\\n').map(l => cleanText(l)).filter(l => l.length > 30);
+            lines.forEach(line => paragraphs.push(`<p>${line}</p>`));
+          }
+        }
       }
 
       // Ultimate fallback: Just get all P tags and heuristically filter
