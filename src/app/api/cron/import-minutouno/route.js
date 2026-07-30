@@ -94,7 +94,9 @@ export async function GET(request) {
 
       // Check if post already exists
       const existing = await prisma.post.findUnique({ where: { slug } });
-      if (existing) continue;
+      if (existing && existing.isPublished) {
+        continue; // Skip already published posts
+      }
 
       // Fetch the article
       const articleRes = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' } });
@@ -199,19 +201,28 @@ export async function GET(request) {
         });
       }
 
-      // Save post as Draft
-      const newPost = await prisma.post.create({
-        data: {
-          title,
-          slug,
-          excerpt,
-          content,
-          coverImage,
-          category: dbCategory.name,
-          isPublished: false, // Guardado como borrador
-          authorId: botUser.id,
-        }
-      });
+      const postData = {
+        title,
+        slug,
+        excerpt,
+        content,
+        coverImage,
+        category: dbCategory.name,
+        isPublished: false, // Guardado como borrador
+        authorId: botUser.id,
+      };
+
+      let newPost;
+      if (existing) {
+        newPost = await prisma.post.update({
+          where: { slug },
+          data: postData,
+        });
+      } else {
+        newPost = await prisma.post.create({
+          data: postData,
+        });
+      }
 
       addedPosts.push(newPost.title);
     }
