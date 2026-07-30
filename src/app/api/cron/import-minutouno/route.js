@@ -101,6 +101,7 @@ export async function GET(request) {
       const $ = cheerio.load(articleHtml);
 
       const title = $('meta[property="og:title"]').attr('content') || $('title').text();
+      const excerpt = $('meta[property="og:description"]').attr('content') || $('meta[name="description"]').attr('content') || '';
       let coverImage = $('meta[property="og:image"]').attr('content') || $('meta[name="twitter:image"]').attr('content') || '';
       if (!coverImage) {
         coverImage = $('article img').first().attr('src') || $('article img').first().attr('data-src') || $('.article-body img').first().attr('src') || '';
@@ -210,6 +211,7 @@ export async function GET(request) {
         data: {
           title,
           slug,
+          excerpt,
           content,
           coverImage,
           category: dbCategory.name,
