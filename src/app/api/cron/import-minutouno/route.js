@@ -15,6 +15,7 @@ const JUNK_PHRASES = [
 ];
 
 function cleanText(text) {
+  if (!text) return null;
   let cleaned = text.trim();
   const lower = cleaned.toLowerCase();
   for (const junk of JUNK_PHRASES) {
@@ -119,15 +120,18 @@ export async function GET(request) {
       function processElement(el) {
         if (isPremium) return;
         
-        if (el.tagName.toLowerCase() === 'img') {
-          let src = $(el).attr('src') || $(el).attr('data-src') || '';
+        const $el = $(el);
+        const isImg = $el.is('img');
+        
+        if (isImg) {
+          let src = $el.attr('src') || $el.attr('data-src') || '';
           if (src && !src.includes('data:image')) {
             if (src.startsWith('/')) src = 'https://www.minutouno.com' + src;
             paragraphs.push(`<img src="${src}" class="rounded-xl w-full my-4" alt="Imagen de la noticia" referrerpolicy="no-referrer" />`);
           }
         } else {
-          const rawText = $(el).text();
-          if (rawText.toLowerCase().includes('exclusivo para suscriptores')) {
+          const rawText = $el.text();
+          if (rawText && rawText.toLowerCase().includes('exclusivo para suscriptores')) {
             isPremium = true;
             return;
           }
@@ -138,25 +142,12 @@ export async function GET(request) {
         }
       }
 
+      // First try to find p and img inside article
       $('article').find('p, img').each((i, el) => processElement(el));
       
-      // Fallback if no <article> tag is found
+      // Fallback 1: specific body classes
       if (paragraphs.length === 0) {
         $('.article-body, .detail-body, .content, .cuerpo-nota, [itemprop="articleBody"]').find('p, img').each((i, el) => processElement(el));
-      }
-
-      // If still no paragraphs, maybe they don't use <p> tags but raw text in a div
-      if (paragraphs.length === 0) {
-        const bodyDiv = $('.article-body, .detail-body, .content, .cuerpo-nota, [itemprop="articleBody"]').first();
-        if (bodyDiv.length > 0) {
-          const rawText = bodyDiv.text();
-          if (rawText.toLowerCase().includes('exclusivo para suscriptores')) {
-            isPremium = true;
-          } else {
-            const lines = rawText.split('\\n').map(l => cleanText(l)).filter(l => l.length > 30);
-            lines.forEach(line => paragraphs.push(`<p>${line}</p>`));
-          }
-        }
       }
 
       // Ultimate fallback: Just get all P tags and heuristically filter
@@ -164,19 +155,21 @@ export async function GET(request) {
         $('p, img').each((i, el) => {
           if (isPremium) return;
           
-          if (el.tagName.toLowerCase() === 'img') {
-             // To prevent scraping icons/logos in ultimate fallback, skip small images or require specific classes. We will just skip imgs in ultimate fallback to be safe, or only take large ones if we could check size. 
-             // Safest is to skip img in ultimate fallback.
-          } else {
-            const rawText = $(el).text();
-            if (rawText.toLowerCase().includes('exclusivo para suscriptores')) {
-              isPremium = true;
-              return;
-            }
-            const text = cleanText(rawText);
-            if (text && text.length > 40 && !text.includes('Copyright') && !text.includes('Términos y condiciones')) {
-              paragraphs.push(`<p>${text}</p>`);
-            }
+          const $el = $(el);
+          if ($el.is('img')) {
+             // To prevent scraping icons/logos in ultimate fallback, skip small images or require specific classes.
+             // We will skip img in ultimate fallback to be safe.
+             return;
+          }
+
+          const rawText = $el.text();
+          if (rawText && rawText.toLowerCase().includes('exclusivo para suscriptores')) {
+            isPremium = true;
+            return;
+          }
+          const text = cleanText(rawText);
+          if (text && text.length > 40 && !text.includes('Copyright') && !text.includes('Términos y condiciones')) {
+            paragraphs.push(`<p>${text}</p>`);
           }
         });
       }
@@ -187,8 +180,8 @@ export async function GET(request) {
       }
 
       if (paragraphs.length === 0 || !title) {
-        addedPosts.push(`Fallo al extraer contenido o título para: ${url}. Title: ${title}, P count: ${paragraphs.length}`);
-        continue;
+         addedPosts.push(`Fallo al extraer contenido o título para: ${url}. Title: ${title}, P count: ${paragraphs.length}`);
+         continue;
       }
 
       const content = paragraphs.join('\n');
