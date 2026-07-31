@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import * as cheerio from 'cheerio';
 
+export const dynamic = 'force-dynamic';
+
 const prisma = new PrismaClient();
 
 // List of phrases to ignore/filter out
