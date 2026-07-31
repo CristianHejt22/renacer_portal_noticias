@@ -28,15 +28,37 @@ function cleanText(text) {
 export async function GET(request) {
   try {
     // 1. Fetch Sitemap
-    const sitemapRes = await fetch('https://www.minutouno.com/sitemap.xml', { next: { revalidate: 0 } });
+    const sitemapRes = await fetch('https://www.minutouno.com/sitemap.xml', { 
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' },
+      next: { revalidate: 0 } 
+    });
     const sitemapXml = await sitemapRes.text();
     
     // Parse XML
-    const $xml = cheerio.load(sitemapXml, { xmlMode: true });
-    const urls = [];
+    let $xml = cheerio.load(sitemapXml, { xmlMode: true });
+    let urls = [];
     $xml('url loc').each((i, el) => {
       urls.push($xml(el).text());
     });
+
+    // If it's a sitemap index, fetch the first sitemap
+    if (urls.length === 0) {
+      const sitemaps = [];
+      $xml('sitemap loc').each((i, el) => {
+        sitemaps.push($xml(el).text());
+      });
+      if (sitemaps.length > 0) {
+        const innerSitemapRes = await fetch(sitemaps[0], { 
+          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' },
+          next: { revalidate: 0 } 
+        });
+        const innerXml = await innerSitemapRes.text();
+        $xml = cheerio.load(innerXml, { xmlMode: true });
+        $xml('url loc').each((i, el) => {
+          urls.push($xml(el).text());
+        });
+      }
+    }
 
     // Get the most recent 15 urls
     const recentUrls = urls.reverse().slice(0, 15);
@@ -79,35 +101,71 @@ export async function GET(request) {
       const $ = cheerio.load(articleHtml);
 
       const title = $('meta[property="og:title"]').attr('content') || $('title').text();
-      const coverImage = $('meta[property="og:image"]').attr('content') || '';
+      let coverImage = $('meta[property="og:image"]').attr('content') || $('meta[name="twitter:image"]').attr('content') || '';
       
-      // Extract paragraphs inside article
+      // Fix relative image URLs
+      if (coverImage && coverImage.startsWith('/')) {
+        coverImage = 'https://www.minutouno.com' + coverImage;
+      }
+      
+      // Extract paragraphs and images inside article
       const paragraphs = [];
-      $('article p').each((i, el) => {
-        const text = cleanText($(el).text());
-        if (text && text.length > 20) {
-          paragraphs.push(`<p>${text}</p>`);
+      let isPremium = false;
+      
+      function processElement(el) {
+        if (isPremium) return;
+        
+        if (el.tagName && el.tagName.toLowerCase() === 'img') {
+          let src = $(el).attr('src') || $(el).attr('data-src') || '';
+          if (src && !src.includes('data:image')) {
+            if (src.startsWith('/')) src = 'https://www.minutouno.com' + src;
+            paragraphs.push(`<img src="${src}" alt="Imagen de la noticia" style="max-width: 100%; height: auto; border-radius: 8px; margin: 10px 0;" referrerpolicy="no-referrer" />`);
+          }
+        } else {
+          const rawText = $(el).text();
+          if (rawText.toLowerCase().includes('exclusivo para suscriptores')) {
+            isPremium = true;
+            return;
+          }
+          const text = cleanText(rawText);
+          if (text && text.length > 20) {
+            paragraphs.push(`<p>${text}</p>`);
+          }
         }
-      });
+      }
+
+      $('article').find('p, img').each((i, el) => processElement(el));
       
       // Fallback if no <article> tag is found
       if (paragraphs.length === 0) {
-        $('.article-body p, .detail-body p, .content p').each((i, el) => {
-          const text = cleanText($(el).text());
-          if (text && text.length > 20) {
-            paragraphs.push(`<p>${text}</p>`);
+        $('.article-body, .detail-body, .content').find('p, img').each((i, el) => processElement(el));
+      }
+
+      // Ultimate fallback: Just get all P tags and heuristically filter
+      if (paragraphs.length === 0 && !isPremium) {
+        $('p, img').each((i, el) => {
+          if (isPremium) return;
+          
+          if (el.tagName && el.tagName.toLowerCase() === 'img') {
+             // To prevent scraping icons/logos in ultimate fallback, skip small images or require specific classes. We will just skip imgs in ultimate fallback to be safe, or only take large ones if we could check size. 
+             // Safest is to skip img in ultimate fallback.
+          } else {
+            const rawText = $(el).text();
+            if (rawText.toLowerCase().includes('exclusivo para suscriptores')) {
+              isPremium = true;
+              return;
+            }
+            const text = cleanText(rawText);
+            if (text && text.length > 40 && !text.includes('Copyright') && !text.includes('Términos y condiciones')) {
+              paragraphs.push(`<p>${text}</p>`);
+            }
           }
         });
       }
 
-      // Ultimate fallback: Just get all P tags and heuristically filter
-      if (paragraphs.length === 0) {
-        $('p').each((i, el) => {
-          const text = cleanText($(el).text());
-          if (text && text.length > 40 && !text.includes('Copyright') && !text.includes('Términos y condiciones')) {
-            paragraphs.push(`<p>${text}</p>`);
-          }
-        });
+      if (isPremium) {
+         addedPosts.push(`Omitido (Premium): ${title}`);
+         continue;
       }
 
       if (paragraphs.length === 0 || !title) {
