@@ -93,7 +93,9 @@ export async function GET(request) {
 
       // Check if post already exists
       const existing = await prisma.post.findUnique({ where: { slug } });
-      if (existing) continue;
+      if (existing && existing.isPublished) {
+        continue;
+      }
 
       // Fetch the article
       const articleRes = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' } });
@@ -134,15 +136,19 @@ export async function GET(request) {
         }
       }
 
-      $('article').find('p, img').each((i, el) => processElement(el));
+      // Try to find the specific body container first
+      let targetArea = $('.article-body, .detail-body, .content, .cuerpo-nota, [itemprop="articleBody"]');
       
-      // Fallback if no <article> tag is found
-      if (paragraphs.length === 0) {
-        $('.article-body, .detail-body, .content').find('p, img').each((i, el) => processElement(el));
+      if (targetArea.length > 0) {
+        targetArea.find('p, img').each((i, el) => processElement(el));
+      } else {
+        // Fallback to article
+        $('article').find('p, img').each((i, el) => processElement(el));
       }
 
       // Ultimate fallback: Just get all P tags and heuristically filter
-      if (paragraphs.length === 0 && !isPremium) {
+      if (paragraphs.filter(p => p.startsWith('<p>')).length === 0 && !isPremium) {
+        paragraphs.length = 0; // Reset array to discard isolated images from header
         $('p, img').each((i, el) => {
           if (isPremium) return;
           
@@ -188,18 +194,29 @@ export async function GET(request) {
         });
       }
 
-      // Save post as Draft
-      const newPost = await prisma.post.create({
-        data: {
-          title,
-          slug,
-          content,
-          coverImage,
-          category: dbCategory.name,
-          isPublished: false, // Guardado como borrador
-          authorId: botUser.id,
-        }
-      });
+      // Prepare post data
+      const postData = {
+        title,
+        slug,
+        content,
+        coverImage,
+        category: dbCategory.name,
+        isPublished: false, // Guardado como borrador
+        authorId: botUser.id,
+      };
+
+      // Save or update post as Draft
+      let newPost;
+      if (existing) {
+        newPost = await prisma.post.update({
+          where: { slug },
+          data: postData
+        });
+      } else {
+        newPost = await prisma.post.create({
+          data: postData
+        });
+      }
 
       addedPosts.push(newPost.title);
     }
