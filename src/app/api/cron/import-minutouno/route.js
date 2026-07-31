@@ -136,19 +136,16 @@ export async function GET(request) {
         }
       }
 
-      // Try to find the specific body container first
-      let targetArea = $('.article-body, .detail-body, .content, .cuerpo-nota, [itemprop="articleBody"]');
-      
-      if (targetArea.length > 0) {
-        targetArea.find('p, img').each((i, el) => processElement(el));
-      } else {
-        // Fallback to article
-        $('article').find('p, img').each((i, el) => processElement(el));
-      }
+      // Combine article AND body searches to ensure we capture images (often in article) and text (often in detail-body)
+      $('article').find('p, img').each((i, el) => processElement(el));
+      $('.article-body, .detail-body, .content, .cuerpo-nota, [itemprop="articleBody"]').find('p, img').each((i, el) => processElement(el));
+
+      // Deduplicate elements (in case body classes were inside article)
+      let uniqueParagraphs = [...new Set(paragraphs)];
 
       // Ultimate fallback: Just get all P tags and heuristically filter
-      if (paragraphs.filter(p => p.startsWith('<p>')).length === 0 && !isPremium) {
-        paragraphs.length = 0; // Reset array to discard isolated images from header
+      if (uniqueParagraphs.filter(p => p.startsWith('<p>')).length === 0 && !isPremium) {
+        uniqueParagraphs = []; // Reset array to discard isolated images from header
         $('p, img').each((i, el) => {
           if (isPremium) return;
           
@@ -163,7 +160,7 @@ export async function GET(request) {
             }
             const text = cleanText(rawText);
             if (text && text.length > 40 && !text.includes('Copyright') && !text.includes('Términos y condiciones')) {
-              paragraphs.push(`<p>${text}</p>`);
+              uniqueParagraphs.push(`<p>${text}</p>`);
             }
           }
         });
@@ -174,12 +171,12 @@ export async function GET(request) {
          continue;
       }
 
-      if (paragraphs.length === 0 || !title) {
-        addedPosts.push(`Fallo al extraer contenido o título para: ${url}. Title: ${title}, P count: ${paragraphs.length}`);
+      if (uniqueParagraphs.length === 0 || !title) {
+        addedPosts.push(`Fallo al extraer contenido o título para: ${url}. Title: ${title}, P count: ${uniqueParagraphs.length}`);
         continue;
       }
 
-      const content = paragraphs.join('\n');
+      const content = uniqueParagraphs.join('\n');
 
       // Ensure Category exists
       const categorySlug = rawCategory.toLowerCase();
