@@ -9,6 +9,7 @@ export default function PostsPage() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sendingId, setSendingId] = useState(null);
+  const [importing, setImporting] = useState(false);
 
   useEffect(() => {
     loadPosts();
@@ -43,17 +44,46 @@ export default function PostsPage() {
     }
   };
 
+  const handleImport = async () => {
+    if (confirm('¿Ejecutar importador de MinutoUno ahora? Esto puede tardar unos segundos.')) {
+      setImporting(true);
+      try {
+        const res = await fetch('/api/cron/import-minutouno');
+        const data = await res.json();
+        if (data.success) {
+          alert(data.message || 'Importación finalizada con éxito.');
+          loadPosts();
+        } else {
+          alert('Error: ' + data.error);
+        }
+      } catch (error) {
+        console.error(error);
+        alert('Ocurrió un error al importar.');
+      }
+      setImporting(false);
+    }
+  };
+
   return (
     <div>
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Gestión de Noticias</h1>
-        <Link 
-          href="/admin/posts/new" 
-          className="flex items-center space-x-2 bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg transition-colors"
-        >
-          <Plus size={20} />
-          <span>Crear Noticia</span>
-        </Link>
+        <div className="flex space-x-4">
+          <button 
+            onClick={handleImport}
+            disabled={importing}
+            className="flex items-center space-x-2 bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
+          >
+            <span>{importing ? 'Importando...' : 'Importar MinutoUno'}</span>
+          </button>
+          <Link 
+            href="/admin/posts/new" 
+            className="flex items-center space-x-2 bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg transition-colors"
+          >
+            <Plus size={20} />
+            <span>Crear Noticia</span>
+          </Link>
+        </div>
       </div>
 
       {loading ? (
