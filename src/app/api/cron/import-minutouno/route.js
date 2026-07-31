@@ -76,9 +76,10 @@ export async function GET(request) {
       });
     }
 
-    // Get the most recent 15 urls matching the category
     const recentUrls = filteredUrls.slice(0, 15);
-    const addedPosts = [];
+    const successfulPosts = [];
+    const skippedPosts = [];
+    const failedPosts = [];
 
     // Ensure "Redacción" user exists
     let botUser = await prisma.user.findFirst({ where: { name: 'Redacción' } });
@@ -183,12 +184,12 @@ export async function GET(request) {
       }
 
       if (isPremium) {
-         addedPosts.push(`Omitido (Premium): ${title}`);
+         skippedPosts.push(`Premium: ${title}`);
          continue;
       }
 
       if (uniqueParagraphs.length === 0 || !title) {
-        addedPosts.push(`Fallo al extraer contenido o título para: ${url}. Title: ${title}, P count: ${uniqueParagraphs.length}`);
+        failedPosts.push(`Fallo: ${url}`);
         continue;
       }
 
@@ -231,13 +232,16 @@ export async function GET(request) {
         });
       }
 
-      addedPosts.push(newPost.title);
+      successfulPosts.push(newPost.title);
     }
+
+    const message = `Éxito: ${successfulPosts.length}. Saltadas: ${skippedPosts.length}. Fallos: ${failedPosts.length}.`;
 
     return NextResponse.json({ 
       success: true, 
-      message: addedPosts.length > 0 ? `Importadas ${addedPosts.length} noticias.` : 'No hay noticias nuevas.',
-      imported: addedPosts 
+      message: message,
+      imported: successfulPosts,
+      details: { successfulPosts, skippedPosts, failedPosts }
     });
   } catch (error) {
     console.error('Import Error:', error);

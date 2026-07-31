@@ -29,9 +29,15 @@ export async function getPosts() {
     const session = await getUserSession();
     if (!session) return { success: false, data: [] };
 
-    // Si es CREATOR, solo ve sus propias noticias
-    // Los publicadores/admins ven todo (incluyendo programadas, para poder gestionarlas).
-    const whereClause = session.role === 'CREATOR' ? { authorId: session.userId } : {};
+    let whereClause = {};
+    if (session.role === 'CREATOR') {
+      whereClause = {
+        OR: [
+          { authorId: session.userId },
+          { author: { email: 'redaccion@bot.local' } } // Permitir ver los borradores del bot
+        ]
+      };
+    }
 
     const posts = await prisma.post.findMany({
       where: whereClause,
