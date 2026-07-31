@@ -57,7 +57,11 @@ export default function PostsPage() {
         const res = await fetch(`/api/cron/import-minutouno?category=${importCategory}`);
         const data = await res.json();
         if (data.success) {
-          alert(data.message || 'Importación finalizada con éxito.');
+          let alertMsg = data.message || 'Importación finalizada con éxito.';
+          if (data.details && data.details.failedPosts && data.details.failedPosts.length > 0) {
+            alertMsg += '\nEjemplo de fallo: ' + data.details.failedPosts[0];
+          }
+          alert(alertMsg);
           loadPosts();
         } else {
           alert('Error: ' + data.error);

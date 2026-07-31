@@ -27,11 +27,27 @@ function cleanText(text) {
   return cleaned;
 }
 
+const BROWSER_HEADERS = {
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+  'Accept-Language': 'es-AR,es;q=0.9,en-US;q=0.8,en;q=0.7',
+  'Cache-Control': 'no-cache',
+  'Pragma': 'no-cache',
+  'Sec-Ch-Ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+  'Sec-Ch-Ua-Mobile': '?0',
+  'Sec-Ch-Ua-Platform': '"Windows"',
+  'Sec-Fetch-Dest': 'document',
+  'Sec-Fetch-Mode': 'navigate',
+  'Sec-Fetch-Site': 'none',
+  'Sec-Fetch-User': '?1',
+  'Upgrade-Insecure-Requests': '1'
+};
+
 export async function GET(request) {
   try {
     // 1. Fetch Sitemap
     const sitemapRes = await fetch('https://www.minutouno.com/sitemap.xml', { 
-      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' },
+      headers: BROWSER_HEADERS,
       next: { revalidate: 0 } 
     });
     const sitemapXml = await sitemapRes.text();
@@ -53,7 +69,7 @@ export async function GET(request) {
       });
       if (sitemaps.length > 0) {
         const innerSitemapRes = await fetch(sitemaps[0], { 
-          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' },
+          headers: BROWSER_HEADERS,
           next: { revalidate: 0 } 
         });
         const innerXml = await innerSitemapRes.text();
@@ -115,7 +131,14 @@ export async function GET(request) {
       }
 
       // Fetch the article
-      const articleRes = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' } });
+      let articleRes;
+      try {
+        articleRes = await fetch(url, { headers: BROWSER_HEADERS });
+      } catch (err) {
+        failedPosts.push(`Fallo red: ${err.message}`);
+        continue;
+      }
+      
       const articleHtml = await articleRes.text();
       const $ = cheerio.load(articleHtml);
 
@@ -189,7 +212,7 @@ export async function GET(request) {
       }
 
       if (uniqueParagraphs.length === 0 || !title) {
-        failedPosts.push(`Fallo: ${url}`);
+        failedPosts.push(`Fallo (HTTP ${articleRes.status}): sin contenido o título. HTML size: ${articleHtml.length}`);
         continue;
       }
 
