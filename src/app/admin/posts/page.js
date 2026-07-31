@@ -10,6 +10,7 @@ export default function PostsPage() {
   const [loading, setLoading] = useState(true);
   const [sendingId, setSendingId] = useState(null);
   const [importing, setImporting] = useState(false);
+  const [importCategory, setImportCategory] = useState('todas');
 
   useEffect(() => {
     loadPosts();
@@ -45,10 +46,15 @@ export default function PostsPage() {
   };
 
   const handleImport = async () => {
-    if (confirm('¿Ejecutar importador de MinutoUno ahora? Esto puede tardar unos segundos.')) {
+    let msg = '¿Ejecutar importador de MinutoUno ahora?';
+    if (importCategory !== 'todas') {
+      msg = `¿Ejecutar importador de MinutoUno filtrando por la categoría "${importCategory}" ahora?`;
+    }
+    
+    if (confirm(msg + ' Esto puede tardar unos segundos.')) {
       setImporting(true);
       try {
-        const res = await fetch('/api/cron/import-minutouno');
+        const res = await fetch(`/api/cron/import-minutouno?category=${importCategory}`);
         const data = await res.json();
         if (data.success) {
           alert(data.message || 'Importación finalizada con éxito.');
@@ -68,19 +74,33 @@ export default function PostsPage() {
     <div>
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Gestión de Noticias</h1>
-        <div className="flex space-x-4">
+        <div className="flex space-x-2">
+          <select 
+            value={importCategory}
+            onChange={(e) => setImportCategory(e.target.value)}
+            disabled={importing}
+            className="bg-slate-800 text-white border border-slate-700 px-3 py-2 rounded-lg text-sm"
+          >
+            <option value="todas">Todas las categorías</option>
+            <option value="deportes">Deportes</option>
+            <option value="politica">Política</option>
+            <option value="economia">Economía</option>
+            <option value="espectaculos">Espectáculos</option>
+            <option value="sociedad">Sociedad</option>
+            <option value="mundo">Mundo</option>
+          </select>
           <button 
             onClick={handleImport}
             disabled={importing}
-            className="flex items-center space-x-2 bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
+            className="flex items-center space-x-2 bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg transition-colors disabled:opacity-50 text-sm"
           >
-            <span>{importing ? 'Importando...' : 'Importar MinutoUno'}</span>
+            <span>{importing ? 'Importando...' : 'Importar'}</span>
           </button>
           <Link 
             href="/admin/posts/new" 
-            className="flex items-center space-x-2 bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg transition-colors"
+            className="flex items-center space-x-2 bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg transition-colors text-sm"
           >
-            <Plus size={20} />
+            <Plus size={16} />
             <span>Crear Noticia</span>
           </Link>
         </div>

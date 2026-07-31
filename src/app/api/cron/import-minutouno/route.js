@@ -43,6 +43,8 @@ export async function GET(request) {
       urls.push($xml(el).text());
     });
 
+    const categoryParam = request.nextUrl.searchParams.get('category');
+
     // If it's a sitemap index, fetch the first sitemap
     if (urls.length === 0) {
       const sitemaps = [];
@@ -62,8 +64,20 @@ export async function GET(request) {
       }
     }
 
-    // Get the most recent 15 urls
-    const recentUrls = urls.reverse().slice(0, 15);
+    let filteredUrls = urls.reverse();
+    if (categoryParam && categoryParam !== 'todas') {
+      filteredUrls = filteredUrls.filter(u => {
+        try {
+          const pathParts = new URL(u).pathname.split('/').filter(Boolean);
+          return pathParts.length > 0 && pathParts[0].toLowerCase() === categoryParam.toLowerCase();
+        } catch {
+          return false;
+        }
+      });
+    }
+
+    // Get the most recent 15 urls matching the category
+    const recentUrls = filteredUrls.slice(0, 15);
     const addedPosts = [];
 
     // Ensure "Redacción" user exists
