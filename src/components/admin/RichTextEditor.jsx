@@ -94,13 +94,10 @@ const MenuBar = ({ editor, availableBanners = [] }) => {
             if (data.url) {
               const credit = window.prompt(`Derechos de autor / Fuente para la imagen "${file.name || 'imagen'}" (Opcional):`);
               if (credit && credit.trim() !== '') {
-                editor.chain().focus()
-                  .insertContent(`<img src="${data.url}" class="rounded-lg max-w-full h-auto" />`)
-                  .insertContent(`<p style="text-align: right"><em>📸 Foto: ${credit.trim()}</em></p>`)
-                  .insertContent('<p></p>')
-                  .run();
+                editor.commands.insertContent(`<img src="${data.url}" class="rounded-lg max-w-full h-auto" />`);
+                editor.commands.insertContent(`<p style="text-align: right"><em>📸 Foto: ${credit.trim()}</em></p><p></p>`);
               } else {
-                editor.chain().focus().insertContent(`<img src="${data.url}" class="rounded-lg max-w-full h-auto" /><p></p>`).run();
+                editor.commands.insertContent(`<img src="${data.url}" class="rounded-lg max-w-full h-auto" /><p></p>`);
               }
               toast.success('Imagen insertada', { id: toastId });
             } else {
