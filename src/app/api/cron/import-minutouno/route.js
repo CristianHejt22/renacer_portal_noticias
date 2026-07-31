@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { PrismaClient } from '@prisma/client';
 import * as cheerio from 'cheerio';
 
@@ -259,6 +260,9 @@ export async function GET(request) {
     }
 
     const message = `Éxito: ${successfulPosts.length}. Saltadas: ${skippedPosts.length}. Fallos: ${failedPosts.length}.`;
+    
+    revalidatePath('/admin/posts');
+    revalidatePath('/');
 
     return NextResponse.json({ 
       success: true, 

@@ -54,7 +54,7 @@ export default function PostsPage() {
     if (confirm(msg + ' Esto puede tardar unos segundos.')) {
       setImporting(true);
       try {
-        const res = await fetch(`/api/cron/import-minutouno?category=${importCategory}`);
+        const res = await fetch(`/api/cron/import-minutouno?category=${importCategory}&t=${Date.now()}`, { cache: 'no-store' });
         const data = await res.json();
         if (data.success) {
           let alertMsg = data.message || 'Importación finalizada con éxito.';
