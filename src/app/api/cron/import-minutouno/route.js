@@ -248,7 +248,10 @@ export async function GET(request) {
       if (existing) {
         newPost = await prisma.post.update({
           where: { slug },
-          data: postData
+          data: {
+            ...postData,
+            createdAt: new Date() // Force it to the top of the list
+          }
         });
       } else {
         newPost = await prisma.post.create({

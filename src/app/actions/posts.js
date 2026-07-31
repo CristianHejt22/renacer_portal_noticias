@@ -34,7 +34,7 @@ export async function getPosts() {
       whereClause = {
         OR: [
           { authorId: session.userId },
-          { author: { email: 'redaccion@bot.local' } } // Permitir ver los borradores del bot
+          { author: { name: 'Redacción' } } // Permitir ver los borradores del bot
         ]
       };
     }
