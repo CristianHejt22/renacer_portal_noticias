@@ -56,8 +56,10 @@ export async function GET(request) {
     // Parse XML
     let $xml = cheerio.load(sitemapXml, { xmlMode: true });
     let urls = [];
-    $xml('url loc').each((i, el) => {
-      urls.push($xml(el).text());
+    $xml('url').each((i, el) => {
+      const loc = $xml(el).find('loc').text();
+      const lastmod = $xml(el).find('lastmod').text();
+      if (loc) urls.push({ loc, lastmod });
     });
 
     const categoryParam = request.nextUrl.searchParams.get('category');
@@ -65,8 +67,8 @@ export async function GET(request) {
     // If it's a sitemap index, fetch the first sitemap
     if (urls.length === 0) {
       const sitemaps = [];
-      $xml('sitemap loc').each((i, el) => {
-        sitemaps.push($xml(el).text());
+      $xml('sitemap').each((i, el) => {
+        sitemaps.push($xml(el).find('loc').text());
       });
       if (sitemaps.length > 0) {
         const innerSitemapRes = await fetch(sitemaps[0], { 
@@ -75,8 +77,10 @@ export async function GET(request) {
         });
         const innerXml = await innerSitemapRes.text();
         $xml = cheerio.load(innerXml, { xmlMode: true });
-        $xml('url loc').each((i, el) => {
-          urls.push($xml(el).text());
+        $xml('url').each((i, el) => {
+          const loc = $xml(el).find('loc').text();
+          const lastmod = $xml(el).find('lastmod').text();
+          if (loc) urls.push({ loc, lastmod });
         });
       }
     }
@@ -85,7 +89,7 @@ export async function GET(request) {
     if (categoryParam && categoryParam !== 'todas') {
       filteredUrls = filteredUrls.filter(u => {
         try {
-          const pathParts = new URL(u).pathname.split('/').filter(Boolean);
+          const pathParts = new URL(u.loc).pathname.split('/').filter(Boolean);
           return pathParts.length > 0 && pathParts[0].toLowerCase() === categoryParam.toLowerCase();
         } catch {
           return false;
@@ -111,7 +115,10 @@ export async function GET(request) {
       });
     }
 
-    for (const url of recentUrls) {
+    for (const item of recentUrls) {
+      const url = item.loc;
+      const remoteLastMod = item.lastmod ? new Date(item.lastmod) : null;
+      
       // Ignore non-article URLs if any
       if (!url.includes('.com/') || url.split('/').length < 4) continue;
 
@@ -127,8 +134,17 @@ export async function GET(request) {
 
       // Check if post already exists
       const existing = await prisma.post.findUnique({ where: { slug } });
-      if (existing && existing.isPublished) {
-        continue;
+      
+      if (existing) {
+        // If it exists, check if the sitemap indicates an update
+        if (remoteLastMod && existing.updatedAt >= remoteLastMod) {
+          skippedPosts.push(`Sin cambios: ${slug}`);
+          continue; // The sitemap lastmod is older or equal to our updatedAt, no need to update
+        }
+        if (!remoteLastMod) {
+          skippedPosts.push(`Ya existe: ${slug}`);
+          continue; // Cannot determine update status, default to skip to save resources
+        }
       }
 
       // Fetch the article
@@ -239,23 +255,25 @@ export async function GET(request) {
         content,
         coverImage,
         category: dbCategory.name,
-        isPublished: false, // Guardado como borrador
         authorId: botUser.id,
       };
 
-      // Save or update post as Draft
+      // Save or update post
       let newPost;
       if (existing) {
         newPost = await prisma.post.update({
           where: { slug },
           data: {
-            ...postData,
-            createdAt: new Date() // Force it to the top of the list
+            ...postData
+            // we intentionally do not override createdAt or isPublished
           }
         });
       } else {
         newPost = await prisma.post.create({
-          data: postData
+          data: {
+            ...postData,
+            isPublished: false // Only new posts are saved as draft
+          }
         });
       }
 
