@@ -27,27 +27,69 @@ async function getUserSession() {
 export async function getPosts() {
   try {
     const session = await getUserSession();
-    if (!session) return { success: false, data: [] };
+    
+    // If logged in as admin/creator, return their posts including drafts
+    if (session) {
+      let whereClause = {};
+      if (session.role === 'CREATOR') {
+        whereClause = {
+          OR: [
+            { authorId: session.userId },
+            { author: { name: 'Redacción' } } // Permitir ver los borradores del bot
+          ]
+        };
+      }
 
-    let whereClause = {};
-    if (session.role === 'CREATOR') {
-      whereClause = {
-        OR: [
-          { authorId: session.userId },
-          { author: { name: 'Redacción' } } // Permitir ver los borradores del bot
-        ]
+      const posts = await prisma.post.findMany({
+        where: whereClause,
+        orderBy: { createdAt: 'desc' },
+        include: { author: true },
+        take: 100,
+      });
+      return { success: true, data: posts };
+    }
+
+    // If public visitor (no session), return published posts
+    const publicPosts = await prisma.post.findMany({
+      where: {
+        isPublished: true,
+        OR: [{ scheduledFor: null }, { scheduledFor: { lte: new Date() } }]
+      },
+      orderBy: { createdAt: 'desc' },
+      include: { author: true },
+      take: 100,
+    });
+    return { success: true, data: publicPosts };
+  } catch (error) {
+    console.error('Error fetching posts:', error);
+    return { success: false, data: [] };
+  }
+}
+
+export async function getPublicPosts({ category, limit = 100 } = {}) {
+  try {
+    let where = {
+      isPublished: true,
+      OR: [{ scheduledFor: null }, { scheduledFor: { lte: new Date() } }]
+    };
+
+    if (category && category !== 'todas') {
+      where.category = {
+        equals: category,
+        mode: 'insensitive'
       };
     }
 
     const posts = await prisma.post.findMany({
-      where: whereClause,
+      where,
       orderBy: { createdAt: 'desc' },
       include: { author: true },
-      take: 50, // Límite de seguridad
+      take: limit,
     });
+
     return { success: true, data: posts };
   } catch (error) {
-    console.error('Error fetching posts:', error);
+    console.error('Error fetching public posts:', error);
     return { success: false, data: [] };
   }
 }
@@ -84,8 +126,6 @@ export async function getHomePosts() {
       },
       orderBy: { createdAt: 'desc' },
       take: 7,
-      // We don't use select here because we need the content for the hero snippet, 
-      // but taking only 7 is thousands of times faster than fetching all posts.
     });
     return { success: true, data: posts };
   } catch (error) {
@@ -109,7 +149,7 @@ export async function getRecentPosts(limit = 4) {
         category: true,
         coverImage: true,
         createdAt: true,
-      } // Exclude heavy content!
+      }
     });
     return { success: true, data: posts };
   } catch (error) {
@@ -159,6 +199,7 @@ export async function createPost(data) {
       }
     });
     revalidatePath('/admin/posts');
+    revalidatePath('/noticias');
     revalidatePath('/');
     return { success: true, data: post };
   } catch (error) {
@@ -172,7 +213,6 @@ export async function updatePost(id, data) {
     const session = await getUserSession();
     if (!session) return { success: false, error: 'No autorizado' };
 
-    // Si es CREATOR, verificar que sea el dueño
     if (session.role === 'CREATOR') {
       const existing = await prisma.post.findUnique({ where: { id: parseInt(id) } });
       if (!existing || existing.authorId !== session.userId) {
@@ -195,6 +235,7 @@ export async function updatePost(id, data) {
       }
     });
     revalidatePath('/admin/posts');
+    revalidatePath('/noticias');
     revalidatePath('/');
     revalidatePath(`/noticias/${post.slug}`);
     return { success: true, data: post };
@@ -209,7 +250,6 @@ export async function deletePost(id) {
     const session = await getUserSession();
     if (!session) return { success: false, error: 'No autorizado' };
 
-    // Si es CREATOR, verificar que sea el dueño
     if (session.role === 'CREATOR') {
       const existing = await prisma.post.findUnique({ where: { id: parseInt(id) } });
       if (!existing || existing.authorId !== session.userId) {
@@ -219,6 +259,7 @@ export async function deletePost(id) {
 
     await prisma.post.delete({ where: { id: parseInt(id) } });
     revalidatePath('/admin/posts');
+    revalidatePath('/noticias');
     revalidatePath('/');
     return { success: true };
   } catch (error) {
@@ -231,23 +272,16 @@ export async function sendPostToMake(id) {
     const session = await getUserSession();
     if (!session) return { success: false, error: 'No autorizado' };
 
-    // 1. Obtener la noticia
     const post = await prisma.post.findUnique({ where: { id: parseInt(id) } });
     if (!post) return { success: false, error: 'Noticia no encontrada' };
 
-    // 2. Obtener la URL del webhook de Make.com
     const setting = await prisma.setting.findUnique({ where: { key: 'make_webhook_url' } });
     if (!setting || !setting.value) {
       return { success: false, error: 'Debes configurar la URL de Make.com en la sección "Redes Sociales" primero.' };
     }
 
-    // 3. Preparar los datos
-    // Limpiamos un poco el contenido HTML para el resumen
     const cleanContent = post.content.replace(/<[^>]*>?/gm, '').substring(0, 200) + '...';
     
-    // Obtener la URL base del sitio (o usar un setting si existe)
-    // Como estamos en servidor, no siempre sabemos el host absoluto, pero asumiremos producción si se puede,
-    // o enviaremos el slug para que Make.com lo construya.
     const siteSetting = await prisma.setting.findUnique({ where: { key: 'site_name' } });
     const siteName = siteSetting ? siteSetting.value : 'Portal de Noticias';
 
@@ -264,7 +298,6 @@ export async function sendPostToMake(id) {
       siteName: siteName
     };
 
-    // 4. Enviar a Make.com
     const response = await fetch(setting.value, {
       method: 'POST',
       headers: {
