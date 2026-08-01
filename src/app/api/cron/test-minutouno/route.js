@@ -25,13 +25,32 @@ export async function GET() {
       next: { revalidate: 0 } 
     });
     
-    const status = sitemapRes.status;
-    const text = await sitemapRes.text();
+    const sitemapStatus = sitemapRes.status;
+    const sitemapText = await sitemapRes.text();
+
+    let articleStatus = null;
+    let articleHtmlSnippet = null;
+    try {
+      const articleRes = await fetch('https://www.minutouno.com/sociedad/derrumbe-san-martin-los-andes-dan-conocer-cronograma-circular-la-ruta-40-n6305923', {
+        headers: BROWSER_HEADERS,
+        next: { revalidate: 0 } 
+      });
+      articleStatus = articleRes.status;
+      const articleText = await articleRes.text();
+      articleHtmlSnippet = articleText.substring(0, 500);
+    } catch(e) {
+      articleStatus = e.message;
+    }
 
     return NextResponse.json({
-      status,
-      headers: Object.fromEntries(sitemapRes.headers.entries()),
-      bodySnippet: text.substring(0, 1000)
+      sitemap: {
+        status: sitemapStatus,
+        bodySnippet: sitemapText.substring(0, 500)
+      },
+      article: {
+        status: articleStatus,
+        bodySnippet: articleHtmlSnippet
+      }
     });
   } catch (error) {
     return NextResponse.json({ error: error.message, stack: error.stack });
