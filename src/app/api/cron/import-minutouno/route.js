@@ -4,11 +4,11 @@ import { PrismaClient } from '@prisma/client';
 import * as cheerio from 'cheerio';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 60; // Allow longer execution time on Vercel Pro/hobby
+export const maxDuration = 60; // Max allowed duration on Vercel Pro/serverless
 
 const prisma = new PrismaClient();
 
-// List of phrases to ignore/filter out in paragraph text
+// List of phrases to ignore/filter out from paragraphs
 const JUNK_PHRASES = [
   "suscríbete a nuestro newsletter",
   "suscribite a nuestro newsletter",
@@ -24,7 +24,12 @@ const JUNK_PHRASES = [
   "copyright",
   "términos y condiciones",
   "todos los derechos reservados",
-  "exclusivo para suscriptores"
+  "exclusivo para suscriptores",
+  "propietario: desarrollos electrónicos",
+  "edición nº",
+  "registro dnda",
+  "mediakit",
+  "tarifario"
 ];
 
 function cleanText(text) {
@@ -112,7 +117,6 @@ export async function GET(request) {
       }
     }
 
-    // MinutoUno lists from newest to oldest or vice versa; ensure we have the newest first
     let filteredUrls = urls;
     
     // Filter by category if specified
@@ -150,7 +154,7 @@ export async function GET(request) {
       const url = item.loc;
       const remoteLastMod = item.lastmod ? new Date(item.lastmod) : null;
 
-      // Validate URL format
+      // Validate URL format (e.g. https://www.minutouno.com/deportes/titulo-noticia-n12345)
       if (!url.includes('.com/') || url.split('/').length < 4) {
         continue;
       }
@@ -158,7 +162,7 @@ export async function GET(request) {
       const urlParts = new URL(url).pathname.split('/').filter(Boolean);
       if (urlParts.length < 2) continue;
       
-      const rawCategory = urlParts[0]; // e.g. "deportes"
+      const rawCategory = urlParts[0];
       let categoryName = rawCategory.charAt(0).toUpperCase() + rawCategory.slice(1);
       const slug = urlParts[1];
 
@@ -166,14 +170,12 @@ export async function GET(request) {
       const existing = await prisma.post.findUnique({ where: { slug } });
       
       if (existing && !force) {
-        // If existing and we have a lastmod timestamp, verify if remote is newer
         if (remoteLastMod && !isNaN(remoteLastMod.getTime())) {
           if (existing.updatedAt >= remoteLastMod) {
             skippedPosts.push({ slug, reason: 'Sin cambios en la fuente' });
             continue;
           }
         } else {
-          // If no remote timestamp, skip to avoid redundant scraping
           skippedPosts.push({ slug, reason: 'Ya importado previamente' });
           continue;
         }
@@ -199,6 +201,9 @@ export async function GET(request) {
       const articleHtml = await articleRes.text();
       const $ = cheerio.load(articleHtml);
 
+      // Clean unwanted DOM elements before extracting content
+      $('.suscription-false, .printed-edition, .m1-interior-nota-interesar, .m1-amb-lo-que-se-lee-ahora, .free-text, .tags, .share-box, .banner, .publicidad, footer, nav, header, script, style, noscript, iframe').remove();
+
       // Extract Title
       const title = $('meta[property="og:title"]').attr('content') || 
                     $('meta[name="twitter:title"]').attr('content') || 
@@ -206,7 +211,7 @@ export async function GET(request) {
                     $('title').text().trim();
 
       // Extract Lead / Bajada / Subtitle
-      let leadText = $('h2.bajada, .article-lead, .lead, [itemprop="description"]').first().text().trim() || 
+      let leadText = $('.excerpt, .bajada, .article-lead, .lead, [itemprop="description"]').first().text().trim() || 
                      $('meta[property="og:description"]').attr('content') || 
                      $('meta[name="description"]').attr('content') || '';
       leadText = cleanText(leadText);
@@ -214,7 +219,7 @@ export async function GET(request) {
       // Extract Cover Image
       let coverImage = $('meta[property="og:image"]').attr('content') || 
                         $('meta[name="twitter:image"]').attr('content') || 
-                        $('.main-image img, .article-image img, [itemprop="image"]').first().attr('src') || '';
+                        $('.gallery-figure img, .main-image img, .article-image img').first().attr('src') || '';
       
       if (coverImage) {
         if (coverImage.startsWith('//')) {
@@ -229,70 +234,36 @@ export async function GET(request) {
                           $('meta[property="article:tag"]').map((i, el) => $(el).attr('content')).get().join(',') || '';
       const tags = rawKeywords ? rawKeywords.split(',').map(t => t.trim()).filter(Boolean).slice(0, 8).join(', ') : null;
 
-      // Extract Content & Structure
+      // Extract Paragraphs & Elements
       const contentElements = [];
-      let isPremium = false;
 
-      if (leadText && leadText.length > 20) {
+      if (leadText && leadText.length > 15) {
         contentElements.push(`<p class="lead font-medium text-lg text-gray-300 mb-4">${leadText}</p>`);
       }
 
-      function processElement(el) {
-        if (isPremium) return;
-        const tagName = el.tagName ? el.tagName.toLowerCase() : '';
-        
-        if (tagName === 'img') {
-          let src = $(el).attr('src') || $(el).attr('data-src') || $(el).attr('data-original') || '';
-          if (src && !src.includes('data:image')) {
-            if (src.startsWith('//')) src = 'https:' + src;
-            else if (src.startsWith('/')) src = 'https://www.minutouno.com' + src;
+      const extractedParagraphs = [];
+      $('.note-body p, .body-content p, .detail-body p, article p').each((i, el) => {
+        const raw = $(el).text();
+        const cleaned = cleanText(raw);
+        if (cleaned && cleaned.length > 20 && cleaned !== leadText && !extractedParagraphs.includes(cleaned)) {
+          extractedParagraphs.push(cleaned);
+          contentElements.push(`<p class="mb-4 text-gray-200 leading-relaxed">${cleaned}</p>`);
+        }
+      });
+
+      // Also capture internal high-quality images inside the note body
+      $('.note-body img, .body-content img, .detail-body img, article img').each((i, el) => {
+        let src = $(el).attr('src') || $(el).attr('data-src') || '';
+        if (src && !src.includes('data:image') && !src.includes('logo') && !src.includes('banner')) {
+          if (src.startsWith('//')) src = 'https:' + src;
+          else if (src.startsWith('/')) src = 'https://www.minutouno.com' + src;
+          
+          if (src !== coverImage && !contentElements.some(c => c.includes(src))) {
             const alt = $(el).attr('alt') || 'Imagen de la noticia';
             contentElements.push(`<img src="${src}" alt="${alt}" style="max-width: 100%; height: auto; border-radius: 8px; margin: 16px 0;" referrerpolicy="no-referrer" loading="lazy" />`);
           }
-        } else if (tagName === 'h2' || tagName === 'h3' || tagName === 'h4') {
-          const headingText = cleanText($(el).text());
-          if (headingText && headingText.length > 5 && headingText !== title) {
-            contentElements.push(`<h3 class="text-xl font-bold mt-6 mb-3 text-white">${headingText}</h3>`);
-          }
-        } else if (tagName === 'blockquote') {
-          const quoteText = cleanText($(el).text());
-          if (quoteText && quoteText.length > 10) {
-            contentElements.push(`<blockquote class="border-l-4 border-primary pl-4 my-4 italic text-gray-300">${quoteText}</blockquote>`);
-          }
-        } else {
-          const rawText = $(el).text();
-          if (rawText.toLowerCase().includes('exclusivo para suscriptores')) {
-            isPremium = true;
-            return;
-          }
-          const text = cleanText(rawText);
-          if (text && text.length > 20 && !contentElements.some(c => c.includes(text))) {
-            contentElements.push(`<p class="mb-4 text-gray-200 leading-relaxed">${text}</p>`);
-          }
         }
-      }
-
-      // Search in standard article content containers
-      $('article, .article-body, .detail-body, .content, .cuerpo-nota, [itemprop="articleBody"]')
-        .find('p, img, h2, h3, h4, blockquote')
-        .each((i, el) => processElement(el));
-
-      // Fallback if no paragraphs were gathered
-      if (contentElements.filter(el => el.startsWith('<p')).length === 0 && !isPremium) {
-        $('p').each((i, el) => {
-          if (isPremium) return;
-          const rawText = $(el).text();
-          const text = cleanText(rawText);
-          if (text && text.length > 40 && !contentElements.some(c => c.includes(text))) {
-            contentElements.push(`<p class="mb-4 text-gray-200 leading-relaxed">${text}</p>`);
-          }
-        });
-      }
-
-      if (isPremium) {
-        skippedPosts.push({ slug, reason: 'Contenido exclusivo para suscriptores' });
-        continue;
-      }
+      });
 
       if (contentElements.length === 0 || !title) {
         failedPosts.push({ slug, error: 'Sin contenido legible o sin título' });
@@ -329,23 +300,24 @@ export async function GET(request) {
           where: { slug },
           data: {
             ...postData,
-            // Keep original publication status unless autoPublish is explicitly forced
+            // Keep original isPublished state unless autoPublish is explicitly passed
             isPublished: autoPublish ? true : existing.isPublished
           }
         });
         updatedPosts.push(updated.title);
       } else {
+        // ALWAYS create new imported posts as Borrador (isPublished: false) by default
         const created = await prisma.post.create({
           data: {
             ...postData,
-            isPublished: autoPublish ? true : false
+            isPublished: autoPublish === true ? true : false
           }
         });
         createdPosts.push(created.title);
       }
     }
 
-    const message = `Completado: ${createdPosts.length} nuevas, ${updatedPosts.length} actualizadas, ${skippedPosts.length} sin cambios, ${failedPosts.length} fallos.`;
+    const message = `Completado: ${createdPosts.length} nuevas (como Borrador), ${updatedPosts.length} actualizadas, ${skippedPosts.length} sin cambios, ${failedPosts.length} fallos.`;
 
     revalidatePath('/admin/posts');
     revalidatePath('/');
