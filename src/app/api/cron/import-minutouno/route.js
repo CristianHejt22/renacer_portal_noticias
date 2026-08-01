@@ -4,20 +4,31 @@ import { PrismaClient } from '@prisma/client';
 import * as cheerio from 'cheerio';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60; // Allow longer execution time on Vercel Pro/hobby
 
 const prisma = new PrismaClient();
 
-// List of phrases to ignore/filter out
+// List of phrases to ignore/filter out in paragraph text
 const JUNK_PHRASES = [
   "suscríbete a nuestro newsletter",
   "suscribite a nuestro newsletter",
   "sumate al canal",
+  "sumate a la comunidad",
   "seguinos en",
   "leé más",
   "te puede interesar",
+  "hacé click aquí",
+  "hacé clic aquí",
+  "descargá la app",
+  "leé también",
+  "copyright",
+  "términos y condiciones",
+  "todos los derechos reservados",
+  "exclusivo para suscriptores"
 ];
 
 function cleanText(text) {
+  if (!text) return null;
   let cleaned = text.trim();
   const lower = cleaned.toLowerCase();
   for (const junk of JUNK_PHRASES) {
@@ -46,46 +57,65 @@ const BROWSER_HEADERS = {
 
 export async function GET(request) {
   try {
+    const searchParams = request.nextUrl.searchParams;
+    const categoryParam = searchParams.get('category');
+    const limitParam = parseInt(searchParams.get('limit') || '20', 10);
+    const limit = Math.min(Math.max(limitParam || 20, 1), 100);
+    const force = searchParams.get('force') === 'true';
+    const autoPublish = searchParams.get('autoPublish') === 'true';
+
     // 1. Fetch Sitemap
     const sitemapRes = await fetch('https://www.minutouno.com/sitemap.xml', { 
       headers: BROWSER_HEADERS,
       next: { revalidate: 0 } 
     });
-    const sitemapXml = await sitemapRes.text();
     
-    // Parse XML
+    if (!sitemapRes.ok) {
+      return NextResponse.json({ 
+        success: false, 
+        error: `Error al obtener sitemap: HTTP ${sitemapRes.status}` 
+      }, { status: 502 });
+    }
+
+    const sitemapXml = await sitemapRes.text();
     let $xml = cheerio.load(sitemapXml, { xmlMode: true });
     let urls = [];
+
     $xml('url').each((i, el) => {
-      const loc = $xml(el).find('loc').text();
-      const lastmod = $xml(el).find('lastmod').text();
+      const loc = $xml(el).find('loc').text().trim();
+      const lastmod = $xml(el).find('lastmod').text().trim();
       if (loc) urls.push({ loc, lastmod });
     });
 
-    const categoryParam = request.nextUrl.searchParams.get('category');
-
-    // If it's a sitemap index, fetch the first sitemap
+    // If sitemap index, fetch sub-sitemaps
     if (urls.length === 0) {
       const sitemaps = [];
       $xml('sitemap').each((i, el) => {
-        sitemaps.push($xml(el).find('loc').text());
+        const loc = $xml(el).find('loc').text().trim();
+        if (loc) sitemaps.push(loc);
       });
+      
       if (sitemaps.length > 0) {
         const innerSitemapRes = await fetch(sitemaps[0], { 
           headers: BROWSER_HEADERS,
           next: { revalidate: 0 } 
         });
-        const innerXml = await innerSitemapRes.text();
-        $xml = cheerio.load(innerXml, { xmlMode: true });
-        $xml('url').each((i, el) => {
-          const loc = $xml(el).find('loc').text();
-          const lastmod = $xml(el).find('lastmod').text();
-          if (loc) urls.push({ loc, lastmod });
-        });
+        if (innerSitemapRes.ok) {
+          const innerXml = await innerSitemapRes.text();
+          $xml = cheerio.load(innerXml, { xmlMode: true });
+          $xml('url').each((i, el) => {
+            const loc = $xml(el).find('loc').text().trim();
+            const lastmod = $xml(el).find('lastmod').text().trim();
+            if (loc) urls.push({ loc, lastmod });
+          });
+        }
       }
     }
 
-    let filteredUrls = urls.reverse();
+    // MinutoUno lists from newest to oldest or vice versa; ensure we have the newest first
+    let filteredUrls = urls;
+    
+    // Filter by category if specified
     if (categoryParam && categoryParam !== 'todas') {
       filteredUrls = filteredUrls.filter(u => {
         try {
@@ -97,12 +127,13 @@ export async function GET(request) {
       });
     }
 
-    const recentUrls = filteredUrls.slice(0, 15);
-    const successfulPosts = [];
+    const recentUrls = filteredUrls.slice(0, limit);
+    const createdPosts = [];
+    const updatedPosts = [];
     const skippedPosts = [];
     const failedPosts = [];
 
-    // Ensure "Redacción" user exists
+    // Ensure default "Redacción" user exists
     let botUser = await prisma.user.findFirst({ where: { name: 'Redacción' } });
     if (!botUser) {
       botUser = await prisma.user.create({
@@ -118,67 +149,115 @@ export async function GET(request) {
     for (const item of recentUrls) {
       const url = item.loc;
       const remoteLastMod = item.lastmod ? new Date(item.lastmod) : null;
-      
-      // Ignore non-article URLs if any
-      if (!url.includes('.com/') || url.split('/').length < 4) continue;
 
-      // Extract slug and category from URL
-      // Format: https://www.minutouno.com/deportes/titulo-de-la-noticia-n12345
+      // Validate URL format
+      if (!url.includes('.com/') || url.split('/').length < 4) {
+        continue;
+      }
+
       const urlParts = new URL(url).pathname.split('/').filter(Boolean);
       if (urlParts.length < 2) continue;
       
       const rawCategory = urlParts[0]; // e.g. "deportes"
       let categoryName = rawCategory.charAt(0).toUpperCase() + rawCategory.slice(1);
-      
       const slug = urlParts[1];
 
-      // Check if post already exists
+      // Check if post already exists in DB
       const existing = await prisma.post.findUnique({ where: { slug } });
       
-      if (existing) {
-        // If it exists, check if the sitemap indicates an update
-        if (remoteLastMod && existing.updatedAt >= remoteLastMod) {
-          skippedPosts.push(`Sin cambios: ${slug}`);
-          continue; // The sitemap lastmod is older or equal to our updatedAt, no need to update
-        }
-        if (!remoteLastMod) {
-          skippedPosts.push(`Ya existe: ${slug}`);
-          continue; // Cannot determine update status, default to skip to save resources
+      if (existing && !force) {
+        // If existing and we have a lastmod timestamp, verify if remote is newer
+        if (remoteLastMod && !isNaN(remoteLastMod.getTime())) {
+          if (existing.updatedAt >= remoteLastMod) {
+            skippedPosts.push({ slug, reason: 'Sin cambios en la fuente' });
+            continue;
+          }
+        } else {
+          // If no remote timestamp, skip to avoid redundant scraping
+          skippedPosts.push({ slug, reason: 'Ya importado previamente' });
+          continue;
         }
       }
 
-      // Fetch the article
+      // Fetch the full article HTML
       let articleRes;
       try {
-        articleRes = await fetch(url, { headers: BROWSER_HEADERS });
+        articleRes = await fetch(url, { 
+          headers: BROWSER_HEADERS,
+          next: { revalidate: 0 }
+        });
       } catch (err) {
-        failedPosts.push(`Fallo red: ${err.message}`);
+        failedPosts.push({ slug, error: `Error de red: ${err.message}` });
         continue;
       }
       
+      if (!articleRes.ok) {
+        failedPosts.push({ slug, error: `HTTP ${articleRes.status}` });
+        continue;
+      }
+
       const articleHtml = await articleRes.text();
       const $ = cheerio.load(articleHtml);
 
-      const title = $('meta[property="og:title"]').attr('content') || $('title').text();
-      let coverImage = $('meta[property="og:image"]').attr('content') || $('meta[name="twitter:image"]').attr('content') || '';
+      // Extract Title
+      const title = $('meta[property="og:title"]').attr('content') || 
+                    $('meta[name="twitter:title"]').attr('content') || 
+                    $('h1.title, h1.article-title, h1').first().text().trim() || 
+                    $('title').text().trim();
+
+      // Extract Lead / Bajada / Subtitle
+      let leadText = $('h2.bajada, .article-lead, .lead, [itemprop="description"]').first().text().trim() || 
+                     $('meta[property="og:description"]').attr('content') || 
+                     $('meta[name="description"]').attr('content') || '';
+      leadText = cleanText(leadText);
+
+      // Extract Cover Image
+      let coverImage = $('meta[property="og:image"]').attr('content') || 
+                        $('meta[name="twitter:image"]').attr('content') || 
+                        $('.main-image img, .article-image img, [itemprop="image"]').first().attr('src') || '';
       
-      // Fix relative image URLs
-      if (coverImage && coverImage.startsWith('/')) {
-        coverImage = 'https://www.minutouno.com' + coverImage;
+      if (coverImage) {
+        if (coverImage.startsWith('//')) {
+          coverImage = 'https:' + coverImage;
+        } else if (coverImage.startsWith('/')) {
+          coverImage = 'https://www.minutouno.com' + coverImage;
+        }
       }
-      
-      // Extract paragraphs and images inside article
-      const paragraphs = [];
+
+      // Extract Tags / Keywords
+      const rawKeywords = $('meta[name="keywords"]').attr('content') || 
+                          $('meta[property="article:tag"]').map((i, el) => $(el).attr('content')).get().join(',') || '';
+      const tags = rawKeywords ? rawKeywords.split(',').map(t => t.trim()).filter(Boolean).slice(0, 8).join(', ') : null;
+
+      // Extract Content & Structure
+      const contentElements = [];
       let isPremium = false;
-      
+
+      if (leadText && leadText.length > 20) {
+        contentElements.push(`<p class="lead font-medium text-lg text-gray-300 mb-4">${leadText}</p>`);
+      }
+
       function processElement(el) {
         if (isPremium) return;
+        const tagName = el.tagName ? el.tagName.toLowerCase() : '';
         
-        if (el.tagName && el.tagName.toLowerCase() === 'img') {
-          let src = $(el).attr('src') || $(el).attr('data-src') || '';
+        if (tagName === 'img') {
+          let src = $(el).attr('src') || $(el).attr('data-src') || $(el).attr('data-original') || '';
           if (src && !src.includes('data:image')) {
-            if (src.startsWith('/')) src = 'https://www.minutouno.com' + src;
-            paragraphs.push(`<img src="${src}" alt="Imagen de la noticia" style="max-width: 100%; height: auto; border-radius: 8px; margin: 10px 0;" referrerpolicy="no-referrer" />`);
+            if (src.startsWith('//')) src = 'https:' + src;
+            else if (src.startsWith('/')) src = 'https://www.minutouno.com' + src;
+            const alt = $(el).attr('alt') || 'Imagen de la noticia';
+            contentElements.push(`<img src="${src}" alt="${alt}" style="max-width: 100%; height: auto; border-radius: 8px; margin: 16px 0;" referrerpolicy="no-referrer" loading="lazy" />`);
+          }
+        } else if (tagName === 'h2' || tagName === 'h3' || tagName === 'h4') {
+          const headingText = cleanText($(el).text());
+          if (headingText && headingText.length > 5 && headingText !== title) {
+            contentElements.push(`<h3 class="text-xl font-bold mt-6 mb-3 text-white">${headingText}</h3>`);
+          }
+        } else if (tagName === 'blockquote') {
+          const quoteText = cleanText($(el).text());
+          if (quoteText && quoteText.length > 10) {
+            contentElements.push(`<blockquote class="border-l-4 border-primary pl-4 my-4 italic text-gray-300">${quoteText}</blockquote>`);
           }
         } else {
           const rawText = $(el).text();
@@ -187,53 +266,40 @@ export async function GET(request) {
             return;
           }
           const text = cleanText(rawText);
-          if (text && text.length > 20) {
-            paragraphs.push(`<p>${text}</p>`);
+          if (text && text.length > 20 && !contentElements.some(c => c.includes(text))) {
+            contentElements.push(`<p class="mb-4 text-gray-200 leading-relaxed">${text}</p>`);
           }
         }
       }
 
-      // Combine article AND body searches to ensure we capture images (often in article) and text (often in detail-body)
-      $('article').find('p, img').each((i, el) => processElement(el));
-      $('.article-body, .detail-body, .content, .cuerpo-nota, [itemprop="articleBody"]').find('p, img').each((i, el) => processElement(el));
+      // Search in standard article content containers
+      $('article, .article-body, .detail-body, .content, .cuerpo-nota, [itemprop="articleBody"]')
+        .find('p, img, h2, h3, h4, blockquote')
+        .each((i, el) => processElement(el));
 
-      // Deduplicate elements (in case body classes were inside article)
-      let uniqueParagraphs = [...new Set(paragraphs)];
-
-      // Ultimate fallback: Just get all P tags and heuristically filter
-      if (uniqueParagraphs.filter(p => p.startsWith('<p>')).length === 0 && !isPremium) {
-        uniqueParagraphs = []; // Reset array to discard isolated images from header
-        $('p, img').each((i, el) => {
+      // Fallback if no paragraphs were gathered
+      if (contentElements.filter(el => el.startsWith('<p')).length === 0 && !isPremium) {
+        $('p').each((i, el) => {
           if (isPremium) return;
-          
-          if (el.tagName && el.tagName.toLowerCase() === 'img') {
-             // To prevent scraping icons/logos in ultimate fallback, skip small images or require specific classes. We will just skip imgs in ultimate fallback to be safe, or only take large ones if we could check size. 
-             // Safest is to skip img in ultimate fallback.
-          } else {
-            const rawText = $(el).text();
-            if (rawText.toLowerCase().includes('exclusivo para suscriptores')) {
-              isPremium = true;
-              return;
-            }
-            const text = cleanText(rawText);
-            if (text && text.length > 40 && !text.includes('Copyright') && !text.includes('Términos y condiciones')) {
-              uniqueParagraphs.push(`<p>${text}</p>`);
-            }
+          const rawText = $(el).text();
+          const text = cleanText(rawText);
+          if (text && text.length > 40 && !contentElements.some(c => c.includes(text))) {
+            contentElements.push(`<p class="mb-4 text-gray-200 leading-relaxed">${text}</p>`);
           }
         });
       }
 
       if (isPremium) {
-         skippedPosts.push(`Premium: ${title}`);
-         continue;
-      }
-
-      if (uniqueParagraphs.length === 0 || !title) {
-        failedPosts.push(`Fallo (HTTP ${articleRes.status}): sin contenido o título. HTML size: ${articleHtml.length}`);
+        skippedPosts.push({ slug, reason: 'Contenido exclusivo para suscriptores' });
         continue;
       }
 
-      const content = uniqueParagraphs.join('\n');
+      if (contentElements.length === 0 || !title) {
+        failedPosts.push({ slug, error: 'Sin contenido legible o sin título' });
+        continue;
+      }
+
+      const content = contentElements.join('\n');
 
       // Ensure Category exists
       const categorySlug = rawCategory.toLowerCase();
@@ -248,51 +314,63 @@ export async function GET(request) {
         });
       }
 
-      // Prepare post data
       const postData = {
         title,
         slug,
         content,
-        coverImage,
+        coverImage: coverImage || null,
         category: dbCategory.name,
+        tags: tags || undefined,
         authorId: botUser.id,
       };
 
-      // Save or update post
-      let newPost;
       if (existing) {
-        newPost = await prisma.post.update({
+        const updated = await prisma.post.update({
           where: { slug },
           data: {
-            ...postData
-            // we intentionally do not override createdAt or isPublished
+            ...postData,
+            // Keep original publication status unless autoPublish is explicitly forced
+            isPublished: autoPublish ? true : existing.isPublished
           }
         });
+        updatedPosts.push(updated.title);
       } else {
-        newPost = await prisma.post.create({
+        const created = await prisma.post.create({
           data: {
             ...postData,
-            isPublished: false // Only new posts are saved as draft
+            isPublished: autoPublish ? true : false
           }
         });
+        createdPosts.push(created.title);
       }
-
-      successfulPosts.push(newPost.title);
     }
 
-    const message = `Éxito: ${successfulPosts.length}. Saltadas: ${skippedPosts.length}. Fallos: ${failedPosts.length}.`;
-    
+    const message = `Completado: ${createdPosts.length} nuevas, ${updatedPosts.length} actualizadas, ${skippedPosts.length} sin cambios, ${failedPosts.length} fallos.`;
+
     revalidatePath('/admin/posts');
     revalidatePath('/');
 
     return NextResponse.json({ 
       success: true, 
-      message: message,
-      imported: successfulPosts,
-      details: { successfulPosts, skippedPosts, failedPosts }
+      message,
+      stats: {
+        created: createdPosts.length,
+        updated: updatedPosts.length,
+        skipped: skippedPosts.length,
+        failed: failedPosts.length,
+      },
+      details: { 
+        createdPosts, 
+        updatedPosts, 
+        skippedPosts, 
+        failedPosts 
+      }
     });
   } catch (error) {
-    console.error('Import Error:', error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    console.error('Cron Import Error:', error);
+    return NextResponse.json({ 
+      success: false, 
+      error: error.message 
+    }, { status: 500 });
   }
 }
