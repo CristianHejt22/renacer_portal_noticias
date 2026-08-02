@@ -12,18 +12,17 @@ export default function ClassifiedCategoriesAdminPage() {
   const [formData, setFormData] = useState({ name: '', slug: '', order: 0, isActive: true, parentId: '' });
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    loadCategories();
-  }, []);
-
   const loadCategories = async () => {
-    setLoading(true);
     const res = await getClassifiedCategories();
     if (res.success && res.data) {
       setCategories(res.data);
     }
     setLoading(false);
   };
+
+  useEffect(() => {
+    loadCategories();
+  }, []);
 
   const openNewModal = () => {
     setEditingId(null);

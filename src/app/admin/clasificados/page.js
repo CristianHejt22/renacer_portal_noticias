@@ -9,18 +9,17 @@ export default function ClassifiedsPage() {
   const [classifieds, setClassifieds] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadClassifieds();
-  }, []);
-
   const loadClassifieds = async () => {
-    setLoading(true);
     const res = await getAllClassifieds();
     if (res.success && res.data) {
       setClassifieds(res.data);
     }
     setLoading(false);
   };
+
+  useEffect(() => {
+    loadClassifieds();
+  }, []);
 
   const handleDelete = async (id) => {
     if (confirm('¿Estás seguro de eliminar este clasificado?')) {

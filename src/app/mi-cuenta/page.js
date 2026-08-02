@@ -19,12 +19,7 @@ export default function UserDashboard() {
   const [profileData, setProfileData] = useState({ whatsapp: '', province: '', city: '' });
   const [savingProfile, setSavingProfile] = useState(false);
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
   const loadData = async () => {
-    setLoading(true);
     const [adsRes, profileRes] = await Promise.all([
       getUserClassifieds(),
       getMe()
@@ -42,6 +37,10 @@ export default function UserDashboard() {
     
     setLoading(false);
   };
+
+  useEffect(() => {
+    loadData();
+  }, []);
 
   const handleLogout = async () => {
     await logout();

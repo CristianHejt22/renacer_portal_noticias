@@ -27,32 +27,34 @@ export default function PublishClassifiedPage() {
   const [profile, setProfile] = useState(null);
 
   useEffect(() => {
-    loadCategories();
-    loadCredits();
+    let isMounted = true;
+    async function init() {
+      const [catRes, profileRes, creditsRes] = await Promise.all([
+        getClassifiedCategories(),
+        getMe(),
+        getUserCredits()
+      ]);
+
+      if (isMounted) {
+        if (catRes.success) setCategories(catRes.data);
+        if (profileRes.success && profileRes.data) {
+          const p = profileRes.data;
+          setProfile(p);
+          setFormData(prev => ({
+            ...prev,
+            whatsapp: p.whatsapp || '',
+            city: p.city || '',
+          }));
+        }
+        if (creditsRes.success && creditsRes.data) {
+          setCredits(creditsRes.data);
+        }
+      }
+    }
+
+    init();
+    return () => { isMounted = false; };
   }, []);
-
-  const loadCategories = async () => {
-    const res = await getClassifiedCategories();
-    if (res.success) setCategories(res.data);
-  };
-
-  const loadCredits = async () => {
-    const profileRes = await getMe();
-    if (profileRes.success && profileRes.data) {
-      const p = profileRes.data;
-      setProfile(p);
-      setFormData(prev => ({
-        ...prev,
-        whatsapp: p.whatsapp || '',
-        city: p.city || '',
-      }));
-    }
-
-    const res = await getUserCredits();
-    if (res.success && res.data) {
-      setCredits(res.data);
-    }
-  };
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);

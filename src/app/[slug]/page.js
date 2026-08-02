@@ -3,6 +3,7 @@ import { getPosts } from '@/app/actions/posts';
 import BannerDisplay from '@/components/ads/BannerDisplay';
 import Link from 'next/link';
 import { Tweet } from 'react-tweet';
+import AdIframeInjector from '@/components/shared/AdIframeInjector';
 
 export async function generateMetadata({ params }) {
   const resolvedParams = await params;

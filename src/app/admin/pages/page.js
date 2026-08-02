@@ -9,18 +9,17 @@ export default function PagesAdminPage() {
   const [pages, setPages] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadPages();
-  }, []);
-
   const loadPages = async () => {
-    setLoading(true);
     const res = await getPages();
     if (res.success && res.data) {
       setPages(res.data);
     }
     setLoading(false);
   };
+
+  useEffect(() => {
+    loadPages();
+  }, []);
 
   const handleDelete = async (id) => {
     if (confirm('¿Eliminar esta página de forma permanente?')) {

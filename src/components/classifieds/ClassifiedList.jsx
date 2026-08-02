@@ -12,6 +12,14 @@ export default function ClassifiedList({ classifieds, categories = [], paginatio
   const [searchTerm, setSearchTerm] = useState(currentQuery);
   const [showFilters, setShowFilters] = useState(false); // For mobile toggle
 
+  const updateUrl = useCallback((q, cat, page) => {
+    const params = new URLSearchParams();
+    if (q) params.set('q', q);
+    if (cat) params.set('cat', cat);
+    if (page > 1) params.set('page', page);
+    router.push(`/clasificados?${params.toString()}`);
+  }, [router]);
+
   // Debounce search
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -20,15 +28,7 @@ export default function ClassifiedList({ classifieds, categories = [], paginatio
       }
     }, 500);
     return () => clearTimeout(timer);
-  }, [searchTerm, currentCategory]);
-
-  const updateUrl = (q, cat, page) => {
-    const params = new URLSearchParams();
-    if (q) params.set('q', q);
-    if (cat) params.set('cat', cat);
-    if (page > 1) params.set('page', page);
-    router.push(`/clasificados?${params.toString()}`);
-  };
+  }, [searchTerm, currentCategory, currentQuery, updateUrl]);
 
   const handleCategoryClick = (catId) => {
     const newCat = currentCategory == catId ? null : catId;

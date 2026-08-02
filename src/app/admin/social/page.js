@@ -11,17 +11,19 @@ export default function SocialSettingsPage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    loadSettings();
-  }, []);
-
-  const loadSettings = async () => {
-    setLoading(true);
-    const res = await getAdSettings();
-    if (res.success && res.data) {
-      setMakeWebhookUrl(res.data.makeWebhookUrl || '');
+    let isMounted = true;
+    async function loadSettings() {
+      const res = await getAdSettings();
+      if (isMounted) {
+        if (res.success && res.data) {
+          setMakeWebhookUrl(res.data.makeWebhookUrl || '');
+        }
+        setLoading(false);
+      }
     }
-    setLoading(false);
-  };
+    loadSettings();
+    return () => { isMounted = false; };
+  }, []);
 
   const handleSave = async () => {
     setSaving(true);

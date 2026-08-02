@@ -12,18 +12,17 @@ export default function CategoriesAdminPage() {
   const [formData, setFormData] = useState({ name: '', slug: '', order: 0, isActive: true });
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    loadCategories();
-  }, []);
-
   const loadCategories = async () => {
-    setLoading(true);
     const res = await getCategories();
     if (res.success && res.data) {
       setCategories(res.data);
     }
     setLoading(false);
   };
+
+  useEffect(() => {
+    loadCategories();
+  }, []);
 
   const openNewModal = () => {
     setEditingId(null);

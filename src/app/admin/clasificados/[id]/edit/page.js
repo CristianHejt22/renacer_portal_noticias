@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { getClassifiedById, updateClassified } from '@/app/actions/classifieds';
@@ -34,13 +34,8 @@ export default function EditClassifiedPage() {
     loadCategories();
   }, []);
 
-  useEffect(() => {
-    if (id) {
-      loadClassified();
-    }
-  }, [id]);
-
-  const loadClassified = async () => {
+  const loadClassified = useCallback(async () => {
+    if (!id) return;
     setInitialLoading(true);
     const res = await getClassifiedById(id);
     if (res.success && res.data) {
@@ -60,7 +55,11 @@ export default function EditClassifiedPage() {
       router.push('/admin/clasificados');
     }
     setInitialLoading(false);
-  };
+  }, [id, router]);
+
+  useEffect(() => {
+    loadClassified();
+  }, [loadClassified]);
 
   const handleSlugify = (text) => {
     return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');

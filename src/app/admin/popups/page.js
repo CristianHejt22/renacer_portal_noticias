@@ -21,12 +21,7 @@ export default function PopupsAdminPage() {
     isActive: false
   });
 
-  useEffect(() => {
-    fetchPopups();
-  }, []);
-
   const fetchPopups = async () => {
-    setLoading(true);
     const res = await getPopups();
     if (res.success) {
       setPopups(res.data);
@@ -35,6 +30,10 @@ export default function PopupsAdminPage() {
     }
     setLoading(false);
   };
+
+  useEffect(() => {
+    fetchPopups();
+  }, []);
 
   const handleOpenModal = (popup = null) => {
     if (popup) {

@@ -13,18 +13,17 @@ export default function AdminUsersPage() {
   const [editForm, setEditForm] = useState({ credits: 0, featuredCredits: 0, role: 'USER' });
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    loadUsers();
-  }, []);
-
   const loadUsers = async () => {
-    setLoading(true);
     const res = await getAllUsers();
     if (res.success) {
       setUsers(res.data);
     }
     setLoading(false);
   };
+
+  useEffect(() => {
+    loadUsers();
+  }, []);
 
   const handleEditClick = (user) => {
     setEditingUser(user);

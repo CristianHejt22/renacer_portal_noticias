@@ -14,18 +14,17 @@ export default function BannersAdminPage() {
 
   const [uploading, setUploading] = useState(false);
 
-  useEffect(() => {
-    loadBanners();
-  }, []);
-
   const loadBanners = async () => {
-    setLoading(true);
     const res = await getBanners();
     if (res.success || res.data) {
       setBanners(res.data);
     }
     setLoading(false);
   };
+
+  useEffect(() => {
+    loadBanners();
+  }, []);
 
   const handleResetMetrics = async (id) => {
     if (confirm('¿Seguro que deseas reiniciar a cero las vistas y clics de este banner?')) {
@@ -279,7 +278,7 @@ export default function BannersAdminPage() {
                     </div>
                   ) : formData.imageUrl && formData.imageUrl.match(/\.(jpeg|jpg|gif|png|webp|svg)$/i) ? (
                     <div className="flex justify-center bg-white/5 p-2 rounded-lg">
-                      <img src={formData.imageUrl} className="h-20 object-contain rounded" />
+                      <img src={formData.imageUrl} alt="Banner preview" className="h-20 object-contain rounded" />
                     </div>
                   ) : formData.imageUrl && formData.position === 'vast-preroll' ? (
                      <div className="text-xs text-yellow-500 bg-yellow-500/10 p-2 rounded">

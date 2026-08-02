@@ -20,18 +20,17 @@ export default function PostsPage() {
   const [lastResult, setLastResult] = useState(null);
   const [copiedUrl, setCopiedUrl] = useState(false);
 
-  useEffect(() => {
-    loadPosts();
-  }, []);
-
   const loadPosts = async () => {
-    setLoading(true);
     const res = await getPosts();
     if (res.success && res.data) {
       setPosts(res.data);
     }
     setLoading(false);
   };
+
+  useEffect(() => {
+    loadPosts();
+  }, []);
 
   const handleDelete = async (id) => {
     if (confirm('¿Estás seguro de eliminar esta noticia?')) {

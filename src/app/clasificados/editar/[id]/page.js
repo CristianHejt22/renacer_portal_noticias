@@ -24,35 +24,38 @@ export default function EditClassifiedPage({ params }) {
   });
 
   useEffect(() => {
-    loadData();
-  }, [id]);
+    let isMounted = true;
+    async function loadData() {
+      if (!id) return;
+      
+      // Load categories
+      const catRes = await getClassifiedCategories();
+      if (isMounted && catRes.success) setCategories(catRes.data);
 
-  const loadData = async () => {
-    setInitialLoading(true);
-    
-    // Load categories
-    const catRes = await getClassifiedCategories();
-    if (catRes.success) setCategories(catRes.data);
-
-    // Load ad
-    const { getClassifiedById } = await import('@/app/actions/classifieds');
-    const adRes = await getClassifiedById(id);
-    
-    if (adRes.success && adRes.data) {
-      const ad = adRes.data;
-      setFormData({
-        title: ad.title,
-        description: ad.description,
-        price: ad.price ? ad.price.toString() : '',
-        classifiedCategoryId: ad.classifiedCategoryId ? ad.classifiedCategoryId.toString() : '',
-      });
-    } else {
-      toast.error('Aviso no encontrado o no autorizado');
-      router.push('/mi-cuenta');
+      // Load ad
+      const { getClassifiedById } = await import('@/app/actions/classifieds');
+      const adRes = await getClassifiedById(id);
+      
+      if (isMounted) {
+        if (adRes.success && adRes.data) {
+          const ad = adRes.data;
+          setFormData({
+            title: ad.title,
+            description: ad.description,
+            price: ad.price ? ad.price.toString() : '',
+            classifiedCategoryId: ad.classifiedCategoryId ? ad.classifiedCategoryId.toString() : '',
+          });
+        } else {
+          toast.error('Aviso no encontrado o no autorizado');
+          router.push('/mi-cuenta');
+        }
+        setInitialLoading(false);
+      }
     }
-    
-    setInitialLoading(false);
-  };
+
+    loadData();
+    return () => { isMounted = false; };
+  }, [id, router]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
