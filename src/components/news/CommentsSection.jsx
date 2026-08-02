@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { MessageSquare, Send } from 'lucide-react';
 import { getComments, createComment } from '@/app/actions/comments';
 
@@ -11,17 +11,17 @@ export default function CommentsSection({ postId }) {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    loadComments();
-  }, [postId]);
-
-  const loadComments = async () => {
+  const loadComments = useCallback(async () => {
     const res = await getComments(postId);
     if (res.success) {
       setComments(res.data);
     }
     setLoading(false);
-  };
+  }, [postId]);
+
+  useEffect(() => {
+    loadComments();
+  }, [loadComments]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

@@ -4,7 +4,7 @@ import { getPublicPosts } from '@/app/actions/posts';
 import { getCategories } from '@/app/actions/categories';
 import BannerDisplay from '@/components/ads/BannerDisplay';
 import FeaturedClassifieds from '@/components/classifieds/FeaturedClassifieds';
-import { Newspaper, Sparkles, FolderOpen, Calendar, User } from 'lucide-react';
+import { Newspaper, Sparkles, FolderOpen, Calendar, User, Images } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -27,6 +27,34 @@ function normalizeText(str) {
     .replace(/[\u0300-\u036f]/g, '')
     .trim()
     .replace(/\s+/g, '-');
+}
+
+/**
+ * Returns the sequence of interleaved banner plans for a given category.
+ */
+function getInterleavedBannerPlans(categorySlug) {
+  if (categorySlug === 'deportes') {
+    return ['plan-deportivo', 'plan-cielo-total', 'plan-deportivo', 'plan-nacional', 'plan-cielo-total'];
+  }
+  if (['nacional', 'politica', 'economia'].includes(categorySlug)) {
+    return ['plan-nacional', 'plan-cielo-total', 'plan-local', 'plan-nacional', 'plan-deportivo'];
+  }
+  if (['local', 'sociedad', 'policiales'].includes(categorySlug)) {
+    return ['plan-local', 'plan-cielo-total', 'plan-nacional', 'plan-local', 'plan-deportivo'];
+  }
+  if (['mundo', 'internacional', 'espectaculos', 'tendencias'].includes(categorySlug)) {
+    return ['plan-internacional', 'plan-cielo-total', 'plan-nacional', 'plan-internacional', 'plan-deportivo'];
+  }
+  
+  // General / Todas rotation across all advertising plans
+  return [
+    'plan-nacional',
+    'plan-deportivo',
+    'plan-local',
+    'plan-internacional',
+    'plan-cielo-total',
+    'plan-clasificados',
+  ];
 }
 
 export default async function NoticiasPage({ searchParams }) {
@@ -104,21 +132,20 @@ export default async function NoticiasPage({ searchParams }) {
     }
   };
 
-  // Determine banner plan
+  // Header Banner Plan based on category
   let headerPlan = null;
-  let gridPlan = 'plan-cielo-total';
-
-  if (currentCategorySlug === 'nacional') {
-    gridPlan = 'plan-nacional';
-  } else if (currentCategorySlug === 'local') {
-    gridPlan = 'plan-local';
-  } else if (currentCategorySlug === 'deportes') {
+  if (currentCategorySlug === 'deportes') {
     headerPlan = 'plan-deportivo';
-    gridPlan = 'plan-cielo-total';
-  } else if (['mundo', 'internacional', 'tendencias'].includes(currentCategorySlug)) {
+  } else if (['nacional', 'politica', 'economia'].includes(currentCategorySlug)) {
+    headerPlan = 'plan-nacional';
+  } else if (['local', 'sociedad', 'policiales'].includes(currentCategorySlug)) {
+    headerPlan = 'plan-local';
+  } else if (['mundo', 'internacional', 'espectaculos', 'tendencias'].includes(currentCategorySlug)) {
     headerPlan = 'plan-internacional';
-    gridPlan = 'plan-cielo-total';
   }
+
+  // Interleaved banner plans sequence
+  const bannerSequence = getInterleavedBannerPlans(currentCategorySlug);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -161,12 +188,12 @@ export default async function NoticiasPage({ searchParams }) {
 
       {/* Header Banner */}
       {headerPlan && (
-        <div className="mb-10">
-          <BannerDisplay position={headerPlan} />
+        <div className="mb-10 w-full flex justify-center">
+          <BannerDisplay position={headerPlan} mode="slider" />
         </div>
       )}
 
-      {/* News Grid */}
+      {/* News Grid with Interleaved Advertising Plans */}
       {posts.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {posts.map((post, index) => {
@@ -218,25 +245,20 @@ export default async function NoticiasPage({ searchParams }) {
               </Link>
             );
 
-            let showCieloTotal = gridPlan === 'plan-cielo-total' && (index + 1) % 6 === 0;
-            let showOtherPlans = gridPlan !== 'plan-cielo-total' && gridPlan !== null && (index + 1) % 3 === 0;
+            // Interleave advertising plan every 3 posts (e.g. after post 3, 6, 9, 12, etc.)
+            const isInterleavePoint = (index + 1) % 3 === 0;
+            const interleaveIndex = Math.floor((index + 1) / 3) - 1;
+            const currentPlan = bannerSequence[interleaveIndex % bannerSequence.length];
 
-            if (showCieloTotal || showOtherPlans) {
+            if (isInterleavePoint) {
               return (
-                <React.Fragment key={`group-${index}`}>
+                <React.Fragment key={`group-${post.id}-${index}`}>
                   {postCard}
-                  {(gridPlan === 'plan-nacional' || showCieloTotal) && (
-                    <div className="col-span-1 md:col-span-2 lg:col-span-3 my-4">
-                      <BannerDisplay position={gridPlan} />
+                  <div className="col-span-1 md:col-span-2 lg:col-span-3 my-4 sm:my-6 w-full flex justify-center">
+                    <div className="w-full">
+                      <BannerDisplay position={currentPlan} mode="slider" />
                     </div>
-                  )}
-                  {gridPlan === 'plan-local' && (
-                    <div className="col-span-1 md:col-span-2 lg:col-span-3 my-4 flex justify-center">
-                      <div className="max-w-md w-full">
-                        <BannerDisplay position="plan-local" />
-                      </div>
-                    </div>
-                  )}
+                  </div>
                 </React.Fragment>
               );
             }
@@ -263,7 +285,7 @@ export default async function NoticiasPage({ searchParams }) {
         </div>
       )}
 
-      {/* Featured Classifieds */}
+      {/* Featured Classifieds at the bottom */}
       <div className="mt-20">
         <FeaturedClassifieds />
       </div>

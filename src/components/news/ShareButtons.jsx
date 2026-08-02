@@ -4,20 +4,24 @@ import { Link as LinkIcon } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 export default function ShareButtons({ shortPath, title }) {
-  const [url, setUrl] = useState('');
+  const [url, setUrl] = useState(() => {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://librecielo.com';
+    return shortPath ? `${baseUrl}${shortPath}` : '';
+  });
 
   useEffect(() => {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://librecielo.com';
-    setUrl(shortPath ? `${baseUrl}${shortPath}` : window.location.href);
-  }, [shortPath]);
+    if (!url && typeof window !== 'undefined') {
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://librecielo.com';
+      setUrl(shortPath ? `${baseUrl}${shortPath}` : window.location.href);
+    }
+  }, [shortPath, url]);
 
-  if (!url) return null;
-
-  const encodedUrl = encodeURIComponent(url);
-  const encodedTitle = encodeURIComponent(title);
+  const displayUrl = url || (shortPath ? `https://librecielo.com${shortPath}` : 'https://librecielo.com');
+  const encodedUrl = encodeURIComponent(displayUrl);
+  const encodedTitle = encodeURIComponent(title || 'Noticia');
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(url);
+    navigator.clipboard.writeText(displayUrl);
     alert('¡Enlace copiado al portapapeles!');
   };
 

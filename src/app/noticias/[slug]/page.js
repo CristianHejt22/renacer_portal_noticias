@@ -3,20 +3,20 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { getAdSettings } from '@/app/actions/settings';
 import BannerDisplay from '@/components/ads/BannerDisplay';
-import AdIframeInjector from '@/components/shared/AdIframeInjector';
 import PublicSidebar from '@/components/layout/PublicSidebar';
-import SponsorWatermark from '@/components/ads/SponsorWatermark';
 import VideoVastHydrator from '@/components/news/VideoVastHydrator';
 import ShareButtons from '@/components/news/ShareButtons';
 import SocialShareButtons from '@/components/shared/SocialShareButtons';
 import CommentsSection from '@/components/news/CommentsSection';
 import RelatedArticles from '@/components/noticias/RelatedArticles';
 import { getPostBySlug } from '@/app/actions/posts';
-import { Tweet } from 'react-tweet';
 import FeaturedClassifieds from '@/components/classifieds/FeaturedClassifieds';
 import SaveButton from '@/components/shared/SaveButton';
+import NewsGallerySlider from '@/components/news/NewsGallerySlider';
+import ArticleContentRenderer from '@/components/news/ArticleContentRenderer';
+import AdIframeInjector from '@/components/shared/AdIframeInjector';
 
-export const revalidate = 60; // Cache ISR por 60 segundos (mejora radical de velocidad)
+export const revalidate = 60; // Cache ISR por 60 segundos
 export const dynamicParams = true;
 
 export async function generateMetadata({ params }) {
@@ -30,7 +30,6 @@ export async function generateMetadata({ params }) {
     };
   }
 
-  // Use explicit excerpt if available, otherwise fallback to truncated content
   const description = post.excerpt || (post.content?.replace(/<[^>]+>/g, '').substring(0, 160) + '...');
 
   return {
@@ -66,7 +65,6 @@ export async function generateMetadata({ params }) {
 export default async function ArticlePage({ params }) {
   const resolvedParams = await params;
   
-  // Fetch settings and post concurrently for maximum speed
   const [adSettings, res] = await Promise.all([
     getAdSettings(),
     getPostBySlug(resolvedParams.slug)
@@ -84,6 +82,18 @@ export default async function ArticlePage({ params }) {
         </Link>
       </div>
     );
+  }
+
+  // Extract all images from content to enrich the gallery slider
+  const contentImages = [];
+  if (post.content) {
+    const imgRegex = /<img[^>]+src=["']([^"']+)["']/gi;
+    let match;
+    while ((match = imgRegex.exec(post.content)) !== null) {
+      if (match[1] && !match[1].includes('data:image') && !match[1].includes('badge')) {
+        contentImages.push(match[1]);
+      }
+    }
   }
 
   return (
@@ -110,7 +120,7 @@ export default async function ArticlePage({ params }) {
               {post.title}
             </h1>
             
-            {/* Bajada / Subtitle (Copete) */}
+            {/* Subtitle / Copete */}
             {post.excerpt && (
               <p className="text-lg md:text-xl text-gray-500 font-medium leading-relaxed mb-6">
                 {post.excerpt}
@@ -128,23 +138,14 @@ export default async function ArticlePage({ params }) {
             </div>
           </header>
 
-          {/* Featured Image */}
-          {post.coverImage && (
-            <div className="relative w-full h-[350px] md:h-[500px] overflow-hidden mb-8 rounded-xl border border-border bg-black/5 dark:bg-white/5">
-              {/* Blurred background */}
-              <img 
-                src={post.coverImage || '/placeholder.jpg'} 
-                alt=""
-                className="absolute inset-0 w-full h-full object-cover opacity-40 blur-xl scale-110"
-              />
-              {/* Contained image */}
-              <img 
-                src={post.coverImage || '/placeholder.jpg'} 
-                alt={post.title}
-                className="absolute inset-0 w-full h-full object-contain"
-              />
-              <SponsorWatermark postSponsorId={post.sponsorId} />
-            </div>
+          {/* Interactive Gallery Slider with Lightbox */}
+          {(post.coverImage || contentImages.length > 0) && (
+            <NewsGallerySlider 
+              coverImage={post.coverImage}
+              images={contentImages}
+              title={post.title}
+              sponsorId={post.sponsorId}
+            />
           )}
 
           {/* Body and Share */}
@@ -154,77 +155,13 @@ export default async function ArticlePage({ params }) {
               title={post.title} 
             />
 
-            {/* Article Content */}
+            {/* Article Content with Lightbox on click */}
             <div className="flex-1">
-              <div className="prose prose-lg dark:prose-invert max-w-none font-serif text-gray-800 dark:text-gray-200 leading-relaxed [&>div:first-child>p:first-of-type]:text-xl [&>div:first-child>p:first-of-type]:text-gray-500 [&>div:first-child>p:first-of-type]:font-medium [&>div:first-child>p:first-of-type]:mb-8">
-                {(post.content?.split(/(\[banner:in-article\]|\[adsterra:in-article\]|\[banner:id:\d+\]|\[tweet:\d+\]|\[embed\][A-Za-z0-9+/=]+\[\/embed\])/g) || []).map((part, index) => {
-                  if (part === '[banner:in-article]') {
-                    return (
-                      <div key={index} className="my-8 not-prose">
-                        <BannerDisplay position="in-article" />
-                      </div>
-                    );
-                  }
-                  
-                  if (part === '[adsterra:in-article]') {
-                    return (
-                      <div key={index} className="my-8 not-prose">
-                        {inArticleScript && <AdIframeInjector htmlCode={inArticleScript} minHeight="250px" />}
-                      </div>
-                    );
-                  }
-
-                  if (part.startsWith('[banner:id:')) {
-                    const bannerId = part.match(/\d+/)[0];
-                    return (
-                      <div key={index} className="my-8 not-prose flex justify-center">
-                        <BannerDisplay position="in-article" specificId={parseInt(bannerId)} />
-                      </div>
-                    );
-                  }
-
-                  if (part.startsWith('[tweet:')) {
-                    const tweetId = part.replace('[tweet:', '').replace(']', '');
-                    return (
-                      <div key={index} className="my-8 not-prose flex justify-center w-full">
-                        <Tweet id={tweetId} />
-                      </div>
-                    );
-                  }
-
-                  if (part.startsWith('[embed]') && part.endsWith('[/embed]')) {
-                    const base64Content = part.replace('[embed]', '').replace('[/embed]', '');
-                    try {
-                      let decoded = '';
-                      if (typeof Buffer !== 'undefined') {
-                        decoded = Buffer.from(base64Content, 'base64').toString('utf-8');
-                      } else {
-                        decoded = decodeURIComponent(escape(atob(base64Content)));
-                      }
-                      
-                      // If it's a simple iframe (like YouTube), render directly
-                      if (decoded.trim().toLowerCase().startsWith('<iframe') && decoded.trim().toLowerCase().endsWith('</iframe>') && (decoded.match(/<iframe/ig) || []).length === 1) {
-                        return (
-                          <div key={index} className="my-8 not-prose w-full flex justify-center">
-                            <div dangerouslySetInnerHTML={{ __html: decoded }} className="w-full max-w-[800px] flex justify-center" />
-                          </div>
-                        );
-                      }
-                      
-                      // Otherwise, it might contain scripts or be a complex embed code, use AdIframeInjector
-                      return (
-                        <div key={index} className="my-8 not-prose w-full overflow-hidden flex justify-center">
-                          <AdIframeInjector htmlCode={decoded} minHeight="600px" />
-                        </div>
-                      );
-                    } catch (e) {
-                      return null;
-                    }
-                  }
-
-                  return <div key={index} dangerouslySetInnerHTML={{ __html: part }} />;
-                })}
-              </div>
+              <ArticleContentRenderer 
+                content={post.content}
+                inArticleScript={inArticleScript}
+                articleTitle={post.title}
+              />
 
               {/* Tags / Hashtags */}
               {post.tags && (
@@ -241,7 +178,7 @@ export default async function ArticlePage({ params }) {
                 </div>
               )}
 
-              {/* Botones adicionales al final */}
+              {/* Social share */}
               <SocialShareButtons title={post.title} slug={post.slug} shortPath={`/n/${post.id}`} />
             </div>
           </div>
