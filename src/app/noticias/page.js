@@ -1,21 +1,22 @@
 import Link from 'next/link';
 import React from 'react';
 import { getPublicPosts } from '@/app/actions/posts';
+import { getCategories } from '@/app/actions/categories';
 import BannerDisplay from '@/components/ads/BannerDisplay';
 import FeaturedClassifieds from '@/components/classifieds/FeaturedClassifieds';
-import { Newspaper, Sparkles } from 'lucide-react';
+import { Newspaper, Sparkles, FolderOpen, Calendar, User } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-const CATEGORIES = [
-  { name: 'Todas', slug: '' },
+const DEFAULT_CATEGORIES = [
   { name: 'Política', slug: 'politica' },
   { name: 'Economía', slug: 'economia' },
   { name: 'Deportes', slug: 'deportes' },
   { name: 'Sociedad', slug: 'sociedad' },
   { name: 'Espectáculos', slug: 'espectaculos' },
   { name: 'Mundo', slug: 'mundo' },
+  { name: 'Policiales', slug: 'policiales' },
 ];
 
 function normalizeText(str) {
@@ -33,9 +34,45 @@ export default async function NoticiasPage({ searchParams }) {
   const rawCategorySlug = (resolvedSearchParams?.category || '').trim();
   const currentCategorySlug = normalizeText(rawCategorySlug);
 
-  const res = await getPublicPosts({ limit: 100 });
-  const allPosts = res.data || [];
+  // Fetch published posts and categories concurrently
+  const [postsRes, categoriesRes] = await Promise.all([
+    getPublicPosts({ limit: 100 }),
+    getCategories()
+  ]);
 
+  const allPosts = postsRes.data || [];
+  const dbCategories = (categoriesRes.success && categoriesRes.data) ? categoriesRes.data : [];
+
+  // Build category list dynamically from DB + Defaults + Existing Posts
+  const categoryMap = new Map();
+  categoryMap.set('', { name: 'Todas', slug: '' });
+
+  // 1. Add DB categories
+  dbCategories.filter(c => c.isActive).forEach(c => {
+    const slug = normalizeText(c.slug || c.name);
+    if (slug) categoryMap.set(slug, { name: c.name, slug });
+  });
+
+  // 2. Add defaults if not present
+  DEFAULT_CATEGORIES.forEach(c => {
+    if (!categoryMap.has(c.slug)) {
+      categoryMap.set(c.slug, c);
+    }
+  });
+
+  // 3. Add any category found in posts
+  allPosts.forEach(p => {
+    if (p.category) {
+      const slug = normalizeText(p.category);
+      if (slug && !categoryMap.has(slug)) {
+        categoryMap.set(slug, { name: p.category, slug });
+      }
+    }
+  });
+
+  const availableCategories = Array.from(categoryMap.values());
+
+  // Filter posts by category
   let posts = allPosts;
   let activeCategoryName = 'Todas las Noticias';
 
@@ -45,7 +82,7 @@ export default async function NoticiasPage({ searchParams }) {
       return normalizeText(p.category) === currentCategorySlug;
     });
 
-    const foundCategory = CATEGORIES.find(c => c.slug === currentCategorySlug);
+    const foundCategory = categoryMap.get(currentCategorySlug);
     if (foundCategory) {
       activeCategoryName = foundCategory.name;
     } else if (posts.length > 0) {
@@ -88,21 +125,21 @@ export default async function NoticiasPage({ searchParams }) {
       
       {/* Header & Title */}
       <div className="text-center max-w-3xl mx-auto mb-8">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold uppercase tracking-wider mb-3">
-          <Newspaper size={14} />
-          <span>Portal Informativo</span>
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-semibold uppercase tracking-wider mb-3">
+          <Newspaper size={15} />
+          <span>Portal Informativo Público</span>
         </div>
         <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight text-white mb-3 capitalize">
           {activeCategoryName}
         </h1>
         <p className="text-gray-400 text-sm md:text-base">
-          Explora las últimas noticias, coberturas especiales y actualizaciones minuto a minuto.
+          Explora todas las noticias y coberturas especiales de libre acceso para toda la comunidad.
         </p>
       </div>
 
-      {/* Category Pills Navigation */}
+      {/* Category Navigation Bar */}
       <div className="flex items-center justify-start sm:justify-center gap-2 overflow-x-auto pb-4 mb-10 no-scrollbar">
-        {CATEGORIES.map((cat) => {
+        {availableCategories.map((cat) => {
           const isActive = (currentCategorySlug === '' && cat.slug === '') || (currentCategorySlug === cat.slug);
           const href = cat.slug ? `/noticias?category=${cat.slug}` : '/noticias';
           
@@ -110,9 +147,9 @@ export default async function NoticiasPage({ searchParams }) {
             <Link
               key={cat.slug || 'todas'}
               href={href}
-              className={`px-4 py-2 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap transition-all ${
+              className={`px-4 py-2 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap transition-all duration-200 ${
                 isActive
-                  ? 'bg-primary text-white shadow-lg shadow-primary/25 scale-105'
+                  ? 'bg-primary text-white shadow-lg shadow-primary/30 scale-105'
                   : 'bg-slate-900 border border-slate-800 text-gray-400 hover:text-white hover:border-slate-700'
               }`}
             >
@@ -168,8 +205,14 @@ export default async function NoticiasPage({ searchParams }) {
                   </div>
 
                   <div className="pt-4 border-t border-slate-800/60 flex items-center justify-between text-xs text-gray-500 font-medium">
-                    <span>{post.author?.name || 'Redacción'}</span>
-                    <span>{formatDate(post.createdAt)}</span>
+                    <span className="flex items-center gap-1">
+                      <User size={13} className="text-gray-400" />
+                      {post.author?.name || 'Redacción'}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Calendar size={13} className="text-gray-400" />
+                      {formatDate(post.createdAt)}
+                    </span>
                   </div>
                 </div>
               </Link>
@@ -204,11 +247,11 @@ export default async function NoticiasPage({ searchParams }) {
       ) : (
         <div className="text-center py-20 px-4 bg-slate-900/40 border border-slate-800 rounded-2xl max-w-xl mx-auto">
           <div className="w-12 h-12 rounded-full bg-slate-800 text-gray-400 flex items-center justify-center mx-auto mb-4">
-            <Newspaper size={24} />
+            <FolderOpen size={24} />
           </div>
-          <h3 className="text-xl font-bold text-white mb-2">No hay noticias en esta sección</h3>
+          <h3 className="text-xl font-bold text-white mb-2">No hay noticias en esta categoría</h3>
           <p className="text-sm text-gray-400 mb-6">
-            Actualmente no hay artículos publicados para la categoría seleccionada.
+            Actualmente no hay artículos publicados en esta sección.
           </p>
           <Link 
             href="/noticias"
@@ -220,7 +263,7 @@ export default async function NoticiasPage({ searchParams }) {
         </div>
       )}
 
-      {/* Featured Classifieds at the bottom */}
+      {/* Featured Classifieds */}
       <div className="mt-20">
         <FeaturedClassifieds />
       </div>
