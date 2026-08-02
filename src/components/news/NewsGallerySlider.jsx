@@ -12,13 +12,12 @@ import {
   ExternalLink,
   Images
 } from 'lucide-react';
-import SponsorWatermark from '@/components/ads/SponsorWatermark';
 
 export default function NewsGallerySlider({ 
   coverImage, 
   images = [], 
   title = 'Imagen de la noticia',
-  sponsorId = null 
+  sponsorWatermark = null 
 }) {
   // Combine cover image with any additional images and filter out duplicates or empties
   const allImages = Array.from(
@@ -119,7 +118,7 @@ export default function NewsGallerySlider({
         </div>
 
         {/* Sponsor Watermark if available */}
-        <SponsorWatermark postSponsorId={sponsorId} />
+        {sponsorWatermark}
 
         {/* Top Floating Controls Bar */}
         <div className="absolute top-4 left-4 right-4 flex items-center justify-between pointer-events-none z-10">

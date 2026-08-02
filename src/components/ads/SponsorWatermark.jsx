@@ -41,8 +41,8 @@ export default async function SponsorWatermark({ postSponsorId }) {
 
   if (!selectedSponsor?.imageUrl) return null;
 
-  const content = (
-    <div className="absolute top-4 right-4 z-10 transition-transform hover:scale-105 opacity-80 hover:opacity-100 drop-shadow-md pointer-events-auto">
+  return (
+    <div className="absolute top-4 right-4 z-10 opacity-80 drop-shadow-md pointer-events-none select-none">
       <img 
         src={selectedSponsor.imageUrl} 
         alt={selectedSponsor.name || 'Patrocinador'} 
@@ -50,14 +50,4 @@ export default async function SponsorWatermark({ postSponsorId }) {
       />
     </div>
   );
-
-  if (selectedSponsor.targetUrl) {
-    return (
-      <a href={selectedSponsor.targetUrl} target="_blank" rel="noreferrer" className="block">
-        {content}
-      </a>
-    );
-  }
-
-  return content;
 }

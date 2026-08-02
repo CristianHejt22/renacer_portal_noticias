@@ -15,6 +15,7 @@ import SaveButton from '@/components/shared/SaveButton';
 import NewsGallerySlider from '@/components/news/NewsGallerySlider';
 import ArticleContentRenderer from '@/components/news/ArticleContentRenderer';
 import AdIframeInjector from '@/components/shared/AdIframeInjector';
+import SponsorWatermark from '@/components/ads/SponsorWatermark';
 
 export const revalidate = 60; // Cache ISR por 60 segundos
 export const dynamicParams = true;
@@ -144,7 +145,7 @@ export default async function ArticlePage({ params }) {
               coverImage={post.coverImage}
               images={contentImages}
               title={post.title}
-              sponsorId={post.sponsorId}
+              sponsorWatermark={<SponsorWatermark postSponsorId={post.sponsorId} />}
             />
           )}
 

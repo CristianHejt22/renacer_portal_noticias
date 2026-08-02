@@ -107,12 +107,44 @@ export async function getPost(id) {
 
 export async function getPostBySlug(slug) {
   try {
-    const post = await prisma.post.findUnique({
-      where: { slug },
+    if (!slug) return { success: false, error: 'Slug no proporcionado' };
+
+    let decodedSlug = slug;
+    try {
+      decodedSlug = decodeURIComponent(slug);
+    } catch (e) {
+      decodedSlug = slug;
+    }
+
+    const post = await prisma.post.findFirst({
+      where: {
+        OR: [
+          { slug: slug },
+          { slug: decodedSlug },
+          { slug: slug.trim() },
+          { slug: decodedSlug.trim() }
+        ]
+      },
       include: { author: true }
     });
-    return { success: true, data: post };
+
+    if (post) {
+      return { success: true, data: post };
+    }
+
+    // Fallback: Si el slug es un ID numérico (ej: /noticias/123)
+    const numericId = parseInt(slug, 10);
+    if (!isNaN(numericId) && numericId > 0) {
+      const postById = await prisma.post.findUnique({
+        where: { id: numericId },
+        include: { author: true }
+      });
+      if (postById) return { success: true, data: postById };
+    }
+
+    return { success: false, error: 'Noticia no encontrada' };
   } catch (error) {
+    console.error('Error fetching post by slug:', error);
     return { success: false, error: 'Error fetching post' };
   }
 }

@@ -95,11 +95,11 @@ export default async function RootLayout({ children }) {
           <ScriptInjector htmlCode={headScript} />
         ) : null}
 
-        {/* PLAN CIELO TOTAL */}
-        <BannerDisplay position="plan-cielo-total" mode="slider" hideUI={true} className="mb-8 mt-2 bg-black/5 dark:bg-white/5 py-4 w-full border-b border-border" />
-
         <Navbar />
         <BreakingNewsBar />
+        
+        {/* PLAN CIELO TOTAL */}
+        <BannerDisplay position="plan-cielo-total" mode="slider" hideUI={true} className="mb-6 bg-black/5 dark:bg-white/5 py-3 w-full border-b border-border" />
         <WhatsAppFloatingButton phoneNumber={currentPhone} />
         <PWAInstallPrompt siteLogo={adSettings.data?.siteLogo} siteName={adSettings.data?.siteName} />
         <NotificationSystem />
