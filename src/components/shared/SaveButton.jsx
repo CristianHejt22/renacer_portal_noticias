@@ -10,17 +10,27 @@ export default function SaveButton({ type, id }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
     async function check() {
       const res = await checkIsFavorite(type, id);
-      if (res.success) {
+      if (isMounted && res.success) {
         setIsSaved(res.isFavorited);
       }
-      setLoading(false);
+      if (isMounted) setLoading(false);
     }
     check();
+    return () => {
+      isMounted = false;
+    };
   }, [type, id]);
 
-  const handleToggle = async () => {
+  const handleToggle = async (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if (loading) return;
+    
     setLoading(true);
     const res = await toggleFavorite(type, id);
     if (res.success) {
@@ -34,9 +44,10 @@ export default function SaveButton({ type, id }) {
 
   return (
     <button
+      type="button"
       onClick={handleToggle}
       disabled={loading}
-      className={`p-2 rounded-full transition-colors flex items-center justify-center ${
+      className={`p-2 rounded-full transition-colors flex items-center justify-center z-10 ${
         isSaved 
           ? 'bg-primary/20 text-primary hover:bg-primary/30' 
           : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
@@ -44,7 +55,7 @@ export default function SaveButton({ type, id }) {
       title={isSaved ? 'Quitar de favoritos' : 'Guardar en favoritos'}
     >
       <Bookmark 
-        size={24} 
+        size={22} 
         className={isSaved ? 'fill-primary' : ''} 
       />
     </button>

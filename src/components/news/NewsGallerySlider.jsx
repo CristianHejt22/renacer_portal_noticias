@@ -32,24 +32,38 @@ export default function NewsGallerySlider({
   const hasMultiple = allImages.length > 1;
 
   const nextImage = useCallback((e) => {
-    if (e) e.stopPropagation();
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     setCurrentIndex((prev) => (prev + 1) % allImages.length);
     setZoomLevel(1);
   }, [allImages.length]);
 
   const prevImage = useCallback((e) => {
-    if (e) e.stopPropagation();
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     setCurrentIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
     setZoomLevel(1);
   }, [allImages.length]);
 
-  const openLightbox = (index = 0) => {
+  const openLightbox = (e, index = 0) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     setCurrentIndex(index);
     setZoomLevel(1);
     setIsLightboxOpen(true);
   };
 
-  const closeLightbox = () => {
+  const closeLightbox = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     setIsLightboxOpen(false);
     setZoomLevel(1);
   };
@@ -79,7 +93,7 @@ export default function NewsGallerySlider({
   const currentImage = allImages[currentIndex] || allImages[0];
 
   return (
-    <div className="w-full mb-8">
+    <div className="w-full mb-8 select-none">
       {/* Main Slider Container */}
       <div className="relative w-full h-[360px] sm:h-[450px] md:h-[520px] rounded-2xl overflow-hidden border border-slate-800 bg-slate-950 shadow-2xl group">
         
@@ -93,7 +107,7 @@ export default function NewsGallerySlider({
 
         {/* Main Contained Image with click to open */}
         <div 
-          onClick={() => openLightbox(currentIndex)}
+          onClick={(e) => openLightbox(e, currentIndex)}
           className="relative w-full h-full cursor-zoom-in flex items-center justify-center p-2 sm:p-4"
         >
           <img 
@@ -117,7 +131,8 @@ export default function NewsGallerySlider({
 
           {/* Fullscreen Expand Button */}
           <button
-            onClick={() => openLightbox(currentIndex)}
+            type="button"
+            onClick={(e) => openLightbox(e, currentIndex)}
             className="pointer-events-auto p-2.5 rounded-full bg-black/70 hover:bg-primary text-white backdrop-blur-md border border-white/10 transition-all duration-200 shadow-lg hover:scale-105"
             title="Abrir imagen en pantalla completa"
             aria-label="Abrir imagen en pantalla completa"
@@ -130,6 +145,7 @@ export default function NewsGallerySlider({
         {hasMultiple && (
           <>
             <button
+              type="button"
               onClick={prevImage}
               className="absolute left-3 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/60 hover:bg-primary text-white backdrop-blur-md border border-white/10 transition-all duration-200 shadow-xl opacity-90 hover:opacity-100 hover:scale-110 z-10"
               aria-label="Imagen anterior"
@@ -137,6 +153,7 @@ export default function NewsGallerySlider({
               <ChevronLeft size={22} />
             </button>
             <button
+              type="button"
               onClick={nextImage}
               className="absolute right-3 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/60 hover:bg-primary text-white backdrop-blur-md border border-white/10 transition-all duration-200 shadow-xl opacity-90 hover:opacity-100 hover:scale-110 z-10"
               aria-label="Siguiente imagen"
@@ -152,7 +169,9 @@ export default function NewsGallerySlider({
             {allImages.map((_, idx) => (
               <button
                 key={idx}
+                type="button"
                 onClick={(e) => {
+                  e.preventDefault();
                   e.stopPropagation();
                   setCurrentIndex(idx);
                 }}
@@ -174,7 +193,12 @@ export default function NewsGallerySlider({
           {allImages.map((img, idx) => (
             <button
               key={idx}
-              onClick={() => setCurrentIndex(idx)}
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setCurrentIndex(idx);
+              }}
               className={`relative flex-shrink-0 w-20 h-16 sm:w-24 sm:h-20 rounded-xl overflow-hidden border-2 transition-all duration-200 ${
                 idx === currentIndex
                   ? 'border-primary ring-2 ring-primary/40 scale-105 opacity-100'
@@ -215,14 +239,22 @@ export default function NewsGallerySlider({
             {/* Lightbox Controls */}
             <div className="flex items-center gap-2">
               <button
-                onClick={() => setZoomLevel((z) => Math.min(z + 0.3, 3))}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setZoomLevel((z) => Math.min(z + 0.3, 3));
+                }}
                 className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
                 title="Ampliar zoom"
               >
                 <ZoomIn size={18} />
               </button>
               <button
-                onClick={() => setZoomLevel((z) => Math.max(z - 0.3, 0.7))}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setZoomLevel((z) => Math.max(z - 0.3, 0.7));
+                }}
                 className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
                 title="Reducir zoom"
               >
@@ -230,7 +262,11 @@ export default function NewsGallerySlider({
               </button>
               {zoomLevel !== 1 && (
                 <button
-                  onClick={() => setZoomLevel(1)}
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setZoomLevel(1);
+                  }}
                   className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
                   title="Restablecer tamaño"
                 >
@@ -241,12 +277,14 @@ export default function NewsGallerySlider({
                 href={currentImage}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
                 className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
                 title="Abrir imagen original"
               >
                 <ExternalLink size={18} />
               </a>
               <button
+                type="button"
                 onClick={closeLightbox}
                 className="p-2 rounded-lg bg-red-500/20 hover:bg-red-500 text-red-300 hover:text-white transition-colors ml-2"
                 title="Cerrar (Esc)"
@@ -260,7 +298,7 @@ export default function NewsGallerySlider({
           <div 
             className="relative flex-1 flex items-center justify-center p-4 overflow-hidden"
             onClick={(e) => {
-              if (e.target === e.currentTarget) closeLightbox();
+              if (e.target === e.currentTarget) closeLightbox(e);
             }}
           >
             <div 
@@ -280,6 +318,7 @@ export default function NewsGallerySlider({
             {hasMultiple && (
               <>
                 <button
+                  type="button"
                   onClick={prevImage}
                   className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/70 hover:bg-primary text-white backdrop-blur-md border border-white/20 transition-all duration-200 shadow-2xl hover:scale-110 z-20"
                   aria-label="Imagen anterior"
@@ -287,6 +326,7 @@ export default function NewsGallerySlider({
                   <ChevronLeft size={28} />
                 </button>
                 <button
+                  type="button"
                   onClick={nextImage}
                   className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/70 hover:bg-primary text-white backdrop-blur-md border border-white/20 transition-all duration-200 shadow-2xl hover:scale-110 z-20"
                   aria-label="Siguiente imagen"
@@ -306,7 +346,10 @@ export default function NewsGallerySlider({
               {allImages.map((img, idx) => (
                 <button
                   key={idx}
-                  onClick={() => {
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
                     setCurrentIndex(idx);
                     setZoomLevel(1);
                   }}

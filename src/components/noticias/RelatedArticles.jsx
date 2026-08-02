@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import { getRelatedPosts } from '@/app/actions/posts';
 
 export default async function RelatedArticles({ category, currentPostId }) {
@@ -24,19 +23,22 @@ export default async function RelatedArticles({ category, currentPostId }) {
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {relatedPosts.map((post) => (
-          <Link key={post.id} href={`/noticias/${post.slug}`} className="group block bg-surface border border-border rounded-xl overflow-hidden hover:border-primary transition-colors">
+          <Link 
+            key={post.id} 
+            href={`/noticias/${post.slug}`} 
+            className="group block bg-surface border border-border rounded-xl overflow-hidden hover:border-primary transition-all duration-300 hover:shadow-lg"
+          >
             {post.coverImage ? (
-              <div className="relative aspect-video w-full overflow-hidden">
-                <Image 
+              <div className="relative aspect-video w-full overflow-hidden bg-slate-900">
+                <img 
                   src={post.coverImage} 
                   alt={post.title} 
-                  fill
-                  sizes="(max-width: 768px) 100vw, 300px"
-                  className="object-cover group-hover:scale-105 transition-transform duration-500"
+                  referrerPolicy="no-referrer"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
               </div>
             ) : (
-              <div className="aspect-video w-full bg-background flex items-center justify-center text-gray-500">
+              <div className="aspect-video w-full bg-slate-900 flex items-center justify-center text-gray-500 text-sm">
                 Sin imagen
               </div>
             )}

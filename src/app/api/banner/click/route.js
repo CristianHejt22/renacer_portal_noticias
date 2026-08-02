@@ -8,9 +8,7 @@ if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
-  const url = searchParams.get('url');
-
-  if (!url) return NextResponse.redirect(new URL('/', request.url));
+  const rawUrl = searchParams.get('url');
 
   if (id) {
     try {
@@ -23,6 +21,23 @@ export async function GET(request) {
     }
   }
 
-  // Redirigir siempre a la URL destino
-  return NextResponse.redirect(url);
+  let destination = rawUrl ? decodeURIComponent(rawUrl).trim() : '';
+
+  if (!destination || destination === 'undefined' || destination === 'null' || destination === '#') {
+    return NextResponse.redirect(new URL('/', request.url));
+  }
+
+  if (!destination.startsWith('http://') && !destination.startsWith('https://')) {
+    if (destination.startsWith('/')) {
+      return NextResponse.redirect(new URL(destination, request.url));
+    } else {
+      destination = 'https://' + destination;
+    }
+  }
+
+  try {
+    return NextResponse.redirect(new URL(destination));
+  } catch (e) {
+    return NextResponse.redirect(new URL('/', request.url));
+  }
 }

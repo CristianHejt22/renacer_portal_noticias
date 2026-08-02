@@ -155,12 +155,13 @@ export default async function ArticlePage({ params }) {
               title={post.title} 
             />
 
-            {/* Article Content with Lightbox on click */}
+            {/* Article Content with Lightbox on click and auto-interleaved ad plans */}
             <div className="flex-1">
               <ArticleContentRenderer 
                 content={post.content}
                 inArticleScript={inArticleScript}
                 articleTitle={post.title}
+                category={post.category}
               />
 
               {/* Tags / Hashtags */}

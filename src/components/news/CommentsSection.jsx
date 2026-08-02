@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { MessageSquare, Send } from 'lucide-react';
 import { getComments, createComment } from '@/app/actions/comments';
 
@@ -11,17 +11,18 @@ export default function CommentsSection({ postId }) {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  const loadComments = useCallback(async () => {
-    const res = await getComments(postId);
-    if (res.success) {
-      setComments(res.data);
-    }
-    setLoading(false);
-  }, [postId]);
-
   useEffect(() => {
-    loadComments();
-  }, [loadComments]);
+    let isMounted = true;
+    getComments(postId).then((res) => {
+      if (isMounted && res.success) {
+        setComments(res.data || []);
+      }
+      if (isMounted) setLoading(false);
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, [postId]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -31,7 +32,10 @@ export default function CommentsSection({ postId }) {
     const res = await createComment(postId, name, content);
     if (res.success) {
       setContent('');
-      loadComments();
+      const updated = await getComments(postId);
+      if (updated.success) {
+        setComments(updated.data || []);
+      }
     } else {
       alert(res.error || 'No se pudo enviar el comentario');
     }
