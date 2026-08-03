@@ -87,17 +87,14 @@ export default async function RootLayout({ children }) {
     >
       <head>
         <meta name="google-adsense-account" content={adsenseClientId} />
+        <script
+          async
+          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseClientId}`}
+          crossOrigin="anonymous"
+        />
       </head>
       <body className="min-h-full flex flex-col pt-16">
         <GoogleAnalytics gaId={gaId} />
-        {adsenseClientId && (
-          <Script
-            async
-            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseClientId}`}
-            crossOrigin="anonymous"
-            strategy="afterInteractive"
-          />
-        )}
         {headScript ? (
           <ScriptInjector htmlCode={headScript} />
         ) : null}
