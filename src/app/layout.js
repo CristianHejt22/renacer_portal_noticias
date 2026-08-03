@@ -19,6 +19,7 @@ export async function generateMetadata() {
   const adSettings = await getAdSettings();
   const siteName = adSettings.data?.siteName || "THE DINNER Portal";
   const siteDescription = adSettings.data?.siteDescription || "Las últimas noticias al instante";
+  const adsenseClientId = adSettings.data?.adsenseClientId || "ca-pub-5460050326198241";
   
   return {
     metadataBase: new URL(adSettings.data?.siteUrl || 'https://librecielo.com'),
@@ -27,6 +28,9 @@ export async function generateMetadata() {
       template: `%s | ${siteName}`,
     },
     description: siteDescription,
+    other: {
+      'google-adsense-account': adsenseClientId,
+    },
     openGraph: {
       title: siteName,
       description: siteDescription,
@@ -81,6 +85,9 @@ export default async function RootLayout({ children }) {
       lang="es"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        <meta name="google-adsense-account" content={adsenseClientId} />
+      </head>
       <body className="min-h-full flex flex-col pt-16">
         <GoogleAnalytics gaId={gaId} />
         {adsenseClientId && (

@@ -38,6 +38,9 @@ export async function generateMetadata({ params }) {
     description: description,
     keywords: post.tags ? post.tags.split(',') : [],
     authors: [{ name: post.author?.name || 'Redacción' }],
+    other: {
+      'google-adsense-account': 'ca-pub-5460050326198241',
+    },
     openGraph: {
       title: post.title,
       description: description,

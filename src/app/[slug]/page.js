@@ -22,6 +22,9 @@ export async function generateMetadata({ params }) {
   return {
     title: page.title,
     description: description,
+    other: {
+      'google-adsense-account': 'ca-pub-5460050326198241',
+    },
     openGraph: {
       title: page.title,
       description: description,
