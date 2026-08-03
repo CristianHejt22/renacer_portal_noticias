@@ -4,6 +4,7 @@ import { getRecentPosts } from '@/app/actions/posts';
 import { getAdSettings } from '@/app/actions/settings';
 import AdIframeInjector from '@/components/shared/AdIframeInjector';
 import SidebarClassifieds from '@/components/classifieds/SidebarClassifieds';
+import AdSenseUnit from '@/components/ads/AdSenseUnit';
 
 export default async function PublicSidebar() {
   const [res, settingsRes] = await Promise.all([
@@ -11,7 +12,11 @@ export default async function PublicSidebar() {
     getAdSettings()
   ]);
   const popularNews = res.data || [];
-  const adSettings = settingsRes || {};
+  const adSettings = settingsRes?.data || {};
+
+  const adsenseClientId = adSettings.adsenseClientId || 'ca-pub-5460050326198241';
+  const adsenseSidebarSlot = adSettings.adsenseSidebarSlot || '';
+  const adsenseEnabled = adSettings.adsenseEnabled !== false;
 
   return (
     <aside className="w-full flex flex-col gap-8">
@@ -19,11 +24,22 @@ export default async function PublicSidebar() {
       <div className="w-full space-y-6">
         <BannerDisplay position="sidebar" />
         
+        {/* Espacio Lateral para Google AdSense */}
+        {adsenseEnabled && (
+          <AdSenseUnit 
+            client={adsenseClientId}
+            slot={adsenseSidebarSlot}
+            format="auto"
+            responsive="true"
+            minHeight="250px"
+          />
+        )}
+
         {/* Banner Adsterra (Visible en Móvil y PC) */}
-        {adSettings.data?.sidebarScript && (
+        {adSettings.sidebarScript && (
           <div className="block w-full text-center">
             <span className="text-[10px] uppercase tracking-widest text-gray-400 bg-gray-500/10 px-2 py-0.5 rounded mb-2 inline-block">Publicidad</span>
-            <AdIframeInjector htmlCode={adSettings.data.sidebarScript} minHeight="250px" />
+            <AdIframeInjector htmlCode={adSettings.sidebarScript} minHeight="250px" />
           </div>
         )}
       </div>
@@ -56,15 +72,26 @@ export default async function PublicSidebar() {
       {/* Clasificados en el Sidebar */}
       <SidebarClassifieds />
 
-      {/* Banner Inferior del Sidebar */}
+      {/* Banner Inferior del Sidebar y Rascacielos Sticky */}
       <div className="w-full sticky top-24 space-y-8">
         <BannerDisplay position="sidebar" />
         
+        {/* Espacio Lateral Sticky Google AdSense */}
+        {adsenseEnabled && (
+          <AdSenseUnit 
+            client={adsenseClientId}
+            slot={adsenseSidebarSlot}
+            format="vertical"
+            responsive="true"
+            minHeight="350px"
+          />
+        )}
+
         {/* Banner Adsterra PC (Lateral 2) */}
-        {adSettings.data?.sidebarScript && (
+        {adSettings.sidebarScript && (
           <div className="hidden lg:block w-full text-center">
             <span className="text-[10px] uppercase tracking-widest text-gray-400 bg-gray-500/10 px-2 py-0.5 rounded mb-2 inline-block">Publicidad</span>
-            <AdIframeInjector htmlCode={adSettings.data.sidebarScript} minHeight="250px" />
+            <AdIframeInjector htmlCode={adSettings.sidebarScript} minHeight="250px" />
           </div>
         )}
         

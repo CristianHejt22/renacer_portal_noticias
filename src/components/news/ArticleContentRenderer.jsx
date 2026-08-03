@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import BannerDisplay from '@/components/ads/BannerDisplay';
 import AdIframeInjector from '@/components/shared/AdIframeInjector';
+import AdSenseUnit from '@/components/ads/AdSenseUnit';
 import { Tweet } from 'react-tweet';
 import { X, ZoomIn, ZoomOut, RotateCcw, ExternalLink } from 'lucide-react';
 
@@ -76,10 +77,10 @@ export default function ArticleContentRenderer({
   const inArticlePlans = getInArticlePlans(category);
 
   // Split content by explicit shortcodes
-  const rawParts = content?.split(/(\[banner:in-article\]|\[adsterra:in-article\]|\[banner:id:\d+\]|\[tweet:\d+\]|\[embed\][A-Za-z0-9+/=]+\[\/embed\])/g) || [];
+  const rawParts = content?.split(/(\[banner:in-article\]|\[adsterra:in-article\]|\[adsense\]|\[adsense:in-article\]|\[banner:id:\d+\]|\[tweet:\d+\]|\[embed\][A-Za-z0-9+/=]+\[\/embed\])/g) || [];
 
   // Check if content already had manual banner shortcodes
-  const hasManualBanners = content?.includes('[banner:in-article]') || content?.includes('[banner:id:');
+  const hasManualBanners = content?.includes('[banner:in-article]') || content?.includes('[banner:id:') || content?.includes('[adsense]');
 
   return (
     <>
@@ -101,6 +102,14 @@ export default function ArticleContentRenderer({
             return (
               <div key={`adsterra-manual-${index}`} className="my-8 not-prose flex justify-center w-full">
                 {inArticleScript && <AdIframeInjector htmlCode={inArticleScript} minHeight="250px" />}
+              </div>
+            );
+          }
+
+          if (part === '[adsense]' || part === '[adsense:in-article]') {
+            return (
+              <div key={`adsense-manual-${index}`} className="my-8 not-prose flex justify-center w-full">
+                <AdSenseUnit format="fluid" layout="in-article" minHeight="250px" />
               </div>
             );
           }

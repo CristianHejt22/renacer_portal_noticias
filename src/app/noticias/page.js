@@ -4,6 +4,7 @@ import { getPublicPosts } from '@/app/actions/posts';
 import { getCategories } from '@/app/actions/categories';
 import BannerDisplay from '@/components/ads/BannerDisplay';
 import FeaturedClassifieds from '@/components/classifieds/FeaturedClassifieds';
+import PublicSidebar from '@/components/layout/PublicSidebar';
 import { Newspaper, Sparkles, FolderOpen, Calendar, User, Images } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
@@ -187,107 +188,119 @@ export default async function NoticiasPage({ searchParams }) {
       </div>
 
       {/* Header Banner */}
-      {headerPlan && (
-        <div className="mb-10 w-full flex justify-center">
-          <BannerDisplay position={headerPlan} mode="slider" />
-        </div>
-      )}
+      {/* Main Grid with Lateral Sidebar for Ads */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* Main Feed Column */}
+        <div className="lg:col-span-8">
+          {/* Header Banner */}
+          {headerPlan && (
+            <div className="mb-8 w-full flex justify-center">
+              <BannerDisplay position={headerPlan} mode="slider" />
+            </div>
+          )}
 
-      {/* News Grid with Interleaved Advertising Plans */}
-      {posts.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-          {posts.map((post, index) => {
-            const cleanExcerpt = post.excerpt || post.content?.replace(/<[^>]+>/g, '').substring(0, 160) + '...';
+          {/* News Grid with Interleaved Advertising Plans */}
+          {posts.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+              {posts.map((post, index) => {
+                const cleanExcerpt = post.excerpt || post.content?.replace(/<[^>]+>/g, '').substring(0, 160) + '...';
 
-            const postCard = (
-              <Link 
-                href={`/noticias/${post.slug}`} 
-                key={post.id} 
-                className="group cursor-pointer block bg-slate-900/70 border border-slate-800/80 hover:border-primary/50 rounded-2xl overflow-hidden hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300 flex flex-col backdrop-blur-sm"
-              >
-                <div className="relative h-52 sm:h-56 overflow-hidden bg-slate-950">
-                  <img 
-                    src={post.coverImage || '/placeholder.jpg'}
-                    alt={post.title}
-                    referrerPolicy="no-referrer"
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent opacity-60" />
-                  
-                  {post.category && (
-                    <span className="absolute top-3 left-3 px-3 py-1 bg-black/60 backdrop-blur-md border border-white/10 text-primary rounded-full font-semibold text-xs uppercase tracking-wider">
-                      {post.category}
-                    </span>
-                  )}
-                </div>
-
-                <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between">
-                  <div>
-                    <h3 className="text-lg sm:text-xl font-bold text-white mb-3 group-hover:text-primary transition-colors line-clamp-2 leading-snug">
-                      {post.title}
-                    </h3>
-                    <p className="text-gray-400 text-xs sm:text-sm mb-4 line-clamp-3 leading-relaxed">
-                      {cleanExcerpt}
-                    </p>
-                  </div>
-
-                  <div className="pt-4 border-t border-slate-800/60 flex items-center justify-between text-xs text-gray-500 font-medium">
-                    <span className="flex items-center gap-1">
-                      <User size={13} className="text-gray-400" />
-                      {post.author?.name || 'Redacción'}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Calendar size={13} className="text-gray-400" />
-                      {formatDate(post.createdAt)}
-                    </span>
-                  </div>
-                </div>
-              </Link>
-            );
-
-            // Interleave advertising plan every 3 posts (e.g. after post 3, 6, 9, 12, etc.)
-            const isInterleavePoint = (index + 1) % 3 === 0;
-            const interleaveIndex = Math.floor((index + 1) / 3) - 1;
-            const currentPlan = bannerSequence[interleaveIndex % bannerSequence.length];
-
-            if (isInterleavePoint) {
-              return (
-                <React.Fragment key={`group-${post.id}-${index}`}>
-                  {postCard}
-                  <div className="col-span-1 md:col-span-2 lg:col-span-3 my-4 sm:my-6 w-full flex justify-center">
-                    <div className="w-full">
-                      <BannerDisplay position={currentPlan} mode="slider" />
+                const postCard = (
+                  <Link 
+                    href={`/noticias/${post.slug}`} 
+                    key={post.id} 
+                    className="group cursor-pointer block bg-slate-900/70 border border-slate-800/80 hover:border-primary/50 rounded-2xl overflow-hidden hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300 flex flex-col backdrop-blur-sm"
+                  >
+                    <div className="relative h-52 sm:h-56 overflow-hidden bg-slate-950">
+                      <img 
+                        src={post.coverImage || '/placeholder.jpg'}
+                        alt={post.title}
+                        referrerPolicy="no-referrer"
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent opacity-60" />
+                      
+                      {post.category && (
+                        <span className="absolute top-3 left-3 px-3 py-1 bg-black/60 backdrop-blur-md border border-white/10 text-primary rounded-full font-semibold text-xs uppercase tracking-wider">
+                          {post.category}
+                        </span>
+                      )}
                     </div>
-                  </div>
-                </React.Fragment>
-              );
-            }
 
-            return postCard;
-          })}
-        </div>
-      ) : (
-        <div className="text-center py-20 px-4 bg-slate-900/40 border border-slate-800 rounded-2xl max-w-xl mx-auto">
-          <div className="w-12 h-12 rounded-full bg-slate-800 text-gray-400 flex items-center justify-center mx-auto mb-4">
-            <FolderOpen size={24} />
+                    <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between">
+                      <div>
+                        <h3 className="text-lg sm:text-xl font-bold text-white mb-3 group-hover:text-primary transition-colors line-clamp-2 leading-snug">
+                          {post.title}
+                        </h3>
+                        <p className="text-gray-400 text-xs sm:text-sm mb-4 line-clamp-3 leading-relaxed">
+                          {cleanExcerpt}
+                        </p>
+                      </div>
+
+                      <div className="pt-4 border-t border-slate-800/60 flex items-center justify-between text-xs text-gray-500 font-medium">
+                        <span className="flex items-center gap-1">
+                          <User size={13} className="text-gray-400" />
+                          {post.author?.name || 'Redacción'}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Calendar size={13} className="text-gray-400" />
+                          {formatDate(post.createdAt)}
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+                );
+
+                // Interleave advertising plan every 2-3 posts
+                const isInterleavePoint = (index + 1) % 4 === 0;
+                const interleaveIndex = Math.floor((index + 1) / 4) - 1;
+                const currentPlan = bannerSequence[interleaveIndex % bannerSequence.length];
+
+                if (isInterleavePoint) {
+                  return (
+                    <React.Fragment key={`group-${post.id}-${index}`}>
+                      {postCard}
+                      <div className="col-span-1 md:col-span-2 my-4 sm:my-6 w-full flex justify-center">
+                        <div className="w-full">
+                          <BannerDisplay position={currentPlan} mode="slider" />
+                        </div>
+                      </div>
+                    </React.Fragment>
+                  );
+                }
+
+                return postCard;
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-20 px-4 bg-slate-900/40 border border-slate-800 rounded-2xl max-w-xl mx-auto">
+              <div className="w-12 h-12 rounded-full bg-slate-800 text-gray-400 flex items-center justify-center mx-auto mb-4">
+                <FolderOpen size={24} />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">No hay noticias en esta categoría</h3>
+              <p className="text-sm text-gray-400 mb-6">
+                Actualmente no hay artículos publicados en esta sección.
+              </p>
+              <Link 
+                href="/noticias"
+                className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white text-sm font-medium px-5 py-2.5 rounded-xl transition-colors"
+              >
+                <Sparkles size={16} />
+                <span>Ver todas las noticias</span>
+              </Link>
+            </div>
+          )}
+
+          {/* Featured Classifieds at the bottom of feed */}
+          <div className="mt-16">
+            <FeaturedClassifieds />
           </div>
-          <h3 className="text-xl font-bold text-white mb-2">No hay noticias en esta categoría</h3>
-          <p className="text-sm text-gray-400 mb-6">
-            Actualmente no hay artículos publicados en esta sección.
-          </p>
-          <Link 
-            href="/noticias"
-            className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white text-sm font-medium px-5 py-2.5 rounded-xl transition-colors"
-          >
-            <Sparkles size={16} />
-            <span>Ver todas las noticias</span>
-          </Link>
         </div>
-      )}
 
-      {/* Featured Classifieds at the bottom */}
-      <div className="mt-20">
-        <FeaturedClassifieds />
+        {/* Lateral Sidebar with Google AdSense and widgets */}
+        <div className="lg:col-span-4">
+          <PublicSidebar />
+        </div>
       </div>
     </div>
   );

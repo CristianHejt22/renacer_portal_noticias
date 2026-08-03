@@ -61,7 +61,7 @@ export default async function RootLayout({ children }) {
   ]);
 
   const headScript = adSettings.data?.headScript || '';
-  const adsenseClientId = adSettings.data?.adsenseClientId || '';
+  const adsenseClientId = adSettings.data?.adsenseClientId || 'ca-pub-5460050326198241';
   const gaId = process.env.NEXT_PUBLIC_GA_ID || '';
   
   // Configurar el botón flotante de WhatsApp para apuntar al Canal de WhatsApp
