@@ -1,99 +1,47 @@
-'use client';
+import { PrismaClient } from '@prisma/client';
+import GeneratorClient from './GeneratorClient';
+import { Share2 } from 'lucide-react';
 
-import { useState, useEffect } from 'react';
-import { Save, Hash, Users, Camera, MessageCircle, Link as LinkIcon, Loader2 } from 'lucide-react';
-import { getAdSettings, saveAdSettings } from '@/app/actions/settings';
+const prisma = new PrismaClient();
 
-export default function SocialSettingsPage() {
-  const [sponsorText, setSponsorText] = useState('Patrocinado por: Empresa Ejemplo');
-  const [makeWebhookUrl, setMakeWebhookUrl] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+export const metadata = {
+  title: 'Generador de Placas - Admin',
+};
 
-  useEffect(() => {
-    let isMounted = true;
-    async function loadSettings() {
-      const res = await getAdSettings();
-      if (isMounted) {
-        if (res.success && res.data) {
-          setMakeWebhookUrl(res.data.makeWebhookUrl || '');
-        }
-        setLoading(false);
-      }
+export default async function AdminSocialPage() {
+  // Obtener las últimas 50 noticias publicadas para el autocompletado
+  const posts = await prisma.post.findMany({
+    where: { status: 'PUBLISHED' },
+    orderBy: { createdAt: 'desc' },
+    take: 50,
+    include: {
+      category: true,
     }
-    loadSettings();
-    return () => { isMounted = false; };
-  }, []);
+  });
 
-  const handleSave = async () => {
-    setSaving(true);
-    const res = await saveAdSettings({
-      make_webhook_url: makeWebhookUrl,
-    });
-    if (res.success) {
-      alert('Configuración guardada exitosamente');
-    } else {
-      alert('Error guardando configuración');
-    }
-    setSaving(false);
-  };
+  // Mapear los datos de las noticias para el cliente
+  const formattedPosts = posts.map(post => ({
+    id: post.id,
+    title: post.title,
+    imageUrl: post.coverImage || post.image || '',
+    category: post.category?.name || 'NOTICIA',
+    date: post.createdAt,
+  }));
 
   return (
-    <div className="max-w-4xl">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Redes Sociales y Publicación</h1>
-        <button 
-          onClick={handleSave}
-          disabled={loading || saving}
-          className="flex items-center space-x-2 bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
-        >
-          {saving ? <Loader2 size={20} className="animate-spin" /> : <Save size={20} />}
-          <span>Guardar Configuración</span>
-        </button>
+    <div className="w-full h-full pb-20">
+      <div className="mb-6">
+        <h1 className="text-3xl font-black bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent flex items-center gap-3">
+          <Share2 className="text-primary" size={28} />
+          Generador de Redes Sociales
+        </h1>
+        <p className="text-muted-foreground mt-2">
+          Crea placas profesionales para Instagram, Facebook y WhatsApp en segundos.
+        </p>
       </div>
 
-      {/* Marca / Sponsor en Imagen Principal */}
-      <section className="glass p-6 rounded-xl border border-border mb-8">
-        <h2 className="text-xl font-bold mb-2">Sponsor en Imágenes (Open Graph)</h2>
-        <p className="text-sm text-gray-500 mb-6">
-          Este texto o marca de agua se incrustará automáticamente en las imágenes al compartirse en redes sociales.
-        </p>
-        <div>
-          <label className="block text-sm font-medium text-gray-400 mb-2">Texto del Patrocinador</label>
-          <input
-            type="text"
-            value={sponsorText}
-            onChange={(e) => setSponsorText(e.target.value)}
-            className="w-full bg-background border border-border rounded-lg px-4 py-3 focus:outline-none focus:border-primary transition-colors"
-          />
-        </div>
-      </section>
-
-      {/* Make.com Integración */}
-      <section className="glass p-6 rounded-xl border border-border">
-        <h2 className="text-xl font-bold mb-2">Automatización con Make.com</h2>
-        <p className="text-sm text-gray-500 mb-6">
-          Ingresa la URL del Webhook (Custom Webhook) de Make.com. Al tener esto configurado, podrás enviar noticias directamente a Make.com para publicarlas en todas tus redes (Facebook, Instagram, X).
-        </p>
-        
-        <div className="space-y-4">
-          <div className="bg-background border border-border rounded-lg p-4">
-            <label className="block text-sm font-medium text-gray-400 mb-2">URL del Webhook (Make.com)</label>
-            <div className="flex">
-              <div className="flex items-center justify-center px-4 bg-muted border border-r-0 border-border rounded-l-lg text-gray-500">
-                <LinkIcon size={18} />
-              </div>
-              <input
-                type="url"
-                value={makeWebhookUrl}
-                onChange={(e) => setMakeWebhookUrl(e.target.value)}
-                placeholder="https://hook.us1.make.com/abc123def456ghi789..."
-                className="flex-1 bg-background border border-border rounded-r-lg px-4 py-3 focus:outline-none focus:border-primary transition-colors"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Componente Cliente que maneja el canvas y el editor */}
+      <GeneratorClient posts={formattedPosts} />
     </div>
   );
 }
