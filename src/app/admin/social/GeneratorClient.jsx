@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import html2canvas from 'html2canvas';
-import { Share2, Facebook, Instagram, Download, Type, LayoutTemplate, Image as ImageIcon, Briefcase, RefreshCcw, CheckCircle2 } from 'lucide-react';
+import { Share2, Facebook, Instagram, Download, Type, LayoutTemplate, Image as ImageIcon, Briefcase, RefreshCcw } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function GeneratorClient({ posts }) {
