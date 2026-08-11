@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import html2canvas from 'html2canvas';
-import { Share2, Facebook, Instagram, Download, Type, LayoutTemplate, Image as ImageIcon, Briefcase, RefreshCcw } from 'lucide-react';
+import { Share2, Download, Type, LayoutTemplate, Image as ImageIcon, Briefcase, RefreshCcw } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function GeneratorClient({ posts }) {
@@ -378,10 +378,10 @@ export default function GeneratorClient({ posts }) {
                WhatsApp
             </button>
             <button onClick={() => handleShare('facebook')} className="bg-[#1877F2] text-white py-2.5 rounded-lg text-sm font-bold flex justify-center items-center gap-2 hover:bg-[#1464c9] transition-colors">
-              <Facebook size={16} /> Facebook
+              Facebook
             </button>
             <button onClick={() => handleShare('instagram')} className="col-span-2 bg-gradient-to-r from-[#f09433] via-[#dc2743] to-[#bc1888] text-white py-2.5 rounded-lg text-sm font-bold flex justify-center items-center gap-2 hover:opacity-90 transition-opacity">
-              <Instagram size={16} /> Publicar en Instagram
+              Publicar en Instagram
             </button>
           </div>
         </div>
