@@ -11,20 +11,17 @@ export const metadata = {
 export default async function AdminSocialPage() {
   // Obtener las últimas 50 noticias publicadas para el autocompletado
   const posts = await prisma.post.findMany({
-    where: { status: 'PUBLISHED' },
+    where: { isPublished: true },
     orderBy: { createdAt: 'desc' },
     take: 50,
-    include: {
-      category: true,
-    }
   });
 
   // Mapear los datos de las noticias para el cliente
   const formattedPosts = posts.map(post => ({
     id: post.id,
     title: post.title,
-    imageUrl: post.coverImage || post.image || '',
-    category: post.category?.name || 'NOTICIA',
+    imageUrl: post.coverImage || '',
+    category: post.category || 'NOTICIA',
     date: post.createdAt,
   }));
 
