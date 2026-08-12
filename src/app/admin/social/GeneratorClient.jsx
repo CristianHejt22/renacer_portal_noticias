@@ -106,7 +106,7 @@ export default function GeneratorClient({ posts }) {
     setSelectedPostId(postId);
 
     if (postId) {
-      const post = posts.find(p => p.id === postId);
+      const post = posts.find(p => String(p.id) === String(postId));
       if (post) {
         setTitle(post.title);
         setCategory(post.category);
