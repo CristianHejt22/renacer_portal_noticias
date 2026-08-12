@@ -5,7 +5,7 @@ import html2canvas from 'html2canvas';
 import { Share2, Download, Type, LayoutTemplate, Image as ImageIcon, Briefcase, RefreshCcw } from 'lucide-react';
 import { toast } from 'sonner';
 
-export default function GeneratorClient({ posts }) {
+export default function GeneratorClient({ posts, sponsors = [] }) {
   // Estados Globales
   const [selectedPostId, setSelectedPostId] = useState('');
   
@@ -172,6 +172,14 @@ export default function GeneratorClient({ posts }) {
     } catch (error) {
       console.error(error);
       return null;
+    }
+  };
+
+  const handleFileUpload = (e, setter) => {
+    const file = e.target.files[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setter(url);
     }
   };
 
@@ -374,12 +382,33 @@ export default function GeneratorClient({ posts }) {
           <div className="space-y-4">
             <div>
               <label className="block text-xs font-semibold mb-2">Logo Portal (Dejar vacío = Texto)</label>
-              <input type="text" value={portalLogo} onChange={e => setPortalLogo(e.target.value)} placeholder="URL PNG transparente" className="w-full bg-background border border-border rounded-lg p-2.5 text-sm mb-2" />
+              <div className="flex gap-2 mb-2">
+                <input type="text" value={portalLogo} onChange={e => setPortalLogo(e.target.value)} placeholder="URL PNG transparente" className="flex-1 bg-background border border-border rounded-lg p-2.5 text-sm" />
+                <label className="bg-primary text-primary-foreground rounded-lg px-3 flex items-center justify-center cursor-pointer hover:bg-primary/90 transition-colors" title="Subir desde PC">
+                  <ImageIcon size={16} />
+                  <input type="file" accept="image/png, image/jpeg" className="hidden" onChange={(e) => handleFileUpload(e, setPortalLogo)} />
+                </label>
+              </div>
               <input type="range" min="20" max="100" value={portalLogoSize} onChange={e => setPortalLogoSize(e.target.value)} className="w-full accent-primary" title="Tamaño Logo Portal" />
             </div>
             <div>
               <label className="block text-xs font-semibold mb-2">Sponsor Oficial (Arriba Der.)</label>
-              <input type="text" value={sponsorLogo} onChange={e => setSponsorLogo(e.target.value)} placeholder="URL PNG transparente" className="w-full bg-background border border-border rounded-lg p-2.5 text-sm mb-2" />
+              <select 
+                onChange={(e) => setSponsorLogo(e.target.value)}
+                className="w-full bg-background border border-border rounded-lg p-2.5 text-sm mb-2 outline-none focus:ring-2 focus:ring-primary"
+              >
+                <option value="">-- Seleccionar Plan Publicitario --</option>
+                {sponsors.map(s => (
+                  <option key={s.id} value={s.imageUrl}>{s.name}</option>
+                ))}
+              </select>
+              <div className="flex gap-2 mb-2">
+                <input type="text" value={sponsorLogo} onChange={e => setSponsorLogo(e.target.value)} placeholder="O ingresa URL / Sube archivo" className="flex-1 bg-background border border-border rounded-lg p-2.5 text-sm" />
+                <label className="bg-primary text-primary-foreground rounded-lg px-3 flex items-center justify-center cursor-pointer hover:bg-primary/90 transition-colors" title="Subir desde PC">
+                  <ImageIcon size={16} />
+                  <input type="file" accept="image/png, image/jpeg" className="hidden" onChange={(e) => handleFileUpload(e, setSponsorLogo)} />
+                </label>
+              </div>
               <input type="range" min="30" max="200" value={sponsorLogoSize} onChange={e => setSponsorLogoSize(e.target.value)} className="w-full accent-primary" title="Tamaño Logo Sponsor" />
             </div>
           </div>
@@ -439,7 +468,7 @@ export default function GeneratorClient({ posts }) {
               <div style={{ position: 'absolute', top: '40px', right: '40px', zIndex: 10 }}>
                 <img 
                   crossOrigin="anonymous" 
-                  src={`https://wsrv.nl/?url=${encodeURIComponent(sponsorLogo)}`} 
+                  src={sponsorLogo.startsWith('blob:') || sponsorLogo.startsWith('data:') || !sponsorLogo.startsWith('http') ? sponsorLogo : `https://wsrv.nl/?url=${encodeURIComponent(sponsorLogo)}`} 
                   alt="Sponsor" 
                   style={{ maxHeight: `${sponsorLogoSize}px`, objectFit: 'contain', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.3))' }} 
                 />
@@ -486,7 +515,7 @@ export default function GeneratorClient({ posts }) {
               {portalLogo ? (
                 <img 
                   crossOrigin="anonymous" 
-                  src={`https://wsrv.nl/?url=${encodeURIComponent(portalLogo)}`} 
+                  src={portalLogo.startsWith('blob:') || portalLogo.startsWith('data:') || !portalLogo.startsWith('http') ? portalLogo : `https://wsrv.nl/?url=${encodeURIComponent(portalLogo)}`} 
                   alt="Logo Portal" 
                   style={{ maxHeight: `${portalLogoSize}px`, objectFit: 'contain', marginRight: '15px' }} 
                 />

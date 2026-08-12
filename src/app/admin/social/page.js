@@ -25,6 +25,18 @@ export default async function AdminSocialPage() {
     date: post.createdAt,
   }));
 
+  // Obtener sponsors (planes publicitarios)
+  const sponsorsData = await prisma.bannerAd.findMany({
+    where: { isActive: true },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  const sponsors = sponsorsData.map(s => ({
+    id: s.id,
+    name: s.name,
+    imageUrl: s.imageUrl,
+  }));
+
   return (
     <div className="w-full h-full pb-20">
       <div className="mb-6">
@@ -38,7 +50,7 @@ export default async function AdminSocialPage() {
       </div>
 
       {/* Componente Cliente que maneja el canvas y el editor */}
-      <GeneratorClient posts={formattedPosts} />
+      <GeneratorClient posts={formattedPosts} sponsors={sponsors} />
     </div>
   );
 }
