@@ -160,10 +160,18 @@ export default function GeneratorClient({ posts, sponsors = [] }) {
     if (!placaRef.current) return null;
     
     const element = placaRef.current;
+    const parent = element.parentElement;
+    const originalTransform = parent.style.transform;
+    
+    // Quitamos la escala visual temporalmente para que html2canvas capture al 100% de resolución
+    parent.style.transform = 'scale(1)';
+    
+    // Pequeña pausa para que el navegador aplique el reflow (esencial)
+    await new Promise(r => setTimeout(r, 50));
     
     try {
       const canvas = await html2canvas(element, { 
-        scale: 1, 
+        scale: 1, // Se captura a escala 1:1 original (1080x...)
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#111111',
@@ -174,6 +182,9 @@ export default function GeneratorClient({ posts, sponsors = [] }) {
     } catch (error) {
       console.error(error);
       return null;
+    } finally {
+      // Restauramos la escala visual
+      parent.style.transform = originalTransform;
     }
   };
 
