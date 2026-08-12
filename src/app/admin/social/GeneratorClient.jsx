@@ -73,14 +73,16 @@ export default function GeneratorClient({ posts, sponsors = [] }) {
       
       setTimeout(() => {
         if (!titleRef.current) return;
-        // Altura del wrapper de texto menos el header de fecha
+        
         const textWrapper = titleRef.current.parentElement;
         if (!textWrapper) return;
         
-        let maxH = textWrapper.clientHeight - 190;
+        // Calculamos la altura disponible restando los paddings (40 arriba, 100 abajo)
+        // y la cabecera de la etiqueta (~60px con margen)
+        let maxH = textWrapper.clientHeight - 200; 
         let currentSize = baseSize;
         
-        while (titleRef.current.scrollHeight > maxH && currentSize > 30) {
+        while (titleRef.current.scrollHeight > maxH && currentSize > 24) {
           currentSize -= 2;
           titleRef.current.style.fontSize = currentSize + 'px';
         }
@@ -493,9 +495,9 @@ export default function GeneratorClient({ posts, sponsors = [] }) {
             </div>
 
             {/* CONTENIDO TEXTUAL */}
-            <div style={{ height: `${hText}%`, padding: '0 60px 60px 60px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', backgroundColor: '#111111', position: 'relative' }}>
+            <div style={{ height: `${hText}%`, padding: '40px 60px 100px 60px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', backgroundColor: '#111111', position: 'relative' }}>
               
-              <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '25px', marginTop: '-20px', zIndex: 2, position: 'relative' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '25px', zIndex: 2, position: 'relative' }}>
                 <div className="category-tag" style={{ backgroundColor: themeColor, color: '#ffffff' }}>
                   {category || 'NOTICIA'}
                 </div>
@@ -505,7 +507,7 @@ export default function GeneratorClient({ posts, sponsors = [] }) {
                 </div>
               </div>
               
-              <h1 ref={titleRef} style={{ color: '#ffffff', fontSize: '58px', fontWeight: 900, lineHeight: 1.15, margin: 0, overflow: 'hidden', display: '-webkit-box', WebkitBoxOrient: 'vertical', textWrap: 'balance' }}>
+              <h1 ref={titleRef} style={{ color: '#ffffff', fontSize: '58px', fontWeight: 800, lineHeight: 1.3, margin: 0, display: 'block', wordWrap: 'break-word' }}>
                 {title}
               </h1>
             </div>
