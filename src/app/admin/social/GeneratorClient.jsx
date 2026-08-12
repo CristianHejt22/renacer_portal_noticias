@@ -512,21 +512,19 @@ export default function GeneratorClient({ posts, sponsors = [] }) {
 
             {/* FOOTER */}
             <div style={{ position: 'absolute', bottom: '40px', left: '60px', display: 'flex', alignItems: 'center', width: 'calc(100% - 120px)' }}>
-              {portalLogo ? (
+              {portalLogo && (
                 <img 
                   crossOrigin="anonymous" 
                   src={portalLogo.startsWith('blob:') || portalLogo.startsWith('data:') || !portalLogo.startsWith('http') ? portalLogo : `https://wsrv.nl/?url=${encodeURIComponent(portalLogo)}`} 
                   alt="Logo Portal" 
                   style={{ maxHeight: `${portalLogoSize}px`, objectFit: 'contain', marginRight: '15px' }} 
                 />
-              ) : (
-                <>
-                  <div style={{ color: '#ffffff', fontSize: '28px', fontWeight: 700, letterSpacing: '1px', display: 'flex', alignItems: 'center' }}>
-                    Libre<span style={{ color: themeColor }}>Cielo</span>.com
-                  </div>
-                  <div style={{ height: '4px', width: '80px', backgroundColor: themeColor, marginLeft: '20px', borderRadius: '2px' }}></div>
-                </>
               )}
+              
+              <div style={{ color: '#ffffff', fontSize: '28px', fontWeight: 700, letterSpacing: '1px', display: 'flex', alignItems: 'center' }}>
+                Libre<span style={{ color: themeColor }}>Cielo</span>.com
+              </div>
+              <div style={{ height: '4px', width: '80px', backgroundColor: themeColor, marginLeft: '20px', borderRadius: '2px' }}></div>
             </div>
             
           </div>
