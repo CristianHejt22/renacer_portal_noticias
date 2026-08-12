@@ -30,9 +30,28 @@ export default function GeneratorClient({ posts }) {
   
   const placaRef = useRef(null);
   const titleRef = useRef(null);
+  const [previewScale, setPreviewScale] = useState(1);
+  const containerRef = useRef(null);
 
   const currentWidth = parseInt(dimensions.split('x')[0]);
   const currentHeight = parseInt(dimensions.split('x')[1]);
+
+  useEffect(() => {
+    const updateScale = () => {
+      if (containerRef.current) {
+        const availableWidth = containerRef.current.clientWidth - 40; // 40px padding
+        const scale = Math.min(1, availableWidth / currentWidth);
+        setPreviewScale(scale);
+      }
+    };
+    
+    updateScale();
+    // Pequeño timeout para asegurar que el contenedor se montó con sus dimensiones
+    setTimeout(updateScale, 100);
+    
+    window.addEventListener('resize', updateScale);
+    return () => window.removeEventListener('resize', updateScale);
+  }, [currentWidth, dimensions]);
 
   // Alturas base para el título
   const titleBaseSizes = { '1080': 58, '1350': 64, '1920': 72 };
@@ -93,7 +112,12 @@ export default function GeneratorClient({ posts }) {
         setCategory(post.category);
         if (post.imageUrl) {
           // Utilizar wsrv.nl como proxy para imágenes para evitar problemas de CORS con html2canvas
-          setBgImage(`https://wsrv.nl/?url=${encodeURIComponent(post.imageUrl)}`);
+          // Solo si es una URL válida
+          if (post.imageUrl.startsWith('http')) {
+            setBgImage(`https://wsrv.nl/?url=${encodeURIComponent(post.imageUrl)}`);
+          } else {
+            setBgImage(post.imageUrl); // Si es relativa o base64
+          }
         }
         
         const dateObj = new Date(post.date);
@@ -134,8 +158,6 @@ export default function GeneratorClient({ posts }) {
     if (!placaRef.current) return null;
     
     const element = placaRef.current;
-    const originalTransform = element.style.transform;
-    element.style.transform = 'scale(1)'; // Necesario para captura real
     
     try {
       const canvas = await html2canvas(element, { 
@@ -147,8 +169,9 @@ export default function GeneratorClient({ posts }) {
         height: currentHeight
       });
       return canvas;
-    } finally {
-      element.style.transform = originalTransform;
+    } catch (error) {
+      console.error(error);
+      return null;
     }
   };
 
@@ -221,7 +244,6 @@ export default function GeneratorClient({ posts }) {
             background-color: #111111;
             position: relative;
             flex-shrink: 0;
-            transform-origin: top left;
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -388,20 +410,28 @@ export default function GeneratorClient({ posts }) {
       </div>
 
       {/* VISTA PREVIA (WORKSPACE) */}
-      <div className="flex-1 w-full bg-[#000] p-4 md:p-8 rounded-2xl shadow-2xl flex items-center justify-center overflow-hidden min-h-[500px]">
-        
-        {/* Contenedor Escalable */}
-        <div style={{ transform: 'scale(1)', transformOrigin: 'top left', display: 'flex', justifyContent: 'center' }} className="w-full relative">
-          
-          {/* PLACA REAL */}
+      <div 
+        ref={containerRef}
+        className="flex-1 w-full bg-[#000] p-4 md:p-8 rounded-2xl shadow-2xl flex items-start justify-center overflow-hidden min-h-[500px]"
+      >
+        {/* Contenedor Escalable Responsivo Visual */}
+        <div 
+          style={{ 
+            transform: `scale(${previewScale})`, 
+            transformOrigin: 'top center', 
+            width: `${currentWidth}px`, 
+            height: `${currentHeight}px`,
+            transition: 'transform 0.15s ease-out'
+          }}
+          className="relative flex justify-center"
+        >
+          {/* PLACA REAL (Siempre 100% de tamaño internamente) */}
           <div 
             ref={placaRef}
             className="placa-container"
             style={{ 
               width: `${currentWidth}px`, 
               height: `${currentHeight}px`,
-              // Escala CSS responsiva solo visual
-              transform: `scale(${Math.min(1, (typeof window !== 'undefined' ? window.innerWidth > 1024 ? (window.innerWidth - 420 - 150) : window.innerWidth - 60 : 600) / currentWidth)})`,
             }}
           >
             {/* SPONSOR */}
