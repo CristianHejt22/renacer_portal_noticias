@@ -12,10 +12,19 @@ export async function GET(request) {
   if (!id) return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
 
   try {
-    await prisma.bannerAd.update({
-      where: { id: parseInt(id) },
-      data: { views: { increment: 1 } }
-    });
+    const banner = await prisma.bannerAd.findUnique({ where: { id: parseInt(id) }, select: { views: true, targetViews: true } });
+    if (banner) {
+      const newViews = banner.views + 1;
+      const reachedLimit = banner.targetViews && newViews >= banner.targetViews;
+      
+      await prisma.bannerAd.update({
+        where: { id: parseInt(id) },
+        data: { 
+          views: newViews,
+          isActive: reachedLimit ? false : undefined
+        }
+      });
+    }
   } catch (error) {
     // Si la DB falla, solo silenciamos el error para no romper la experiencia de usuario
     console.error('Tracking view error:', error.message);

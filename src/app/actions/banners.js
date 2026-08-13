@@ -42,6 +42,7 @@ export async function createBanner(data) {
         targetUrl: data.targetUrl,
         position: data.position || 'in-article',
         duration: data.duration !== undefined ? parseInt(data.duration) : 5,
+        targetViews: data.targetViews ? parseInt(data.targetViews) : null,
         isActive: true,
       }
     });
@@ -64,6 +65,7 @@ export async function updateBanner(id, data) {
         targetUrl: data.targetUrl,
         position: data.position,
         duration: data.duration !== undefined ? parseInt(data.duration) : 5,
+        targetViews: data.targetViews ? parseInt(data.targetViews) : null,
       }
     });
     revalidatePath('/admin/banners');

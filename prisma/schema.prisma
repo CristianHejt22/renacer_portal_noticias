@@ -67,16 +67,18 @@ model Setting {
 }
 
 model BannerAd {
-  id         Int      @id @default(autoincrement())
-  name       String
-  imageUrl   String
-  targetUrl  String
-  views      Int      @default(0)
-  clicks     Int      @default(0)
-  position   String   @default("in-article")
-  isActive   Boolean  @default(true)
-  duration   Int      @default(5)
-  createdAt  DateTime @default(now())
+  id          Int      @id @default(autoincrement())
+  name        String
+  imageUrl    String
+  targetUrl   String
+  views       Int      @default(0)
+  clicks      Int      @default(0)
+  targetViews Int?     
+  token       String   @unique @default(uuid())
+  position    String   @default("in-article")
+  isActive    Boolean  @default(true)
+  duration    Int      @default(5)
+  createdAt   DateTime @default(now())
 }
 
 model Category {

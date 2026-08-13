@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, Eye, MousePointerClick, Image as ImageIcon, ToggleLeft, ToggleRight, Edit, RotateCcw, Percent } from 'lucide-react';
+import { Plus, Trash2, Eye, MousePointerClick, Image as ImageIcon, ToggleLeft, ToggleRight, Edit, RotateCcw, Percent, Link } from 'lucide-react';
 import { getBanners, createBanner, toggleBannerStatus, deleteBanner, updateBanner } from '@/app/actions/banners';
 import { compressImage } from '@/lib/imageCompression';
 
@@ -10,7 +10,7 @@ export default function BannersAdminPage() {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  const [formData, setFormData] = useState({ name: '', imageUrl: '', targetUrl: '', position: 'plan-local', duration: 5 });
+  const [formData, setFormData] = useState({ name: '', imageUrl: '', targetUrl: '', position: 'plan-local', duration: 5, targetViews: '' });
 
   const [uploading, setUploading] = useState(false);
 
@@ -97,13 +97,20 @@ export default function BannersAdminPage() {
 
   const openNewModal = () => {
     setEditingId(null);
-    setFormData({ name: '', imageUrl: '', targetUrl: '', position: 'plan-local', duration: 5 });
+    setFormData({ name: '', imageUrl: '', targetUrl: '', position: 'plan-local', duration: 5, targetViews: '' });
     setIsModalOpen(true);
   };
 
   const openEditModal = (banner) => {
     setEditingId(banner.id);
-    setFormData({ name: banner.name, imageUrl: banner.imageUrl, targetUrl: banner.targetUrl, position: banner.position || 'plan-local', duration: banner.duration || 5 });
+    setFormData({ 
+      name: banner.name, 
+      imageUrl: banner.imageUrl, 
+      targetUrl: banner.targetUrl, 
+      position: banner.position || 'plan-local', 
+      duration: banner.duration || 5,
+      targetViews: banner.targetViews || '' 
+    });
     setIsModalOpen(true);
   };
 
@@ -119,7 +126,7 @@ export default function BannersAdminPage() {
     if (res.success) {
       setIsModalOpen(false);
       setEditingId(null);
-      setFormData({ name: '', imageUrl: '', targetUrl: '', position: 'plan-local', duration: 5 });
+      setFormData({ name: '', imageUrl: '', targetUrl: '', position: 'plan-local', duration: 5, targetViews: '' });
       loadBanners();
     } else {
       alert('Error: Asegúrate de tener la Base de Datos configurada para guardar permanentemente.');
@@ -202,7 +209,7 @@ export default function BannersAdminPage() {
                       <div className="flex flex-col space-y-2">
                         <div className="flex items-center space-x-3 text-sm">
                           <span className="flex items-center text-blue-400 bg-blue-400/10 px-2 py-1 rounded-md min-w-[70px] justify-center" title="Vistas Totales">
-                            <Eye className="w-4 h-4 mr-1.5" /> {views}
+                            <Eye className="w-4 h-4 mr-1.5" /> {views} {banner.targetViews ? `/ ${banner.targetViews}` : ''}
                           </span>
                           <span className="flex items-center text-green-400 bg-green-400/10 px-2 py-1 rounded-md min-w-[70px] justify-center" title="Clics Totales">
                             <MousePointerClick className="w-4 h-4 mr-1.5" /> {clicks}
@@ -222,7 +229,18 @@ export default function BannersAdminPage() {
                       </button>
                     </td>
                   <td className="p-4 text-right">
-                    <button onClick={() => openEditModal(banner)} className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors">
+                    <button 
+                      onClick={() => {
+                        const url = `${window.location.origin}/sponsors/${banner.token}`;
+                        navigator.clipboard.writeText(url);
+                        alert('¡Link de métricas copiado al portapapeles!');
+                      }}
+                      title="Copiar Link de Métricas"
+                      className="p-2 text-blue-400 hover:bg-blue-400/10 rounded-lg transition-colors"
+                    >
+                      <Link className="w-4 h-4" />
+                    </button>
+                    <button onClick={() => openEditModal(banner)} className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors ml-2">
                       <Edit className="w-4 h-4" />
                     </button>
                     <button onClick={() => handleDelete(banner.id)} className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors ml-2">
@@ -310,6 +328,12 @@ export default function BannersAdminPage() {
                 <label className="block text-sm font-medium mb-1">Duración en pantalla (Segundos)</label>
                 <input type="number" min="1" max="300" value={formData.duration} onChange={e => setFormData({...formData, duration: e.target.value})} className="w-full bg-background border border-border rounded-lg p-2.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none" />
                 <p className="text-xs text-gray-500 mt-1">Si subes un GIF, la duración se calculará automáticamente.</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Meta de Visualizaciones (Opcional)</label>
+                <input type="number" min="1" value={formData.targetViews} onChange={e => setFormData({...formData, targetViews: e.target.value})} className="w-full bg-background border border-border rounded-lg p-2.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none" placeholder="Ej: 10000" />
+                <p className="text-xs text-gray-500 mt-1">Si defines un límite, el anuncio se pausará automáticamente al alcanzarlo.</p>
               </div>
 
               <div className="pt-4 flex justify-end space-x-3">
