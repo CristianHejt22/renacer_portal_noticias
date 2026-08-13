@@ -231,6 +231,10 @@ export default function BannersAdminPage() {
                   <td className="p-4 text-right">
                     <button 
                       onClick={() => {
+                        if (!banner.token) {
+                          alert('Este banner es antiguo. Por favor dale a Editar y luego Guardar para generarle un link de métricas.');
+                          return;
+                        }
                         const url = `${window.location.origin}/sponsors/${banner.token}`;
                         navigator.clipboard.writeText(url);
                         alert('¡Link de métricas copiado al portapapeles!');

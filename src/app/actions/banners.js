@@ -57,6 +57,9 @@ export async function createBanner(data) {
 
 export async function updateBanner(id, data) {
   try {
+    const existing = await prisma.bannerAd.findUnique({ where: { id } });
+    const newToken = existing?.token || crypto.randomUUID();
+
     const banner = await prisma.bannerAd.update({
       where: { id },
       data: {
@@ -66,6 +69,7 @@ export async function updateBanner(id, data) {
         position: data.position,
         duration: data.duration !== undefined ? parseInt(data.duration) : 5,
         targetViews: data.targetViews ? parseInt(data.targetViews) : null,
+        token: newToken,
       }
     });
     revalidatePath('/admin/banners');
