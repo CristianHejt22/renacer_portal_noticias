@@ -74,7 +74,7 @@ model BannerAd {
   views       Int      @default(0)
   clicks      Int      @default(0)
   targetViews Int?     
-  token       String   @unique @default(uuid())
+  token       String?  @unique @default(uuid())
   position    String   @default("in-article")
   isActive    Boolean  @default(true)
   duration    Int      @default(5)
