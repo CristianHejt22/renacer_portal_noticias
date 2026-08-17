@@ -77,9 +77,9 @@ export default function GeneratorClient({ posts, sponsors = [] }) {
         const textWrapper = titleRef.current.parentElement;
         if (!textWrapper) return;
         
-        // Calculamos la altura disponible restando los paddings (40 arriba, 100 abajo)
+        // Calculamos la altura disponible restando los paddings (40 arriba, 60 abajo)
         // y la cabecera de la etiqueta (~60px con margen)
-        let maxH = textWrapper.clientHeight - 200; 
+        let maxH = textWrapper.clientHeight - 160; 
         let currentSize = baseSize;
         
         while (titleRef.current.scrollHeight > maxH && currentSize > 24) {
@@ -490,23 +490,29 @@ export default function GeneratorClient({ posts, sponsors = [] }) {
 
             {/* IMAGEN DE FONDO */}
             <div style={{ width: '100%', height: `${hImg}%`, position: 'relative', overflow: 'hidden', backgroundColor: '#050505' }}>
-              <img 
-                crossOrigin="anonymous" 
-                src={bgImage || 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='} 
-                alt="Fondo" 
-                style={{ 
-                  width: '100%', 
-                  height: '100%', 
-                  objectFit: imgFit, 
-                  objectPosition: `center ${imgPosY}%`,
-                  transform: `scale(${imgZoom / 100})`
-                }} 
-              />
+              <div style={{ 
+                position: 'absolute', 
+                top: '50%', left: '50%', 
+                transform: 'translate(-50%, -50%)',
+                width: `${imgZoom}%`, height: `${imgZoom}%` 
+              }}>
+                <img 
+                  crossOrigin="anonymous" 
+                  src={bgImage || 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='} 
+                  alt="Fondo" 
+                  style={{ 
+                    width: '100%', 
+                    height: '100%', 
+                    objectFit: imgFit, 
+                    objectPosition: `center ${imgPosY}%`
+                  }} 
+                />
+              </div>
               <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '60%', background: 'linear-gradient(to bottom, rgba(17,17,17,0) 0%, rgba(17,17,17,1) 100%)', pointerEvents: 'none' }}></div>
             </div>
 
             {/* CONTENIDO TEXTUAL */}
-            <div style={{ height: `${hText}%`, padding: '40px 60px 100px 60px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', backgroundColor: '#111111', position: 'relative' }}>
+            <div style={{ height: `${hText}%`, padding: '40px 60px 60px 60px', display: 'flex', flexDirection: 'column', justifyContent: 'center', backgroundColor: '#111111', position: 'relative' }}>
               
               <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '25px', zIndex: 2, position: 'relative' }}>
                 <div className="category-tag" style={{ backgroundColor: themeColor, color: '#ffffff' }}>
