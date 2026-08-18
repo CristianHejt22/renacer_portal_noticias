@@ -20,6 +20,7 @@ export default function GeneratorClient({ posts, sponsors = [] }) {
   const [imgFit, setImgFit] = useState('cover');
   const [imgPosY, setImgPosY] = useState(20);
   const [imgZoom, setImgZoom] = useState(100);
+  const [textScale, setTextScale] = useState(100);
 
   const [portalLogo, setPortalLogo] = useState('');
   const [portalLogoSize, setPortalLogoSize] = useState(40);
@@ -86,9 +87,13 @@ export default function GeneratorClient({ posts, sponsors = [] }) {
           currentSize -= 2;
           titleRef.current.style.fontSize = currentSize + 'px';
         }
+
+        // Aplicamos el ajuste manual del usuario sobre el tamaño calculado
+        const finalSize = Math.round(currentSize * (textScale / 100));
+        titleRef.current.style.fontSize = finalSize + 'px';
       }, 50);
     }
-  }, [title, currentHeight]);
+  }, [title, currentHeight, textScale]);
 
   const autoSelectColor = (catName) => {
     let cat = catName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -361,7 +366,9 @@ export default function GeneratorClient({ posts, sponsors = [] }) {
             </div>
             <div>
               <label className="block text-xs font-semibold mb-2">Titular Principal</label>
-              <textarea rows={3} value={title} onChange={e => setTitle(e.target.value)} className="w-full bg-background border border-border rounded-lg p-2.5 text-sm resize-none" />
+              <textarea rows={3} value={title} onChange={e => setTitle(e.target.value)} className="w-full bg-background border border-border rounded-lg p-2.5 text-sm resize-none mb-2" />
+              <label className="block text-xs font-semibold mb-2 text-muted-foreground flex justify-between">Ajuste Manual de Tamaño <span>{textScale}%</span></label>
+              <input type="range" min="50" max="200" value={textScale} onChange={e => setTextScale(e.target.value)} className="w-full accent-primary" />
             </div>
           </div>
         </div>
