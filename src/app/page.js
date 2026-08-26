@@ -16,8 +16,13 @@ export default async function Home() {
   const allPosts = postsRes.data || [];
   const publishedPosts = allPosts; // already filtered by isPublished in the query
 
+  // Fetch ad settings for Adsterra
+  const { getAdSettings } = await import('@/app/actions/settings');
+  const settingsRes = await getAdSettings();
+  const adSettings = settingsRes?.data || {};
+
   const featuredPost = publishedPosts.length > 0 ? publishedPosts[0] : null;
-  const recentPosts = publishedPosts.length > 1 ? publishedPosts.slice(1, 7) : [];
+  const recentPosts = publishedPosts.length > 1 ? publishedPosts.slice(1, 15) : [];
 
   const formatDate = (dateString) => {
     try {
@@ -55,7 +60,7 @@ export default async function Home() {
                 <SponsorWatermark postSponsorId={featuredPost.sponsorId} />
                 
                 <div className="absolute bottom-0 left-0 p-8 md:p-12 w-full">
-                  <span className="inline-block px-3 py-1 bg-primary text-white text-sm font-semibold rounded-full mb-4">
+                  <span className="inline-block px-3 py-1 bg-primary text-white text-sm font-semibold rounded-full mb-4 shadow-lg backdrop-blur-sm bg-primary/90">
                     {featuredPost.category}
                   </span>
                   <h1 className="text-3xl md:text-5xl font-bold text-white mb-4 leading-tight">
@@ -85,7 +90,7 @@ export default async function Home() {
           {/* Recent News Grid */}
           <section className="mt-12">
             <div className="flex items-center justify-between mb-8">
-              <h2 className="text-2xl font-bold border-b-2 border-primary pb-2">Noticias Recientes</h2>
+              <h2 className="text-2xl font-bold border-b-2 border-primary pb-2">Noticias de Hoy</h2>
               <Link href="/noticias" className="text-primary hover:text-accent transition-colors flex items-center">
                 Ver todas <ArrowRight className="ml-1 w-4 h-4" />
               </Link>
@@ -95,8 +100,11 @@ export default async function Home() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {recentPosts.map((post, index) => (
                   <React.Fragment key={post.id}>
-                    <Link href={`/noticias/${post.slug}`} className="group cursor-pointer block bg-surface rounded-xl overflow-hidden border border-border hover:border-primary/50 transition-colors">
-                      <div className="relative h-48 w-full overflow-hidden bg-black/5 dark:bg-white/5">
+                    <Link href={`/noticias/${post.slug}`} className="group cursor-pointer flex flex-col bg-surface rounded-xl overflow-hidden border border-border hover:border-primary/50 transition-all hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/10">
+                      <div className="relative h-56 w-full overflow-hidden bg-black/5 dark:bg-white/5">
+                        <span className="absolute top-4 left-4 z-10 px-3 py-1 bg-primary/90 backdrop-blur-sm text-white text-xs font-bold uppercase tracking-wider rounded-full shadow-lg">
+                          {post.category}
+                        </span>
                         {/* Blurred background */}
                         <Image 
                           src={post.coverImage || '/placeholder.jpg'} 
@@ -113,26 +121,54 @@ export default async function Home() {
                           referrerPolicy="no-referrer"
                         />
                       </div>
-                      <div className="p-5">
-                        <span className="text-accent text-xs font-bold uppercase tracking-wider mb-2 block">{post.category}</span>
-                        <h3 className="text-xl font-bold mb-3 group-hover:text-primary transition-colors line-clamp-2">
+                      <div className="p-6 flex flex-col flex-1">
+                        <h3 className="text-xl font-bold mb-3 group-hover:text-primary transition-colors line-clamp-3">
                           {post.title}
                         </h3>
-                        <p className="text-sm text-gray-500">{formatDate(post.createdAt)}</p>
+                        <div className="mt-auto pt-4 border-t border-border flex items-center justify-between">
+                          <p className="text-sm text-gray-500 font-medium">{formatDate(post.createdAt)}</p>
+                          <span className="text-primary/70 group-hover:text-primary transition-colors">
+                            <ArrowRight className="w-5 h-5" />
+                          </span>
+                        </div>
                       </div>
                     </Link>
                     
                     {/* Insert Banner after 2nd post */}
                     {index === 1 && (
-                      <div className="md:col-span-2 my-4">
+                      <div className="md:col-span-2 my-2">
                         <BannerDisplay position="plan-local" />
                       </div>
                     )}
                     
+                    {/* Insert Adsterra after 3rd post */}
+                    {index === 2 && adSettings.inArticleScript && (
+                      <div className="md:col-span-2 my-4 bg-surface p-4 rounded-xl border border-border/50 text-center flex flex-col items-center justify-center">
+                        <span className="text-[10px] uppercase tracking-widest text-gray-400 mb-2">Publicidad</span>
+                        <div dangerouslySetInnerHTML={{ __html: adSettings.inArticleScript }} className="w-full overflow-hidden flex justify-center" />
+                      </div>
+                    )}
+
                     {/* Insert Banner after 4th post */}
                     {index === 3 && (
-                      <div className="md:col-span-2 my-4">
+                      <div className="md:col-span-2 my-2">
                         <BannerDisplay position="plan-deportivo" />
+                      </div>
+                    )}
+
+                    {/* Insert Adsterra after 7th post */}
+                    {index === 6 && adSettings.inArticleScript && (
+                      <div className="md:col-span-2 my-4 bg-surface p-4 rounded-xl border border-border/50 text-center flex flex-col items-center justify-center">
+                        <span className="text-[10px] uppercase tracking-widest text-gray-400 mb-2">Publicidad</span>
+                        <div dangerouslySetInnerHTML={{ __html: adSettings.inArticleScript }} className="w-full overflow-hidden flex justify-center" />
+                      </div>
+                    )}
+
+                    {/* Insert Adsterra after 11th post */}
+                    {index === 10 && adSettings.inArticleScript && (
+                      <div className="md:col-span-2 my-4 bg-surface p-4 rounded-xl border border-border/50 text-center flex flex-col items-center justify-center">
+                        <span className="text-[10px] uppercase tracking-widest text-gray-400 mb-2">Publicidad</span>
+                        <div dangerouslySetInnerHTML={{ __html: adSettings.inArticleScript }} className="w-full overflow-hidden flex justify-center" />
                       </div>
                     )}
                   </React.Fragment>

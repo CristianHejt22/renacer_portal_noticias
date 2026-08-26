@@ -157,7 +157,7 @@ export async function getHomePosts() {
         OR: [{ scheduledFor: null }, { scheduledFor: { lte: new Date() } }]
       },
       orderBy: { createdAt: 'desc' },
-      take: 7,
+      take: 15,
     });
     return { success: true, data: posts };
   } catch (error) {
