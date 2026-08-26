@@ -135,7 +135,7 @@ export async function logout() {
 async function createSession(userId, role) {
   const token = await new SignJWT({ userId, role })
     .setProtectedHeader({ alg: 'HS256' })
-    .setExpirationTime('7d')
+    .setExpirationTime('30d')
     .sign(encodedSecret);
 
   const cookieStore = await cookies();
@@ -144,8 +144,36 @@ async function createSession(userId, role) {
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     path: '/',
-    maxAge: 60 * 60 * 24 * 7, // 7 days
+    maxAge: 60 * 60 * 24 * 30, // 30 days
   });
+}
+
+export async function changePassword(currentPassword, newPassword) {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get('auth_token')?.value;
+    if (!token) return { success: false, error: 'No autorizado' };
+
+    const { payload } = await jwtVerify(token, encodedSecret);
+    const userId = payload.userId;
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) return { success: false, error: 'Usuario no encontrado' };
+
+    const isValid = await bcrypt.compare(currentPassword, user.password);
+    if (!isValid) return { success: false, error: 'Contraseña actual incorrecta' };
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await prisma.user.update({
+      where: { id: userId },
+      data: { password: hashedPassword }
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error in changePassword:', error);
+    return { success: false, error: 'Error interno al cambiar la contraseña' };
+  }
 }
 
 export async function getMe() {

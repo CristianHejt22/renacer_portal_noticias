@@ -1,15 +1,21 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Save, Share2 } from 'lucide-react';
+import { Save, Share2, Key } from 'lucide-react';
 import { getAdSettings, saveAdSettings } from '@/app/actions/settings';
 import { getBanners } from '@/app/actions/banners';
+import { changePassword } from '@/app/actions/auth';
 import { compressImage } from '@/lib/imageCompression';
 
 export default function GeneralSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [availableSponsors, setAvailableSponsors] = useState([]);
+  
+  // Password change states
+  const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' });
+  const [passMsg, setPassMsg] = useState({ type: '', text: '' });
+  const [savingPass, setSavingPass] = useState(false);
   
   const [settings, setSettings] = useState({
     sponsorMode: 'random',
@@ -107,6 +113,29 @@ export default function GeneralSettingsPage() {
     }
   };
 
+  const handlePasswordChange = async (e) => {
+    e.preventDefault();
+    setPassMsg({ type: '', text: '' });
+    
+    if (passwords.new.length < 6) {
+      return setPassMsg({ type: 'error', text: 'La nueva contraseña debe tener al menos 6 caracteres' });
+    }
+    if (passwords.new !== passwords.confirm) {
+      return setPassMsg({ type: 'error', text: 'Las nuevas contraseñas no coinciden' });
+    }
+
+    setSavingPass(true);
+    const res = await changePassword(passwords.current, passwords.new);
+    setSavingPass(false);
+
+    if (res.success) {
+      setPassMsg({ type: 'success', text: '¡Contraseña actualizada exitosamente!' });
+      setPasswords({ current: '', new: '', confirm: '' });
+    } else {
+      setPassMsg({ type: 'error', text: res.error || 'Error al cambiar contraseña' });
+    }
+  };
+
   if (loading) return <p>Cargando configuración...</p>;
 
   return (
@@ -124,6 +153,64 @@ export default function GeneralSettingsPage() {
       </div>
 
       <div className="space-y-6">
+        
+        {/* Cambiar Contraseña */}
+        <div className="bg-card p-6 rounded-xl border border-border">
+          <div className="flex items-center gap-3 mb-4">
+            <Key className="text-primary w-5 h-5" />
+            <h2 className="text-xl font-bold">Seguridad (Cambiar Contraseña)</h2>
+          </div>
+          <p className="text-sm text-gray-400 mb-6">
+            Si notas que tu sesión se cierra seguido, no te preocupes, el sistema ahora mantiene tu sesión abierta por 30 días. Para evitar problemas de credenciales inválidas si tu navegador auto-completa tu antigua contraseña, asegúrate de actualizarla aquí.
+          </p>
+          <form onSubmit={handlePasswordChange} className="space-y-4 max-w-md">
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-2">Contraseña Actual</label>
+              <input
+                type="password"
+                required
+                value={passwords.current}
+                onChange={(e) => setPasswords({ ...passwords, current: e.target.value })}
+                className="w-full bg-surface border border-border rounded-lg p-2.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-2">Nueva Contraseña (mín. 6 caracteres)</label>
+              <input
+                type="password"
+                required
+                minLength={6}
+                value={passwords.new}
+                onChange={(e) => setPasswords({ ...passwords, new: e.target.value })}
+                className="w-full bg-surface border border-border rounded-lg p-2.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-2">Confirmar Nueva Contraseña</label>
+              <input
+                type="password"
+                required
+                minLength={6}
+                value={passwords.confirm}
+                onChange={(e) => setPasswords({ ...passwords, confirm: e.target.value })}
+                className="w-full bg-surface border border-border rounded-lg p-2.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+              />
+            </div>
+            {passMsg.text && (
+              <div className={`p-3 rounded-lg text-sm ${passMsg.type === 'error' ? 'bg-red-500/10 text-red-500 border border-red-500/20' : 'bg-green-500/10 text-green-500 border border-green-500/20'}`}>
+                {passMsg.text}
+              </div>
+            )}
+            <button
+              type="submit"
+              disabled={savingPass}
+              className="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
+            >
+              {savingPass ? 'Guardando...' : 'Cambiar Contraseña'}
+            </button>
+          </form>
+        </div>
+
         <div className="bg-card p-6 rounded-xl border border-border">
           <h2 className="text-xl font-bold mb-4">Google AdSense (Monetización)</h2>
           <div className="space-y-4 mb-8">
