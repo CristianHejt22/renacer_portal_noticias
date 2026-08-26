@@ -40,8 +40,7 @@ export async function GET(request) {
     });
 
     // 4. Redirect them straight into the admin dashboard
-    const origin = request.nextUrl.origin;
-    return NextResponse.redirect(new URL('/admin', origin));
+    return NextResponse.redirect('https://librecielo.com/admin');
     
   } catch (error) {
     return NextResponse.json({ success: false, error: error.message });
