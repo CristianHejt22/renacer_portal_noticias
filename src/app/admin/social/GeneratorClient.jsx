@@ -286,7 +286,10 @@ export default function GeneratorClient({ posts, sponsors = [] }) {
             font-size: 22px;
             text-transform: uppercase;
             padding: 10px 24px;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
             letter-spacing: 3px;
             border-radius: 8px;
             box-shadow: 0 10px 30px -5px rgba(0,0,0,0.5);
@@ -519,7 +522,7 @@ export default function GeneratorClient({ posts, sponsors = [] }) {
               {/* Brillo sutil de fondo */}
               <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: `radial-gradient(circle at top left, ${themeColor}15 0%, transparent 70%)`, pointerEvents: 'none' }}></div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '25px', zIndex: 2, position: 'relative' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '12px', zIndex: 2, position: 'relative' }}>
                 <div className="category-tag" style={{ background: `linear-gradient(135deg, ${themeColor} 0%, #000000 250%)`, color: '#ffffff', borderLeft: `4px solid #ffffff` }}>
                   {category || 'NOTICIA'}
                 </div>
@@ -530,7 +533,7 @@ export default function GeneratorClient({ posts, sponsors = [] }) {
               </div>
               
               <div style={{ flex: 1, display: 'flex', alignItems: 'flex-start', zIndex: 2, position: 'relative' }}>
-                <h1 ref={titleRef} style={{ color: '#ffffff', fontSize: '58px', fontWeight: 900, lineHeight: 1.25, margin: 0, display: 'block', wordWrap: 'break-word', textShadow: `0 4px 20px rgba(0,0,0,0.8), 0 0 40px ${themeColor}30` }}>
+                <h1 ref={titleRef} style={{ color: '#ffffff', fontSize: '58px', fontWeight: 900, lineHeight: 1.15, margin: 0, display: 'block', wordWrap: 'break-word', textShadow: `0 4px 20px rgba(0,0,0,0.8), 0 0 40px ${themeColor}30` }}>
                   {title}
                 </h1>
               </div>
