@@ -78,9 +78,9 @@ export default function GeneratorClient({ posts, sponsors = [] }) {
         const textWrapper = titleRef.current.parentElement;
         if (!textWrapper) return;
         
-        // Calculamos la altura disponible restando los paddings (40 arriba, 120 abajo)
+        // Calculamos la altura disponible restando los paddings (40 arriba, 90 abajo)
         // y la cabecera de la etiqueta (~60px con margen)
-        let maxH = textWrapper.clientHeight - 220; 
+        let maxH = textWrapper.clientHeight - 190; 
         let currentSize = baseSize;
         
         while (titleRef.current.scrollHeight > maxH && currentSize > 24) {
@@ -282,14 +282,15 @@ export default function GeneratorClient({ posts, sponsors = [] }) {
         }
 
         .category-tag {
-            font-weight: 700;
-            font-size: 24px;
+            font-weight: 800;
+            font-size: 22px;
             text-transform: uppercase;
-            padding: 10px 20px;
+            padding: 10px 24px;
             display: inline-block;
-            letter-spacing: 2px;
-            border-radius: 6px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            letter-spacing: 3px;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px -5px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.1);
         }
       `}} />
 
@@ -509,14 +510,17 @@ export default function GeneratorClient({ posts, sponsors = [] }) {
                   backgroundRepeat: 'no-repeat'
                 }} 
               />
-              <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '60%', background: 'linear-gradient(to bottom, rgba(17,17,17,0) 0%, rgba(17,17,17,1) 100%)', pointerEvents: 'none' }}></div>
+              <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '80%', background: `linear-gradient(to bottom, rgba(17,17,17,0) 0%, ${themeColor}10 60%, rgba(17,17,17,1) 100%)`, pointerEvents: 'none' }}></div>
             </div>
 
             {/* CONTENIDO TEXTUAL */}
-            <div style={{ height: `${hText}%`, padding: '40px 60px 120px 60px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', backgroundColor: '#111111', position: 'relative' }}>
+            <div style={{ height: `${hText}%`, padding: '40px 60px 90px 60px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', background: 'linear-gradient(180deg, #111111 0%, #050505 100%)', position: 'relative' }}>
               
+              {/* Brillo sutil de fondo */}
+              <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: `radial-gradient(circle at top left, ${themeColor}15 0%, transparent 70%)`, pointerEvents: 'none' }}></div>
+
               <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '25px', zIndex: 2, position: 'relative' }}>
-                <div className="category-tag" style={{ backgroundColor: themeColor, color: '#ffffff' }}>
+                <div className="category-tag" style={{ background: `linear-gradient(135deg, ${themeColor} 0%, #000000 250%)`, color: '#ffffff', borderLeft: `4px solid #ffffff` }}>
                   {category || 'NOTICIA'}
                 </div>
                 <div style={{ color: '#a3a3a3', fontSize: '20px', fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -525,8 +529,8 @@ export default function GeneratorClient({ posts, sponsors = [] }) {
                 </div>
               </div>
               
-              <div style={{ flex: 1, display: 'flex', alignItems: 'flex-start' }}>
-                <h1 ref={titleRef} style={{ color: '#ffffff', fontSize: '58px', fontWeight: 800, lineHeight: 1.3, margin: 0, display: 'block', wordWrap: 'break-word', textShadow: '0 4px 15px rgba(0,0,0,0.5)' }}>
+              <div style={{ flex: 1, display: 'flex', alignItems: 'flex-start', zIndex: 2, position: 'relative' }}>
+                <h1 ref={titleRef} style={{ color: '#ffffff', fontSize: '58px', fontWeight: 900, lineHeight: 1.25, margin: 0, display: 'block', wordWrap: 'break-word', textShadow: `0 4px 20px rgba(0,0,0,0.8), 0 0 40px ${themeColor}30` }}>
                   {title}
                 </h1>
               </div>
