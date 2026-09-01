@@ -22,7 +22,7 @@ export default async function Home() {
   const adSettings = settingsRes?.data || {};
 
   const featuredPost = publishedPosts.length > 0 ? publishedPosts[0] : null;
-  const recentPosts = publishedPosts.length > 1 ? publishedPosts.slice(1, 15) : [];
+  const recentPosts = publishedPosts.length > 1 ? publishedPosts.slice(1, 40) : [];
 
   const formatDate = (dateString) => {
     try {
@@ -33,15 +33,15 @@ export default async function Home() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <div className="max-w-[1920px] w-full mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 py-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 2xl:gap-12">
         
-        {/* Main Content: 8 columns on large screens */}
-        <div className="lg:col-span-8">
+        {/* Main Content: 8 columns on large screens, 9 columns on huge screens */}
+        <div className="lg:col-span-8 xl:col-span-9">
           {/* Hero Section */}
           <section className="mb-12">
             {featuredPost ? (
-              <Link href={`/noticias/${featuredPost.slug}`} className="block relative rounded-2xl overflow-hidden group cursor-pointer h-[500px] bg-black/90">
+              <Link href={`/noticias/${featuredPost.slug}`} className="block relative rounded-2xl overflow-hidden group cursor-pointer h-[500px] xl:h-[650px] bg-black/90 shadow-2xl">
                 {/* Blurred background */}
                 <Image 
                   src={featuredPost.coverImage || '/placeholder.jpg'} 
@@ -59,27 +59,27 @@ export default async function Home() {
                 /><div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
                 <SponsorWatermark postSponsorId={featuredPost.sponsorId} />
                 
-                <div className="absolute bottom-0 left-0 p-8 md:p-12 w-full">
-                  <span className="inline-block px-3 py-1 bg-primary text-white text-sm font-semibold rounded-full mb-4 shadow-lg backdrop-blur-sm bg-primary/90">
+                <div className="absolute bottom-0 left-0 p-8 md:p-12 xl:p-16 w-full">
+                  <span className="inline-block px-4 py-1.5 bg-primary text-white text-sm xl:text-base font-bold tracking-wider uppercase rounded-full mb-4 shadow-lg backdrop-blur-sm bg-primary/90">
                     {featuredPost.category}
                   </span>
-                  <h1 className="text-3xl md:text-5xl font-bold text-white mb-4 leading-tight">
+                  <h1 className="text-3xl md:text-5xl xl:text-6xl font-black text-white mb-6 leading-tight drop-shadow-2xl">
                     {featuredPost.title}
                   </h1>
-                  <p className="text-gray-300 text-lg mb-6 line-clamp-2 w-full md:w-3/4">
+                  <p className="text-gray-200 text-lg xl:text-xl mb-8 line-clamp-2 w-full md:w-3/4 drop-shadow-md">
                     {featuredPost.excerpt || featuredPost.content?.replace(/<[^>]+>/g, '')}
                   </p>
-                  <div className="flex items-center text-sm text-gray-400">
+                  <div className="flex items-center text-sm xl:text-base font-medium text-gray-300">
                     <span>{formatDate(featuredPost.createdAt)}</span>
-                    <span className="mx-2">•</span>
-                    <span className="flex items-center group-hover:text-white transition-colors">
-                      Leer artículo <ArrowRight className="ml-2 w-4 h-4" />
+                    <span className="mx-3 text-primary">•</span>
+                    <span className="flex items-center text-white group-hover:text-primary transition-colors">
+                      Leer artículo completo <ArrowRight className="ml-2 w-5 h-5" />
                     </span>
                   </div>
                 </div>
               </Link>
             ) : (
-              <div className="flex items-center justify-center h-[300px] bg-surface border border-border rounded-2xl">
+              <div className="flex items-center justify-center h-[400px] bg-surface border border-border rounded-2xl">
                 <p className="text-gray-500 text-xl">Aún no hay noticias publicadas.</p>
               </div>
             )}
@@ -88,21 +88,21 @@ export default async function Home() {
           <BannerDisplay position="plan-nacional" />
 
           {/* Recent News Grid */}
-          <section className="mt-12">
-            <div className="flex items-center justify-between mb-8">
-              <h2 className="text-2xl font-bold border-b-2 border-primary pb-2">Noticias de Hoy</h2>
-              <Link href="/noticias" className="text-primary hover:text-accent transition-colors flex items-center">
-                Ver todas <ArrowRight className="ml-1 w-4 h-4" />
+          <section className="mt-16">
+            <div className="flex items-center justify-between mb-10">
+              <h2 className="text-3xl font-black border-b-4 border-primary pb-2 uppercase tracking-wide">Noticias de Hoy</h2>
+              <Link href="/noticias" className="text-primary hover:text-accent font-bold transition-colors flex items-center bg-primary/10 px-4 py-2 rounded-lg">
+                Ver todas <ArrowRight className="ml-2 w-5 h-5" />
               </Link>
             </div>
 
             {recentPosts.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4 gap-8">
                 {recentPosts.map((post, index) => (
                   <React.Fragment key={post.id}>
-                    <Link href={`/noticias/${post.slug}`} className="group cursor-pointer flex flex-col bg-surface rounded-xl overflow-hidden border border-border hover:border-primary/50 transition-all hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/10">
-                      <div className="relative h-56 w-full overflow-hidden bg-black/5 dark:bg-white/5">
-                        <span className="absolute top-4 left-4 z-10 px-3 py-1 bg-primary/90 backdrop-blur-sm text-white text-xs font-bold uppercase tracking-wider rounded-full shadow-lg">
+                    <Link href={`/noticias/${post.slug}`} className="group cursor-pointer flex flex-col bg-surface rounded-2xl overflow-hidden border border-border hover:border-primary/50 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-primary/20">
+                      <div className="relative h-60 xl:h-64 w-full overflow-hidden bg-black/5 dark:bg-white/5">
+                        <span className="absolute top-4 left-4 z-10 px-3 py-1.5 bg-primary/95 backdrop-blur-sm text-white text-xs font-bold uppercase tracking-wider rounded-lg shadow-lg">
                           {post.category}
                         </span>
                         {/* Blurred background */}
@@ -121,54 +121,38 @@ export default async function Home() {
                           referrerPolicy="no-referrer"
                         />
                       </div>
-                      <div className="p-6 flex flex-col flex-1">
-                        <h3 className="text-xl font-bold mb-3 group-hover:text-primary transition-colors line-clamp-3">
+                      <div className="p-6 xl:p-8 flex flex-col flex-1">
+                        <h3 className="text-xl xl:text-2xl font-bold mb-4 leading-snug group-hover:text-primary transition-colors line-clamp-3">
                           {post.title}
                         </h3>
                         <div className="mt-auto pt-4 border-t border-border flex items-center justify-between">
                           <p className="text-sm text-gray-500 font-medium">{formatDate(post.createdAt)}</p>
-                          <span className="text-primary/70 group-hover:text-primary transition-colors">
+                          <span className="text-primary/70 group-hover:text-primary bg-primary/10 p-2 rounded-full transition-colors">
                             <ArrowRight className="w-5 h-5" />
                           </span>
                         </div>
                       </div>
                     </Link>
                     
-                    {/* Insert Banner after 2nd post */}
+                    {/* Official Sponsor Banners (Only specific positions) */}
                     {index === 1 && (
-                      <div className="md:col-span-2 my-2">
+                      <div className="col-span-1 md:col-span-2 xl:col-span-3 3xl:col-span-4 my-2">
                         <BannerDisplay position="plan-local" />
                       </div>
                     )}
                     
-                    {/* Insert Adsterra after 3rd post */}
-                    {index === 2 && adSettings.inArticleScript && (
-                      <div className="md:col-span-2 my-4 bg-surface p-4 rounded-xl border border-border/50 text-center flex flex-col items-center justify-center">
-                        <span className="text-[10px] uppercase tracking-widest text-gray-400 mb-2">Publicidad</span>
-                        <div dangerouslySetInnerHTML={{ __html: adSettings.inArticleScript }} className="w-full overflow-hidden flex justify-center" />
-                      </div>
-                    )}
-
-                    {/* Insert Banner after 4th post */}
                     {index === 3 && (
-                      <div className="md:col-span-2 my-2">
+                      <div className="col-span-1 md:col-span-2 xl:col-span-3 3xl:col-span-4 my-2">
                         <BannerDisplay position="plan-deportivo" />
                       </div>
                     )}
 
-                    {/* Insert Adsterra after 7th post */}
-                    {index === 6 && adSettings.inArticleScript && (
-                      <div className="md:col-span-2 my-4 bg-surface p-4 rounded-xl border border-border/50 text-center flex flex-col items-center justify-center">
-                        <span className="text-[10px] uppercase tracking-widest text-gray-400 mb-2">Publicidad</span>
-                        <div dangerouslySetInnerHTML={{ __html: adSettings.inArticleScript }} className="w-full overflow-hidden flex justify-center" />
-                      </div>
-                    )}
-
-                    {/* Insert Adsterra after 11th post */}
-                    {index === 10 && adSettings.inArticleScript && (
-                      <div className="md:col-span-2 my-4 bg-surface p-4 rounded-xl border border-border/50 text-center flex flex-col items-center justify-center">
-                        <span className="text-[10px] uppercase tracking-widest text-gray-400 mb-2">Publicidad</span>
-                        <div dangerouslySetInnerHTML={{ __html: adSettings.inArticleScript }} className="w-full overflow-hidden flex justify-center" />
+                    {/* Infinite Adsterra Injection (every 4 posts starting at index 2) */}
+                    {(index % 4 === 2) && adSettings.inArticleScript && (
+                      <div className="col-span-1 md:col-span-2 xl:col-span-3 3xl:col-span-4 my-8 bg-black/5 dark:bg-white/5 p-8 rounded-3xl border border-border/50 text-center flex flex-col items-center justify-center shadow-inner relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent"></div>
+                        <span className="text-[10px] xl:text-xs font-bold uppercase tracking-[0.3em] text-gray-400/80 mb-6 bg-background px-4 py-1.5 rounded-full border border-border/50">Anuncio Publicitario</span>
+                        <div dangerouslySetInnerHTML={{ __html: adSettings.inArticleScript }} className="w-full overflow-hidden flex justify-center scale-100 xl:scale-110 origin-center transition-transform" />
                       </div>
                     )}
                   </React.Fragment>
