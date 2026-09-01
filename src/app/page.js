@@ -141,14 +141,14 @@ export default async function Home() {
                     <NewsCard post={post} />
                     
                     {/* Interleave Ads inside the top batch */}
-                    {(index === 2 || index === 7) && (
+                    {(index === 2 || index === 7) && (adSettings.inArticleScript || true) && (
                       <div className="col-span-1 flex flex-col items-center justify-center bg-black/5 dark:bg-white/5 p-4 rounded-2xl border border-border/50 hover:border-primary/30 transition-colors shadow-inner min-h-[350px]">
                         <span className="text-[10px] uppercase tracking-[0.2em] text-gray-500 mb-4 bg-muted px-3 py-1 rounded-full border border-border">Anuncio</span>
                         {index === 2 && adSettings.inArticleScript ? (
                           <AdsterraBlock html={adSettings.inArticleScript} />
                         ) : (
                           <div className="w-[300px] h-[250px] flex items-center justify-center overflow-hidden">
-                            <BannerDisplay position="plan-cuadrado" mode="slider" hideUI={true} />
+                            <BannerDisplay position="plan-local" mode="slider" hideUI={true} />
                           </div>
                         )}
                       </div>
@@ -204,12 +204,12 @@ export default async function Home() {
                     <div className="col-span-1 flex flex-col items-center justify-center bg-black/5 dark:bg-white/5 p-4 rounded-2xl border border-border/50 hover:border-primary/30 transition-colors shadow-inner min-h-[350px]">
                       <span className="text-[10px] uppercase tracking-[0.2em] text-gray-500 mb-4 bg-muted px-3 py-1 rounded-full border border-border">Anuncio</span>
                       
-                      {isOwnAd ? (
+                      {isOwnAd || !adSettings.inArticleScript ? (
                         <div className="w-[300px] h-[250px] flex items-center justify-center overflow-hidden">
-                          <BannerDisplay position="plan-cuadrado" mode="slider" hideUI={true} />
+                          <BannerDisplay position="plan-local" mode="slider" hideUI={true} />
                         </div>
                       ) : (
-                        adSettings.inArticleScript && <AdsterraBlock html={adSettings.inArticleScript} />
+                        <AdsterraBlock html={adSettings.inArticleScript} />
                       )}
                     </div>
                   )}
