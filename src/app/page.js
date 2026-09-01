@@ -26,8 +26,9 @@ export default async function Home() {
   const recentPosts = publishedPosts.length > 1 ? publishedPosts.slice(1, 40) : [];
   
   // Split posts to fill empty space on PC next to the sidebar
-  const topNewsBatch = recentPosts.slice(0, 6);
-  const remainingNewsBatch = recentPosts.slice(6);
+  // 12 posts will create 4 rows of 3 columns, perfectly filling massive vertical sidebars on PC
+  const topNewsBatch = recentPosts.slice(0, 12);
+  const remainingNewsBatch = recentPosts.slice(12);
 
   const formatDate = (dateString) => {
     try {
@@ -139,11 +140,17 @@ export default async function Home() {
                   <React.Fragment key={post.id}>
                     <NewsCard post={post} />
                     
-                    {/* Interleave Adsterra inside the top batch */}
-                    {(index === 2) && adSettings.inArticleScript && (
+                    {/* Interleave Ads inside the top batch */}
+                    {(index === 2 || index === 7) && (
                       <div className="col-span-1 flex flex-col items-center justify-center bg-black/5 dark:bg-white/5 p-4 rounded-2xl border border-border/50 hover:border-primary/30 transition-colors shadow-inner min-h-[350px]">
                         <span className="text-[10px] uppercase tracking-[0.2em] text-gray-500 mb-4 bg-muted px-3 py-1 rounded-full border border-border">Anuncio</span>
-                        <AdsterraBlock html={adSettings.inArticleScript} />
+                        {index === 2 && adSettings.inArticleScript ? (
+                          <AdsterraBlock html={adSettings.inArticleScript} />
+                        ) : (
+                          <div className="w-[300px] h-[250px] flex items-center justify-center overflow-hidden">
+                            <BannerDisplay position="plan-cuadrado" mode="slider" hideUI={true} />
+                          </div>
+                        )}
                       </div>
                     )}
                   </React.Fragment>
@@ -170,33 +177,45 @@ export default async function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-8">
-            {remainingNewsBatch.map((post, index) => (
-              <React.Fragment key={post.id}>
-                
-                <NewsCard post={post} />
-                
-                {/* Official Sponsor Banners (Full width break) */}
-                {index === 4 && (
-                  <div className="col-span-full my-4">
-                    <BannerDisplay position="plan-local" />
-                  </div>
-                )}
-                
-                {index === 14 && (
-                  <div className="col-span-full my-4">
-                    <BannerDisplay position="plan-deportivo" />
-                  </div>
-                )}
+            {remainingNewsBatch.map((post, index) => {
+              const showAdCard = index % 5 === 3;
+              const isOwnAd = index % 15 === 8; // 1/3 of the time it's own ad, 2/3 Adsterra
 
-                {/* Adsterra Grid Card */}
-                {(index % 5 === 3) && adSettings.inArticleScript && (
-                  <div className="col-span-1 flex flex-col items-center justify-center bg-black/5 dark:bg-white/5 p-4 rounded-2xl border border-border/50 hover:border-primary/30 transition-colors shadow-inner min-h-[350px]">
-                    <span className="text-[10px] uppercase tracking-[0.2em] text-gray-500 mb-4 bg-muted px-3 py-1 rounded-full border border-border">Anuncio</span>
-                    <AdsterraBlock html={adSettings.inArticleScript} />
-                  </div>
-                )}
-              </React.Fragment>
-            ))}
+              return (
+                <React.Fragment key={post.id}>
+                  
+                  <NewsCard post={post} />
+                  
+                  {/* Official Sponsor Banners (Full width break) */}
+                  {index === 4 && (
+                    <div className="col-span-full my-4">
+                      <BannerDisplay position="plan-local" />
+                    </div>
+                  )}
+                  
+                  {index === 14 && (
+                    <div className="col-span-full my-4">
+                      <BannerDisplay position="plan-deportivo" />
+                    </div>
+                  )}
+
+                  {/* Interleaved Grid Card Ads */}
+                  {showAdCard && (
+                    <div className="col-span-1 flex flex-col items-center justify-center bg-black/5 dark:bg-white/5 p-4 rounded-2xl border border-border/50 hover:border-primary/30 transition-colors shadow-inner min-h-[350px]">
+                      <span className="text-[10px] uppercase tracking-[0.2em] text-gray-500 mb-4 bg-muted px-3 py-1 rounded-full border border-border">Anuncio</span>
+                      
+                      {isOwnAd ? (
+                        <div className="w-[300px] h-[250px] flex items-center justify-center overflow-hidden">
+                          <BannerDisplay position="plan-cuadrado" mode="slider" hideUI={true} />
+                        </div>
+                      ) : (
+                        adSettings.inArticleScript && <AdsterraBlock html={adSettings.inArticleScript} />
+                      )}
+                    </div>
+                  )}
+                </React.Fragment>
+              );
+            })}
           </div>
         </section>
       )}
